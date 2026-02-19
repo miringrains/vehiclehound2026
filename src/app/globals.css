@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   VehicleHound Design System — "Blue Violet Dark"
+   All tokens defined here. No magic numbers in components.
+   ============================================================ */
+
+@theme inline {
+  /* --- Fonts --- */
+  --font-sans: var(--font-inter);
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  /* --- Semantic color mapping (Tailwind v4) --- */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* --- Sidebar --- */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* --- Charts --- */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* --- Violet ramp (exposed as Tailwind colors) --- */
+  --color-violet-50: var(--violet-50);
+  --color-violet-100: var(--violet-100);
+  --color-violet-200: var(--violet-200);
+  --color-violet-300: var(--violet-300);
+  --color-violet-400: var(--violet-400);
+  --color-violet-500: var(--violet-500);
+  --color-violet-600: var(--violet-600);
+  --color-violet-700: var(--violet-700);
+  --color-violet-800: var(--violet-800);
+  --color-violet-900: var(--violet-900);
+  --color-violet-950: var(--violet-950);
+
+  /* --- Radius scale --- */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/* ============================================================
+   Dark-mode-first: :root IS the dark theme.
+   ============================================================ */
+
+:root {
+  --radius: 0.5rem;
+
+  /* --- Blue Violet Ramp --- */
+  --violet-50:  oklch(0.96 0.02 285);
+  --violet-100: oklch(0.93 0.03 285);
+  --violet-200: oklch(0.86 0.06 285);
+  --violet-300: oklch(0.78 0.09 285);
+  --violet-400: oklch(0.70 0.12 280);
+  --violet-500: oklch(0.62 0.14 280);
+  --violet-600: oklch(0.54 0.16 280);
+  --violet-700: oklch(0.46 0.16 280);
+  --violet-800: oklch(0.39 0.13 280);
+  --violet-900: oklch(0.33 0.10 280);
+  --violet-950: oklch(0.22 0.07 280);
+
+  /* --- Semantic tokens --- */
+  --background:           oklch(0.07 0.005 285);
+  --foreground:           oklch(0.98 0 0);
+
+  --card:                 oklch(0.12 0.005 285);
+  --card-foreground:      oklch(0.98 0 0);
+
+  --popover:              oklch(0.12 0.005 285);
+  --popover-foreground:   oklch(0.98 0 0);
+
+  --primary:              var(--violet-700);
+  --primary-foreground:   var(--violet-50);
+
+  --secondary:            oklch(0.17 0.005 285);
+  --secondary-foreground: oklch(0.98 0 0);
+
+  --muted:                oklch(0.17 0.005 285);
+  --muted-foreground:     oklch(0.71 0.01 280);
+
+  --accent:               var(--violet-600);
+  --accent-foreground:    var(--violet-50);
+
+  --destructive:          oklch(0.63 0.24 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  --success:              oklch(0.72 0.19 155);
+  --success-foreground:   oklch(0.98 0 0);
+
+  --warning:              oklch(0.80 0.16 85);
+  --warning-foreground:   oklch(0.07 0 0);
+
+  --border:               oklch(0.23 0.005 280);
+  --input:                oklch(0.23 0.005 280);
+  --ring:                 var(--violet-500);
+
+  /* --- Sidebar --- */
+  --sidebar:                    oklch(0.14 0.005 285);
+  --sidebar-foreground:         oklch(0.87 0.005 280);
+  --sidebar-primary:            var(--violet-700);
+  --sidebar-primary-foreground: var(--violet-50);
+  --sidebar-accent:             var(--violet-950);
+  --sidebar-accent-foreground:  var(--violet-200);
+  --sidebar-border:             oklch(0.23 0.005 280);
+  --sidebar-ring:               var(--violet-500);
+
+  /* --- Charts --- */
+  --chart-1: var(--violet-500);
+  --chart-2: var(--violet-400);
+  --chart-3: var(--violet-300);
+  --chart-4: oklch(0.74 0.14 220);
+  --chart-5: oklch(0.76 0.15 165);
+
+  /* --- Shadows (violet-tinted) --- */
+  --shadow-sm:   0 1px 2px 0 oklch(0.25 0.02 280 / 0.15);
+  --shadow-md:   0 4px 12px 0 oklch(0.2 0.02 280 / 0.2);
+  --shadow-lg:   0 8px 32px 0 oklch(0.15 0.03 280 / 0.25);
+  --shadow-glow: 0 0 20px 0 oklch(0.5 0.15 280 / 0.15);
+
+  /* --- Z-Index scale --- */
+  --z-base:     0;
+  --z-raised:   10;
+  --z-dropdown: 50;
+  --z-sticky:   100;
+  --z-overlay:  200;
+  --z-modal:    300;
+  --z-toast:    400;
+  --z-max:      999;
+
+  /* --- Durations --- */
+  --duration-fast:   100ms;
+  --duration-normal: 200ms;
+  --duration-smooth: 300ms;
+  --duration-slow:   500ms;
+
+  /* --- Easings --- */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.87, 0, 0.13, 1);
+
+  /* --- Layout constants --- */
+  --sidebar-width:           260px;
+  --sidebar-width-collapsed: 68px;
+  --topbar-height:           64px;
+  --content-max-width:       1280px;
+  --content-max-width-public: 1440px;
+}
+
+/* ============================================================
+   Base styles
+   ============================================================ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar styling for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.30 0.005 280);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.40 0.01 280);
+  }
+}
+
+/* ============================================================
+   Named text styles (apply via @apply or utility classes)
+   ============================================================ */
+
+@layer utilities {
+  .text-display-lg {
+    @apply text-5xl font-bold tracking-tight;
+  }
+
+  .text-display-sm {
+    @apply text-4xl font-bold tracking-tight;
+  }
+
+  .text-heading-1 {
+    @apply text-3xl font-semibold tracking-tight;
+  }
+
+  .text-heading-2 {
+    @apply text-2xl font-semibold;
+  }
+
+  .text-heading-3 {
+    @apply text-xl font-semibold;
+  }
+
+  .text-heading-4 {
+    @apply text-lg font-medium;
+  }
+
+  .text-body-lg {
+    @apply text-lg font-normal;
+  }
+
+  .text-body {
+    @apply text-base font-normal;
+  }
+
+  .text-body-sm {
+    @apply text-sm font-normal;
+  }
+
+  .text-caption {
+    @apply text-xs font-medium;
+  }
+
+  .text-overline {
+    @apply text-xs font-semibold uppercase tracking-widest;
+  }
+
+  .text-code {
+    @apply font-mono text-sm font-normal;
+  }
+
+  /* Glass-morphism utility */
+  .glass {
+    @apply backdrop-blur-xl border;
+    background: oklch(0.12 0.005 285 / 0.8);
+    border-color: oklch(0.33 0.10 280 / 0.2);
+  }
+}
