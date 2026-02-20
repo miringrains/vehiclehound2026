@@ -10,7 +10,6 @@ import { portalNav } from "@/config/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
 import { routes } from "@/config/routes";
@@ -35,13 +34,11 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 bg-background/80 backdrop-blur-xl border-r-white/[0.06]">
-        <div className="flex h-[var(--topbar-height)] items-center px-5">
+        <div className="flex items-center px-5 pt-6 pb-6">
           <Logo height={34} />
         </div>
 
-        <Separator className="bg-white/[0.06]" />
-
-        <ScrollArea className="flex-1 px-3 py-4">
+        <ScrollArea className="flex-1 px-3">
           <nav className="flex flex-col gap-6">
             {portalNav.map((group, i) => (
               <div key={i}>
@@ -78,7 +75,7 @@ export function MobileNav() {
           </nav>
         </ScrollArea>
 
-        <div className="border-t border-white/[0.06] p-3">
+        <div className="p-3 pb-5">
           <Button
             variant="ghost"
             className="w-full justify-start gap-2.5 text-muted-foreground"

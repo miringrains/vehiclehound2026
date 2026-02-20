@@ -9,7 +9,7 @@ export default function PortalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen bg-background">
+    <div className="h-screen bg-background overflow-hidden">
       {/* Aurora behind everything */}
       <AuroraBackdrop subtle />
 
@@ -19,14 +19,12 @@ export default function PortalLayout({
       </div>
 
       {/* Light floating content panel */}
-      <div className="relative z-[1] lg:pl-[var(--sidebar-width)] h-screen">
-        <div className="p-2 lg:p-3 h-full">
-          <div className="light-panel h-full overflow-y-auto rounded-2xl bg-background shadow-xl">
-            <TopBar />
-            <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
-              {children}
-            </main>
-          </div>
+      <div className="relative z-[1] flex flex-col lg:pl-[var(--sidebar-width)] h-screen p-2 lg:p-3">
+        <div className="light-panel flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-2xl bg-background shadow-xl">
+          <TopBar />
+          <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
+            {children}
+          </main>
         </div>
       </div>
 

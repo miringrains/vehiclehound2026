@@ -8,7 +8,6 @@ import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { portalNav, type NavGroup, type NavItem } from "@/config/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -25,18 +24,16 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-[var(--z-sticky)] flex w-[var(--sidebar-width)] flex-col border-r border-white/[0.06]">
+    <aside className="fixed inset-y-0 left-0 z-[var(--z-sticky)] flex w-[var(--sidebar-width)] flex-col pt-5 lg:pt-6">
       {/* Logo */}
-      <div className="flex h-[var(--topbar-height)] items-center px-5">
+      <div className="flex items-center px-5 pb-6">
         <Link href={routes.dashboard}>
           <Logo height={38} />
         </Link>
       </div>
 
-      <Separator className="bg-white/[0.06]" />
-
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="flex-1 px-3">
         <nav className="flex flex-col gap-6">
           {portalNav.map((group, i) => (
             <NavGroupSection key={i} group={group} pathname={pathname} />
@@ -45,7 +42,7 @@ export function AppSidebar() {
       </ScrollArea>
 
       {/* Logout */}
-      <div className="border-t border-white/[0.06] p-3">
+      <div className="p-3 pb-5">
         <Button
           variant="ghost"
           className="w-full justify-start gap-2.5 text-muted-foreground hover:text-foreground"
