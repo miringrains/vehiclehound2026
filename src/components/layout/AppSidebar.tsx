@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Car, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { portalNav, type NavGroup, type NavItem } from "@/config/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { routes } from "@/config/routes";
@@ -26,11 +27,10 @@ export function AppSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-[var(--z-sticky)] flex w-[var(--sidebar-width)] flex-col border-r border-sidebar-border bg-sidebar">
       {/* Logo */}
-      <div className="flex h-[var(--topbar-height)] items-center gap-2.5 px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Car size={18} strokeWidth={ICON_STROKE_WIDTH} className="text-primary-foreground" />
-        </div>
-        <span className="text-heading-4 text-foreground">VehicleHound</span>
+      <div className="flex h-[var(--topbar-height)] items-center px-5">
+        <Link href={routes.dashboard}>
+          <Logo height={24} />
+        </Link>
       </div>
 
       <Separator className="bg-sidebar-border" />

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, Car, LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { portalNav } from "@/config/navigation";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/shared/Logo";
 import { createClient } from "@/lib/supabase/client";
 import { routes } from "@/config/routes";
 
@@ -34,11 +35,8 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 bg-sidebar">
-        <div className="flex h-[var(--topbar-height)] items-center gap-2.5 px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Car size={18} strokeWidth={ICON_STROKE_WIDTH} className="text-primary-foreground" />
-          </div>
-          <span className="text-heading-4 text-foreground">VehicleHound</span>
+        <div className="flex h-[var(--topbar-height)] items-center px-5">
+          <Logo height={24} />
         </div>
 
         <Separator className="bg-sidebar-border" />

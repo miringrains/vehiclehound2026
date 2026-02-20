@@ -1,5 +1,5 @@
-import { Car } from "lucide-react";
-import { ICON_STROKE_WIDTH } from "@/lib/constants";
+import { Logo } from "@/components/shared/Logo";
+import { AuroraBackground } from "./_components/AuroraBackground";
 
 export default function AuthLayout({
   children,
@@ -7,28 +7,23 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4">
-      {/* Brand strip */}
-      <div className="mb-8 flex items-center gap-2.5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-          <Car
-            size={22}
-            strokeWidth={ICON_STROKE_WIDTH}
-            className="text-primary-foreground"
-          />
-        </div>
-        <span className="text-heading-2 text-foreground">VehicleHound</span>
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4">
+      <AuroraBackground />
+
+      {/* Logo */}
+      <div className="relative z-10 mb-10">
+        <Logo height={38} />
       </div>
 
-      {/* Auth card */}
-      <div className="w-full max-w-[420px]">
-        <div className="rounded-xl border border-border bg-card p-8">
+      {/* Auth card — glass effect over aurora */}
+      <div className="relative z-10 w-full max-w-[420px]">
+        <div className="rounded-2xl border border-white/[0.08] bg-background/70 p-8 shadow-lg backdrop-blur-2xl">
           {children}
         </div>
       </div>
 
       {/* Footer */}
-      <p className="mt-8 text-caption text-muted-foreground">
+      <p className="relative z-10 mt-8 text-caption text-muted-foreground/60">
         &copy; {new Date().getFullYear()} VehicleHound. All rights reserved.
       </p>
     </div>
