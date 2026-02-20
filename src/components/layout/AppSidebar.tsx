@@ -25,15 +25,15 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-[var(--z-sticky)] flex w-[var(--sidebar-width)] flex-col border-r border-sidebar-border bg-sidebar">
+    <aside className="fixed inset-y-0 left-0 z-[var(--z-sticky)] flex w-[var(--sidebar-width)] flex-col border-r border-white/[0.06]">
       {/* Logo */}
       <div className="flex h-[var(--topbar-height)] items-center px-5">
         <Link href={routes.dashboard}>
-          <Logo height={32} />
+          <Logo height={38} />
         </Link>
       </div>
 
-      <Separator className="bg-sidebar-border" />
+      <Separator className="bg-white/[0.06]" />
 
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
@@ -45,7 +45,7 @@ export function AppSidebar() {
       </ScrollArea>
 
       {/* Logout */}
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-t border-white/[0.06] p-3">
         <Button
           variant="ghost"
           className="w-full justify-start gap-2.5 text-muted-foreground hover:text-foreground"

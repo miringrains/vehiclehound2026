@@ -34,12 +34,12 @@ export function MobileNav() {
           <Menu size={20} strokeWidth={ICON_STROKE_WIDTH} />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] p-0 bg-sidebar">
+      <SheetContent side="left" className="w-[280px] p-0 bg-background/80 backdrop-blur-xl border-r-white/[0.06]">
         <div className="flex h-[var(--topbar-height)] items-center px-5">
-          <Logo height={28} />
+          <Logo height={34} />
         </div>
 
-        <Separator className="bg-sidebar-border" />
+        <Separator className="bg-white/[0.06]" />
 
         <ScrollArea className="flex-1 px-3 py-4">
           <nav className="flex flex-col gap-6">
@@ -78,7 +78,7 @@ export function MobileNav() {
           </nav>
         </ScrollArea>
 
-        <div className="border-t border-sidebar-border p-3">
+        <div className="border-t border-white/[0.06] p-3">
           <Button
             variant="ghost"
             className="w-full justify-start gap-2.5 text-muted-foreground"
