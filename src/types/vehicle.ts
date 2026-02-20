@@ -26,8 +26,11 @@ export type Vehicle = {
 
   lease_payment: number | null;
   lease_term: number | null;
+  lease_down_payment: number | null;
+  lease_annual_mileage: number | null;
   lease_spec: string | null;
   broker_fee: number | null;
+  taxes_and_fees: number | null;
 
   engine_hp: string | null;
   engine_cylinders: string | null;

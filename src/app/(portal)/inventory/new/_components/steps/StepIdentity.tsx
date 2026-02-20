@@ -1,22 +1,85 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ICON_STROKE_WIDTH, VEHICLE_STATUSES } from "@/lib/constants";
 import { vehicleTypes } from "@/config/vehicle-options";
 import { useWizard } from "../WizardContext";
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => CURRENT_YEAR + 1 - i);
+
+const reveal = {
+  initial: { opacity: 0, height: 0, marginTop: 0 },
+  animate: { opacity: 1, height: "auto", marginTop: 24 },
+  exit: { opacity: 0, height: 0, marginTop: 0 },
+  transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const },
+};
+
 export function StepIdentity() {
   const { data, setData, next } = useWizard();
+  const isSale = data.inventory_type === "sale";
+
+  const [makes, setMakes] = useState<string[]>([]);
+  const [models, setModels] = useState<string[]>([]);
+  const [loadingMakes, setLoadingMakes] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+
+  // VIN decode state (sale only)
   const [decoding, setDecoding] = useState(false);
   const [decodeError, setDecodeError] = useState<string | null>(null);
+  const [decoded, setDecoded] = useState(false);
+
+  // Fetch makes when year changes
+  useEffect(() => {
+    if (!data.year) { setMakes([]); return; }
+    let cancelled = false;
+    setLoadingMakes(true);
+    fetch(`/api/vehicles/makes?year=${data.year}`)
+      .then((r) => r.json())
+      .then((json) => { if (!cancelled) setMakes(json.makes || []); })
+      .catch(() => { if (!cancelled) setMakes([]); })
+      .finally(() => { if (!cancelled) setLoadingMakes(false); });
+    return () => { cancelled = true; };
+  }, [data.year]);
+
+  // Fetch models when make changes
+  useEffect(() => {
+    if (!data.make || !data.year) { setModels([]); return; }
+    let cancelled = false;
+    setLoadingModels(true);
+    fetch(`/api/vehicles/models?make=${encodeURIComponent(data.make)}&year=${data.year}`)
+      .then((r) => r.json())
+      .then((json) => { if (!cancelled) setModels(json.models || []); })
+      .catch(() => { if (!cancelled) setModels([]); })
+      .finally(() => { if (!cancelled) setLoadingModels(false); });
+    return () => { cancelled = true; };
+  }, [data.make, data.year]);
+
+  // Clear downstream when upstream changes
+  const handleYearChange = useCallback((year: string) => {
+    setData({ year: year ? Number(year) : null, make: "", model: "", trim: "" });
+    setDecoded(false);
+  }, [setData]);
+
+  const handleMakeChange = useCallback((make: string) => {
+    setData({ make, model: "", trim: "" });
+    setDecoded(false);
+  }, [setData]);
+
+  const handleModelChange = useCallback((model: string) => {
+    setData({ model, trim: "" });
+    setDecoded(false);
+  }, [setData]);
 
   async function handleDecode() {
     if (!data.vin || data.vin.length !== 17) {
@@ -52,6 +115,7 @@ export function StepIdentity() {
         transmission_style: (d.transmission_style as string) ?? data.transmission_style,
         drive_type: (d.drive_type as string) ?? data.drive_type,
       });
+      setDecoded(true);
     } catch {
       setDecodeError("Network error");
     } finally {
@@ -59,107 +123,240 @@ export function StepIdentity() {
     }
   }
 
+  const hasVehicle = !!(data.year && data.make && data.model);
+  const canProceed = hasVehicle;
+
   return (
-    <div className="space-y-10">
-      <div>
-        <h2 className="text-heading-1 mb-1">Vehicle Identity</h2>
+    <div className="space-y-0">
+      <div className="mb-10">
+        <h2 className="text-heading-1 mb-1">
+          {isSale ? "Vehicle Details" : "Lease Vehicle"}
+        </h2>
         <p className="text-body text-muted-foreground">
-          Enter the VIN to auto-fill, or fill in manually.
+          {isSale
+            ? "Start with the year, then select make and model."
+            : "Select the vehicle year, make, and model for the lease listing."}
         </p>
       </div>
 
-      {/* VIN Decode */}
-      <div className="space-y-2">
-        <Label htmlFor="vin">VIN</Label>
-        <div className="flex gap-2">
-          <Input
-            id="vin"
-            placeholder="1HGBH41JXMN109186"
-            value={data.vin}
-            onChange={(e) => setData({ vin: e.target.value.toUpperCase() })}
-            maxLength={17}
-            className="font-mono tracking-wider"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleDecode}
-            disabled={decoding || data.vin.length !== 17}
-            className="shrink-0 gap-2"
+      {/* ─── Section 1: Vehicle Selection (progressive) ─── */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h3 className="text-heading-4 mb-5">Vehicle Selection</h3>
+
+        {/* Row 1: Year */}
+        <div className="max-w-[200px]">
+          <Label>Year</Label>
+          <Select
+            value={data.year ? String(data.year) : undefined}
+            onValueChange={handleYearChange}
           >
-            {decoding ? (
-              <LoadingSpinner size={16} />
-            ) : (
-              <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />
-            )}
-            Decode
-          </Button>
-        </div>
-        {decodeError && (
-          <p className="text-caption text-destructive">{decodeError}</p>
-        )}
-      </div>
-
-      {/* Core fields */}
-      <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
-        <Field label="Year" type="number" placeholder="2024" value={data.year ?? ""} onChange={(v) => setData({ year: v ? Number(v) : null })} />
-        <Field label="Make" placeholder="Toyota" value={data.make} onChange={(v) => setData({ make: v })} />
-        <Field label="Model" placeholder="Camry" value={data.model} onChange={(v) => setData({ model: v })} />
-        <Field label="Trim" placeholder="XSE" value={data.trim} onChange={(v) => setData({ trim: v })} />
-      </div>
-
-      <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="space-y-1.5">
-          <Label>Vehicle Type</Label>
-          <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
-            <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
             <SelectContent>
-              {vehicleTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              {YEARS.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
-        <Field label="Doors" type="number" placeholder="4" value={data.doors ?? ""} onChange={(v) => setData({ doors: v ? Number(v) : null })} />
-        <Field label="Stock #" placeholder="STK-001" value={data.stock_number} onChange={(v) => setData({ stock_number: v })} />
-        <Field label="Mileage" type="number" placeholder="25000" value={data.mileage ?? ""} onChange={(v) => setData({ mileage: v ? Number(v) : null })} />
+
+        {/* Row 2: Make + Model (unlocks after year) */}
+        <AnimatePresence>
+          {data.year && (
+            <motion.div {...reveal} className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Make</Label>
+                <Combobox
+                  value={data.make}
+                  onValueChange={handleMakeChange}
+                  options={makes}
+                  placeholder="Search makes..."
+                  searchPlaceholder="Type to filter makes..."
+                  emptyText={loadingMakes ? "Loading..." : "No makes found."}
+                  loading={loadingMakes}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Model</Label>
+                <Combobox
+                  value={data.model}
+                  onValueChange={handleModelChange}
+                  options={models}
+                  placeholder={data.make ? "Search models..." : "Select a make first"}
+                  searchPlaceholder="Type to filter models..."
+                  emptyText={loadingModels ? "Loading..." : "No models found."}
+                  loading={loadingModels}
+                  disabled={!data.make}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Row 3: Trim (unlocks after model) */}
+        <AnimatePresence>
+          {data.model && (
+            <motion.div {...reveal} className="max-w-sm">
+              <div className="space-y-1.5">
+                <Label>Trim</Label>
+                <Input
+                  placeholder="e.g. XSE, Sport, Limited"
+                  value={data.trim}
+                  onChange={(e) => setData({ trim: e.target.value })}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Status */}
-      <div className="max-w-xs">
-        <Label>Status</Label>
-        <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value={String(VEHICLE_STATUSES.FOR_SALE)}>For Sale</SelectItem>
-            <SelectItem value={String(VEHICLE_STATUSES.COMING_SOON)}>Coming Soon</SelectItem>
-            <SelectItem value={String(VEHICLE_STATUSES.DREAM_BUILD)}>Dream Build</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* ─── Section 2: VIN Decode (sale only, unlocks after vehicle selected) ─── */}
+      <AnimatePresence>
+        {isSale && hasVehicle && (
+          <motion.div {...reveal}>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-heading-4">VIN Decode</h3>
+                  <p className="text-caption text-muted-foreground">Optional — auto-fills specs from the VIN.</p>
+                </div>
+                {decoded && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                    <Check size={12} strokeWidth={ICON_STROKE_WIDTH} />
+                    Decoded
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter 17-character VIN"
+                  value={data.vin}
+                  onChange={(e) => setData({ vin: e.target.value.toUpperCase() })}
+                  maxLength={17}
+                  className="font-mono tracking-wider"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleDecode}
+                  disabled={decoding || data.vin.length !== 17}
+                  className="shrink-0 gap-2"
+                >
+                  {decoding ? (
+                    <LoadingSpinner size={16} />
+                  ) : (
+                    <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />
+                  )}
+                  Decode
+                </Button>
+              </div>
+              {decodeError && (
+                <p className="text-caption text-destructive mt-2">{decodeError}</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className="flex justify-end pt-4">
-        <Button size="lg" onClick={next}>
-          Continue to Pricing
-        </Button>
-      </div>
-    </div>
-  );
-}
+      {/* ─── Section 3: Additional Details (unlocks after vehicle selected) ─── */}
+      <AnimatePresence>
+        {hasVehicle && (
+          <motion.div {...reveal}>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="text-heading-4 mb-5">Additional Details</h3>
+              <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label>Vehicle Type</Label>
+                  <Select
+                    value={data.vehicle_type || undefined}
+                    onValueChange={(v) => setData({ vehicle_type: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vehicleTypes.map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-function Field({
-  label, placeholder, value, onChange, type = "text",
-}: {
-  label: string; placeholder: string; value: string | number;
-  onChange: (v: string) => void; type?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
-      <Input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+                <div className="space-y-1.5">
+                  <Label>Doors</Label>
+                  <Select
+                    value={data.doors ? String(data.doors) : undefined}
+                    onValueChange={(v) => setData({ doors: Number(v) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[2, 3, 4, 5].map((d) => (
+                        <SelectItem key={d} value={String(d)}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {isSale && (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label>Stock #</Label>
+                      <Input
+                        placeholder="STK-001"
+                        value={data.stock_number}
+                        onChange={(e) => setData({ stock_number: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label>Mileage</Label>
+                      <Input
+                        type="number"
+                        placeholder="25,000"
+                        value={data.mileage ?? ""}
+                        onChange={(e) => setData({ mileage: e.target.value ? Number(e.target.value) : null })}
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label>Status</Label>
+                  <Select
+                    value={String(data.status)}
+                    onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={String(VEHICLE_STATUSES.FOR_SALE)}>
+                        {isSale ? "For Sale" : "Available"}
+                      </SelectItem>
+                      <SelectItem value={String(VEHICLE_STATUSES.COMING_SOON)}>Coming Soon</SelectItem>
+                      <SelectItem value={String(VEHICLE_STATUSES.DREAM_BUILD)}>Dream Build</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Continue */}
+      <AnimatePresence>
+        {canProceed && (
+          <motion.div {...reveal} className="flex justify-end pt-2">
+            <Button size="lg" onClick={next}>
+              Continue to Pricing
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

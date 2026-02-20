@@ -67,8 +67,11 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
     purchase_price: vehicle.purchase_price,
     lease_payment: vehicle.lease_payment,
     lease_term: vehicle.lease_term,
+    lease_down_payment: vehicle.lease_down_payment,
+    lease_annual_mileage: vehicle.lease_annual_mileage,
     lease_spec: vehicle.lease_spec ?? "",
     broker_fee: vehicle.broker_fee,
+    taxes_and_fees: vehicle.taxes_and_fees,
     location_detail: vehicle.location_detail ?? "",
     engine_hp: vehicle.engine_hp ?? "",
     engine_cylinders: vehicle.engine_cylinders ?? "",
@@ -137,8 +140,11 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
         purchase_price: form.purchase_price,
         lease_payment: form.lease_payment,
         lease_term: form.lease_term,
+        lease_down_payment: form.lease_down_payment,
+        lease_annual_mileage: form.lease_annual_mileage,
         lease_spec: form.lease_spec || null,
         broker_fee: form.broker_fee,
+        taxes_and_fees: form.taxes_and_fees,
         location_detail: form.location_detail || null,
         engine_hp: form.engine_hp || null,
         engine_cylinders: form.engine_cylinders || null,
@@ -280,21 +286,24 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
         )}
 
         {tab === "pricing" && (
-          <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+          <div className="space-y-6">
             {isSale ? (
-              <>
+              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
                 <PF label="Online Price" value={form.online_price} onChange={(v) => set({ online_price: v })} />
                 <PF label="Sale Price" value={form.sale_price} onChange={(v) => set({ sale_price: v })} />
                 <PF label="MSRP" value={form.msrp} onChange={(v) => set({ msrp: v })} />
                 <PF label="Purchase Price" value={form.purchase_price} onChange={(v) => set({ purchase_price: v })} />
-              </>
+              </div>
             ) : (
-              <>
+              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
                 <PF label="Monthly Payment" value={form.lease_payment} onChange={(v) => set({ lease_payment: v })} />
                 <F label="Lease Term (months)" type="number" value={form.lease_term ?? ""} onChange={(v) => set({ lease_term: v ? Number(v) : null })} />
+                <F label="Mileage/Year" type="number" value={form.lease_annual_mileage ?? ""} onChange={(v) => set({ lease_annual_mileage: v ? Number(v) : null })} />
+                <PF label="Down Payment" value={form.lease_down_payment} onChange={(v) => set({ lease_down_payment: v })} />
                 <PF label="MSRP" value={form.msrp} onChange={(v) => set({ msrp: v })} />
                 <PF label="Broker Fee" value={form.broker_fee} onChange={(v) => set({ broker_fee: v })} />
-              </>
+                <PF label="Taxes & Fees" value={form.taxes_and_fees} onChange={(v) => set({ taxes_and_fees: v })} />
+              </div>
             )}
             <F label="Location Detail" value={form.location_detail} onChange={(v) => set({ location_detail: v })} />
           </div>

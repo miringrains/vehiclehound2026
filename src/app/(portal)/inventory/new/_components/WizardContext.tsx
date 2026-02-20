@@ -19,14 +19,21 @@ export type WizardData = {
   mileage: number | null;
   status: VehicleStatus;
 
+  // Sale pricing
   online_price: number | null;
   sale_price: number | null;
   msrp: number | null;
   purchase_price: number | null;
+
+  // Lease pricing
   lease_payment: number | null;
   lease_term: number | null;
+  lease_down_payment: number | null;
+  lease_annual_mileage: number | null;
   lease_spec: string;
   broker_fee: number | null;
+  taxes_and_fees: number | null;
+
   location_detail: string;
 
   engine_hp: string;
@@ -97,8 +104,11 @@ const INITIAL_DATA: WizardData = {
   purchase_price: null,
   lease_payment: null,
   lease_term: null,
+  lease_down_payment: null,
+  lease_annual_mileage: null,
   lease_spec: "",
   broker_fee: null,
+  taxes_and_fees: null,
   location_detail: "",
   engine_hp: "",
   engine_cylinders: "",
