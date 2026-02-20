@@ -138,24 +138,17 @@ export function StepIdentity() {
       <div className="rounded-xl border border-border bg-card p-6">
         <h3 className="text-heading-4 mb-5">Vehicle Selection</h3>
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-4">
-          {/* Year — spans 1 col */}
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
           <div className="space-y-1.5">
             <Label>Year</Label>
-            <Select
-              value={data.year ? String(data.year) : undefined}
-              onValueChange={handleYearChange}
-            >
+            <Select value={data.year ? String(data.year) : undefined} onValueChange={handleYearChange}>
               <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
               <SelectContent>
-                {YEARS.map((y) => (
-                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                ))}
+                {YEARS.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Make — spans 1 col */}
           <div className="space-y-1.5">
             <Label>Make</Label>
             <Combobox
@@ -171,7 +164,6 @@ export function StepIdentity() {
             />
           </div>
 
-          {/* Model — spans 1 col */}
           <div className="space-y-1.5">
             <Label>Model</Label>
             <Combobox
@@ -186,7 +178,6 @@ export function StepIdentity() {
             />
           </div>
 
-          {/* Trim — spans 1 col */}
           <div className="space-y-1.5">
             <Label>Trim</Label>
             <Input
@@ -211,12 +202,11 @@ export function StepIdentity() {
                 </div>
                 {decoded && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                    <Check size={12} strokeWidth={ICON_STROKE_WIDTH} />
-                    Decoded
+                    <Check size={12} strokeWidth={ICON_STROKE_WIDTH} /> Decoded
                   </span>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Input
                   placeholder="Enter 17-character VIN"
                   value={data.vin}
@@ -224,24 +214,12 @@ export function StepIdentity() {
                   maxLength={17}
                   className="font-mono tracking-wider"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleDecode}
-                  disabled={decoding || data.vin.length !== 17}
-                  className="shrink-0 gap-2"
-                >
-                  {decoding ? (
-                    <LoadingSpinner size={16} />
-                  ) : (
-                    <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />
-                  )}
+                <Button type="button" variant="outline" onClick={handleDecode} disabled={decoding || data.vin.length !== 17} className="shrink-0 gap-2">
+                  {decoding ? <LoadingSpinner size={16} /> : <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />}
                   Decode
                 </Button>
               </div>
-              {decodeError && (
-                <p className="text-caption text-destructive mt-2">{decodeError}</p>
-              )}
+              {decodeError && <p className="text-caption text-destructive mt-2">{decodeError}</p>}
             </div>
           </motion.div>
         )}
@@ -255,8 +233,8 @@ export function StepIdentity() {
               <h3 className="text-heading-4 mb-5">Additional Details</h3>
 
               {isSale ? (
-                <>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
                     <div className="space-y-1.5">
                       <Label>Vehicle Type</Label>
                       <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
@@ -280,7 +258,7 @@ export function StepIdentity() {
                       <Input type="number" placeholder="25,000" value={data.mileage ?? ""} onChange={(e) => setData({ mileage: e.target.value ? Number(e.target.value) : null })} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-4 mt-4">
+                  <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
                     <div className="space-y-1.5">
                       <Label>Status</Label>
                       <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
@@ -293,9 +271,9 @@ export function StepIdentity() {
                       </Select>
                     </div>
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+                <div className="grid grid-cols-3 gap-6">
                   <div className="space-y-1.5">
                     <Label>Vehicle Type</Label>
                     <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
@@ -328,13 +306,10 @@ export function StepIdentity() {
         )}
       </AnimatePresence>
 
-      {/* Continue */}
       <AnimatePresence>
         {hasVehicle && (
           <motion.div {...reveal} className="flex justify-end pt-2">
-            <Button size="lg" onClick={next}>
-              Continue to Pricing
-            </Button>
+            <Button size="lg" onClick={next}>Continue to Pricing</Button>
           </motion.div>
         )}
       </AnimatePresence>

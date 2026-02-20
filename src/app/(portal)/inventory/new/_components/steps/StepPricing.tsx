@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,21 +27,41 @@ const TERM_OPTIONS = [
   { value: 48, label: "48 months" },
 ];
 
+const LOCATION_OPTIONS = [
+  "National",
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC",
+];
+
 export function StepPricing() {
   const { data, setData, next } = useWizard();
   const isSale = data.inventory_type === "sale";
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function numChange(key: string) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       const v = e.target.value;
       setData({ [key]: v ? Number(v) : null });
+      setErrors((prev) => ({ ...prev, [key]: "" }));
     };
   }
 
-  function strChange(key: string) {
-    return (e: React.ChangeEvent<HTMLInputElement>) => {
-      setData({ [key]: e.target.value });
-    };
+  function validateAndContinue() {
+    if (!isSale) {
+      const errs: Record<string, string> = {};
+      if (!data.lease_payment) errs.lease_payment = "Required";
+      if (!data.lease_term) errs.lease_term = "Required";
+      if (!data.lease_annual_mileage) errs.lease_annual_mileage = "Required";
+      if (!data.lease_down_payment && data.lease_down_payment !== 0) errs.lease_down_payment = "Required";
+      if (Object.keys(errs).length > 0) {
+        setErrors(errs);
+        return;
+      }
+    }
+    next();
   }
 
   return (
@@ -50,144 +71,133 @@ export function StepPricing() {
         <p className="text-body text-muted-foreground">
           {isSale
             ? "Set your asking prices and dealer cost."
-            : "Define the lease terms, payment, and fees."}
+            : "Define the lease terms and payment."}
         </p>
       </div>
 
       {isSale ? (
-        /* ─── SALE PRICING ─── */
         <>
           <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="text-heading-4 mb-5">Customer Pricing</h3>
-            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-6">
               <PriceField label="List / Online Price" value={data.online_price} onChange={numChange("online_price")} placeholder="29,999" />
               <PriceField label="Sale Price" value={data.sale_price} onChange={numChange("sale_price")} placeholder="28,500" />
             </div>
           </div>
-
           <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="text-heading-4 mb-5">Dealer Cost</h3>
-            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-6">
               <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="32,000" />
               <PriceField label="Purchase Price" value={data.purchase_price} onChange={numChange("purchase_price")} placeholder="24,000" />
             </div>
           </div>
         </>
       ) : (
-        /* ─── LEASE PRICING ─── */
-        <>
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="text-heading-4 mb-5">Lease Terms</h3>
-            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-              <PriceField label="Monthly Payment" value={data.lease_payment} onChange={numChange("lease_payment")} placeholder="599" suffix="/mo" />
-
-              <div className="space-y-1.5">
-                <Label>Lease Term</Label>
-                <Select
-                  value={data.lease_term ? String(data.lease_term) : undefined}
-                  onValueChange={(v) => setData({ lease_term: Number(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select term" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TERM_OPTIONS.map((t) => (
-                      <SelectItem key={t.value} value={String(t.value)}>{t.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Allowed Mileage</Label>
-                <Select
-                  value={data.lease_annual_mileage ? String(data.lease_annual_mileage) : undefined}
-                  onValueChange={(v) => setData({ lease_annual_mileage: Number(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select mileage" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MILEAGE_OPTIONS.map((m) => (
-                      <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <PriceField label="Down Payment" value={data.lease_down_payment} onChange={numChange("lease_down_payment")} placeholder="2,500" />
-              <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="52,000" />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="text-heading-4 mb-5">Fees</h3>
-            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-              <PriceField label="Broker Fee" value={data.broker_fee} onChange={numChange("broker_fee")} placeholder="1,995" />
-              <PriceField label="Taxes & Fees" value={data.taxes_and_fees} onChange={numChange("taxes_and_fees")} placeholder="450" />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="text-heading-4 mb-5">Lease Specification</h3>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h3 className="text-heading-4 mb-5">Lease Terms</h3>
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
             <div className="space-y-1.5">
-              <Label>Additional Details</Label>
-              <Input
-                placeholder="e.g. Tier 1 credit required, 1st payment due at signing"
-                value={data.lease_spec}
-                onChange={strChange("lease_spec")}
-              />
+              <Label>Monthly Payment <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  type="number" step="0.01" placeholder="599"
+                  value={data.lease_payment ?? ""}
+                  onChange={numChange("lease_payment")}
+                  className="pl-7"
+                />
+              </div>
+              {errors.lease_payment && <p className="text-caption text-destructive">{errors.lease_payment}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Term <span className="text-destructive">*</span></Label>
+              <Select
+                value={data.lease_term ? String(data.lease_term) : undefined}
+                onValueChange={(v) => { setData({ lease_term: Number(v) }); setErrors((p) => ({ ...p, lease_term: "" })); }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select term" /></SelectTrigger>
+                <SelectContent>
+                  {TERM_OPTIONS.map((t) => <SelectItem key={t.value} value={String(t.value)}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.lease_term && <p className="text-caption text-destructive">{errors.lease_term}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Mileage <span className="text-destructive">*</span></Label>
+              <Select
+                value={data.lease_annual_mileage ? String(data.lease_annual_mileage) : undefined}
+                onValueChange={(v) => { setData({ lease_annual_mileage: Number(v) }); setErrors((p) => ({ ...p, lease_annual_mileage: "" })); }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {MILEAGE_OPTIONS.map((m) => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.lease_annual_mileage && <p className="text-caption text-destructive">{errors.lease_annual_mileage}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Due at Signing <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  type="number" step="0.01" placeholder="2,999"
+                  value={data.lease_down_payment ?? ""}
+                  onChange={numChange("lease_down_payment")}
+                  className="pl-7"
+                />
+              </div>
+              {errors.lease_down_payment && <p className="text-caption text-destructive">{errors.lease_down_payment}</p>}
             </div>
           </div>
-        </>
+
+          <div className="grid grid-cols-2 gap-6 mt-5">
+            <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="52,000" />
+            <PriceField label="Taxes & Fees" value={data.taxes_and_fees} onChange={numChange("taxes_and_fees")} placeholder="450" />
+          </div>
+        </div>
       )}
 
       {/* Location */}
       <div className="rounded-xl border border-border bg-card p-6">
-        <div className="max-w-sm space-y-1.5">
-          <Label>Location Detail</Label>
-          <Input
-            placeholder="e.g. Main Lot, Bay 4"
-            value={data.location_detail}
-            onChange={strChange("location_detail")}
-          />
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+          <div className="space-y-1.5">
+            <Label>Location</Label>
+            <Select
+              value={data.location_detail || undefined}
+              onValueChange={(v) => setData({ location_detail: v })}
+            >
+              <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+              <SelectContent>
+                {LOCATION_OPTIONS.map((loc) => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       <div className="flex justify-end pt-2">
-        <Button size="lg" onClick={next}>
-          Continue to Details
-        </Button>
+        <Button size="lg" onClick={validateAndContinue}>Continue to Details</Button>
       </div>
     </div>
   );
 }
 
 function PriceField({
-  label, value, onChange, placeholder, suffix,
+  label, value, onChange, placeholder,
 }: {
   label: string; value: number | null;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder: string; suffix?: string;
+  placeholder: string;
 }) {
   return (
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-        <Input
-          type="number"
-          step="0.01"
-          placeholder={placeholder}
-          value={value ?? ""}
-          onChange={onChange}
-          className="pl-7"
-        />
-        {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-caption text-muted-foreground">
-            {suffix}
-          </span>
-        )}
+        <Input type="number" step="0.01" placeholder={placeholder} value={value ?? ""} onChange={onChange} className="pl-7" />
       </div>
     </div>
   );

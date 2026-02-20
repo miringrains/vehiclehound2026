@@ -18,7 +18,7 @@ import { routes } from "@/config/routes";
 import { ICON_STROKE_WIDTH, VEHICLE_STATUSES } from "@/lib/constants";
 import {
   fuelTypes, transmissionStyles, driveTypes, titleStatuses,
-  vehicleTypes, defaultColors,
+  vehicleTypes,
 } from "@/config/vehicle-options";
 import { createClient } from "@/lib/supabase/client";
 import type { Vehicle, VehicleImage } from "@/types/vehicle";
@@ -295,13 +295,12 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
                 <PF label="Purchase Price" value={form.purchase_price} onChange={(v) => set({ purchase_price: v })} />
               </div>
             ) : (
-              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
                 <PF label="Monthly Payment" value={form.lease_payment} onChange={(v) => set({ lease_payment: v })} />
-                <F label="Lease Term (months)" type="number" value={form.lease_term ?? ""} onChange={(v) => set({ lease_term: v ? Number(v) : null })} />
+                <F label="Term (months)" type="number" value={form.lease_term ?? ""} onChange={(v) => set({ lease_term: v ? Number(v) : null })} />
                 <F label="Mileage/Year" type="number" value={form.lease_annual_mileage ?? ""} onChange={(v) => set({ lease_annual_mileage: v ? Number(v) : null })} />
-                <PF label="Down Payment" value={form.lease_down_payment} onChange={(v) => set({ lease_down_payment: v })} />
+                <PF label="Due at Signing" value={form.lease_down_payment} onChange={(v) => set({ lease_down_payment: v })} />
                 <PF label="MSRP" value={form.msrp} onChange={(v) => set({ msrp: v })} />
-                <PF label="Broker Fee" value={form.broker_fee} onChange={(v) => set({ broker_fee: v })} />
                 <PF label="Taxes & Fees" value={form.taxes_and_fees} onChange={(v) => set({ taxes_and_fees: v })} />
               </div>
             )}
@@ -319,11 +318,11 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
               <SF label="Transmission" value={form.transmission_style} options={[...transmissionStyles]} onChange={(v) => set({ transmission_style: v })} />
               <SF label="Drive Type" value={form.drive_type} options={[...driveTypes]} onChange={(v) => set({ drive_type: v })} />
             </div>
-            <div className="grid gap-6 sm:grid-cols-2">
-              <ColorField label="Exterior" value={form.exterior_color} onChange={(v) => set({ exterior_color: v })} />
-              <ColorField label="Interior" value={form.interior_color} onChange={(v) => set({ interior_color: v })} />
+            <div className="grid grid-cols-2 gap-6">
+              <F label="Exterior Color" value={form.exterior_color} onChange={(v) => set({ exterior_color: v })} />
+              <F label="Interior Color" value={form.interior_color} onChange={(v) => set({ interior_color: v })} />
             </div>
-            <SF label="Title Status" value={form.title_status} options={[...titleStatuses]} onChange={(v) => set({ title_status: v })} />
+            {isSale && <SF label="Title Status" value={form.title_status} options={[...titleStatuses]} onChange={(v) => set({ title_status: v })} />}
             <div className="space-y-1.5">
               <Label>Description</Label>
               <Textarea rows={5} value={form.description} onChange={(e) => set({ description: e.target.value })} />
@@ -423,23 +422,3 @@ function SF({ label, value, options, onChange }: {
   );
 }
 
-function ColorField({ label, value, onChange }: {
-  label: string; value: string; onChange: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-3">
-      <Label>{label}</Label>
-      <div className="flex flex-wrap gap-2">
-        {defaultColors.map(({ label: cl, hex }) => (
-          <button key={hex} type="button" title={cl} onClick={() => onChange(cl)}
-            className={cn("h-7 w-7 rounded-full border-2 transition-all",
-              value === cl ? "border-primary scale-110 ring-2 ring-primary/30" : "border-border hover:scale-105"
-            )}
-            style={{ backgroundColor: hex }}
-          />
-        ))}
-      </div>
-      <Input placeholder="Custom color" value={value} onChange={(e) => onChange(e.target.value)} className="max-w-48" />
-    </div>
-  );
-}

@@ -3,11 +3,24 @@ import { NextResponse } from "next/server";
 const NHTSA_BASE = "https://vpic.nhtsa.dot.gov/api/vehicles";
 
 const POPULAR_MAKES = new Set([
-  "Acura", "Audi", "BMW", "Buick", "Cadillac", "Chevrolet", "Chrysler",
-  "Dodge", "Ford", "Genesis", "GMC", "Honda", "Hyundai", "INFINITI",
-  "Jaguar", "Jeep", "Kia", "Land Rover", "Lexus", "Lincoln", "Mazda",
-  "Mercedes-Benz", "MINI", "Mitsubishi", "Nissan", "Porsche", "Ram",
-  "Rivian", "Subaru", "Tesla", "Toyota", "Volkswagen", "Volvo",
+  "Acura", "Alfa Romeo", "Aston Martin", "Audi",
+  "Bentley", "BMW", "Buick",
+  "Cadillac", "Chevrolet", "Chrysler",
+  "Dodge",
+  "Ferrari", "Fiat", "Ford",
+  "Genesis", "GMC",
+  "Honda", "Hyundai",
+  "INFINITI",
+  "Jaguar", "Jeep",
+  "Kia",
+  "Lamborghini", "Land Rover", "Lexus", "Lincoln", "Lotus", "Lucid",
+  "Maserati", "Mazda", "McLaren", "Mercedes-Benz", "MINI", "Mitsubishi",
+  "Nissan",
+  "Polestar", "Porsche",
+  "Ram", "Rivian", "Rolls-Royce",
+  "Subaru",
+  "Tesla", "Toyota",
+  "Volkswagen", "Volvo",
 ]);
 
 export async function GET(request: Request) {

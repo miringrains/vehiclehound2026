@@ -28,5 +28,11 @@ export default async function VehicleDetailPage({
 
   if (error || !vehicle) notFound();
 
-  return <VehicleDetail vehicle={vehicle} />;
+  const { data: images } = await supabase
+    .from("vehicle_images")
+    .select("*")
+    .eq("vehicle_id", id)
+    .order("display_order", { ascending: true });
+
+  return <VehicleDetail vehicle={vehicle} images={images ?? []} />;
 }
