@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { routes } from "@/config/routes";
-import { VehicleForm } from "../_components/VehicleForm";
+import { VehicleWizard } from "./_components/VehicleWizard";
 
 export const metadata: Metadata = { title: "Add Vehicle" };
 
@@ -23,5 +23,5 @@ export default async function NewVehiclePage() {
 
   if (!profile?.dealership_id) redirect(routes.login);
 
-  return <VehicleForm dealershipId={profile.dealership_id} />;
+  return <VehicleWizard dealershipId={profile.dealership_id} />;
 }

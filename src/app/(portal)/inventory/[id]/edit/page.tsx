@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { routes } from "@/config/routes";
-import { VehicleForm } from "../../_components/VehicleForm";
+import { VehicleEditForm } from "./_components/VehicleEditForm";
 
 export const metadata: Metadata = { title: "Edit Vehicle" };
 
@@ -36,5 +36,17 @@ export default async function EditVehiclePage({
 
   if (error || !vehicle) notFound();
 
-  return <VehicleForm dealershipId={profile.dealership_id} vehicle={vehicle} />;
+  const { data: images } = await supabase
+    .from("vehicle_images")
+    .select("*")
+    .eq("vehicle_id", id)
+    .order("display_order", { ascending: true });
+
+  return (
+    <VehicleEditForm
+      vehicle={vehicle}
+      dealershipId={profile.dealership_id}
+      existingImages={images ?? []}
+    />
+  );
 }
