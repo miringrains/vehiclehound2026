@@ -42,11 +42,30 @@ type VehicleSummary = {
   exterior_color: string | null;
   preview_image: string | null;
   created_at: string;
+  lease_payment: number | null;
+  lease_term: number | null;
+  lease_annual_mileage: number | null;
+  drive_type: string | null;
+  fuel_type: string | null;
 };
+
+function priceLabel(v: VehicleSummary): string {
+  if (v.inventory_type === "lease") {
+    return v.lease_payment
+      ? `${formatCurrencyDollars(v.lease_payment)}/mo`
+      : "No price";
+  }
+  return v.online_price
+    ? formatCurrencyDollars(v.online_price)
+    : v.sale_price
+      ? formatCurrencyDollars(v.sale_price)
+      : "No price";
+}
 
 export function InventoryList({ vehicles }: { vehicles: VehicleSummary[] }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
   const filtered = useMemo(() => {
     return vehicles.filter((v) => {
@@ -61,9 +80,12 @@ export function InventoryList({ vehicles }: { vehicles: VehicleSummary[] }) {
       const matchesStatus =
         statusFilter === "all" || v.status === Number(statusFilter);
 
-      return matchesSearch && matchesStatus;
+      const matchesType =
+        typeFilter === "all" || v.inventory_type === typeFilter;
+
+      return matchesSearch && matchesStatus && matchesType;
     });
-  }, [vehicles, search, statusFilter]);
+  }, [vehicles, search, statusFilter, typeFilter]);
 
   return (
     <div className="space-y-6">
@@ -92,8 +114,18 @@ export function InventoryList({ vehicles }: { vehicles: VehicleSummary[] }) {
             className="pl-9"
           />
         </div>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full sm:w-[140px]">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="sale">For Sale</SelectItem>
+            <SelectItem value="lease">Lease</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
@@ -129,61 +161,92 @@ export function InventoryList({ vehicles }: { vehicles: VehicleSummary[] }) {
           animate="visible"
           className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
         >
-          {filtered.map((v) => (
-            <motion.div key={v.id} variants={staggerItem}>
-              <Link
-                href={routes.vehicleDetail(v.id)}
-                className="group block rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
-              >
-                <div className="flex h-40 items-center justify-center rounded-t-xl bg-muted">
-                  {v.preview_image ? (
-                    <img
-                      src={v.preview_image}
-                      alt=""
-                      className="h-full w-full rounded-t-xl object-cover"
-                    />
-                  ) : (
-                    <Car
-                      size={40}
-                      strokeWidth={1.5}
-                      className="text-muted-foreground/50"
-                    />
-                  )}
-                </div>
-                <div className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-body-sm font-medium leading-tight truncate">
-                      {[v.year, v.make, v.model].filter(Boolean).join(" ") ||
-                        "Untitled"}
-                    </h3>
-                    <StatusBadge
-                      status={VEHICLE_STATUS_LABELS[v.status] ?? "Unknown"}
-                    />
-                  </div>
-                  {v.trim && (
-                    <p className="text-caption text-muted-foreground truncate">
-                      {v.trim}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between text-caption text-muted-foreground">
-                    <span>
-                      {v.online_price
-                        ? formatCurrencyDollars(v.online_price)
-                        : "No price"}
-                    </span>
-                    <span>
-                      {v.mileage ? `${formatNumber(v.mileage)} mi` : ""}
+          {filtered.map((v) => {
+            const isLease = v.inventory_type === "lease";
+
+            return (
+              <motion.div key={v.id} variants={staggerItem}>
+                <Link
+                  href={routes.vehicleDetail(v.id)}
+                  className="group block rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
+                >
+                  {/* Image — 4:3 aspect ratio */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-muted">
+                    {v.preview_image ? (
+                      <img
+                        src={v.preview_image}
+                        alt=""
+                        className="h-full w-full rounded-t-xl object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Car
+                          size={40}
+                          strokeWidth={1.5}
+                          className="text-muted-foreground/50"
+                        />
+                      </div>
+                    )}
+
+                    {/* Type badge overlaid on image */}
+                    <span className="absolute top-2.5 left-2.5 rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-white backdrop-blur-sm">
+                      {isLease ? "Lease" : "For Sale"}
                     </span>
                   </div>
-                  {v.stock_number && (
-                    <p className="text-caption text-muted-foreground">
-                      Stock #{v.stock_number}
+
+                  <div className="p-4 space-y-2.5">
+                    {/* Title + status */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-body-sm font-semibold leading-tight truncate">
+                          {[v.year, v.make, v.model].filter(Boolean).join(" ") || "Untitled"}
+                        </h3>
+                        {v.trim && (
+                          <p className="text-caption text-muted-foreground truncate mt-0.5">
+                            {v.trim}
+                          </p>
+                        )}
+                      </div>
+                      <StatusBadge
+                        status={VEHICLE_STATUS_LABELS[v.status] ?? "Unknown"}
+                        className="shrink-0"
+                      />
+                    </div>
+
+                    {/* Price row */}
+                    <p className="text-body font-semibold">
+                      {priceLabel(v)}
                     </p>
-                  )}
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+
+                    {/* Detail chips */}
+                    <div className="flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+                      {isLease && v.lease_term && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">{v.lease_term}mo</span>
+                      )}
+                      {isLease && v.lease_annual_mileage && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">{formatNumber(v.lease_annual_mileage)} mi/yr</span>
+                      )}
+                      {!isLease && v.mileage != null && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">{formatNumber(v.mileage)} mi</span>
+                      )}
+                      {v.exterior_color && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">{v.exterior_color}</span>
+                      )}
+                      {v.drive_type && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">{v.drive_type}</span>
+                      )}
+                      {v.fuel_type && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">{v.fuel_type}</span>
+                      )}
+                      {!isLease && v.stock_number && (
+                        <span className="rounded-md bg-muted px-2 py-0.5">#{v.stock_number}</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </motion.div>
       )}
     </div>

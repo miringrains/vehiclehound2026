@@ -26,7 +26,7 @@ export default async function InventoryPage() {
   const { data: vehicles } = await supabase
     .from("vehicles")
     .select(
-      "id, year, make, model, trim, stock_number, vin, status, inventory_type, online_price, sale_price, mileage, exterior_color, preview_image, created_at"
+      "id, year, make, model, trim, stock_number, vin, status, inventory_type, online_price, sale_price, mileage, exterior_color, preview_image, created_at, lease_payment, lease_term, lease_annual_mileage, drive_type, fuel_type"
     )
     .eq("dealership_id", profile.dealership_id)
     .order("created_at", { ascending: false });

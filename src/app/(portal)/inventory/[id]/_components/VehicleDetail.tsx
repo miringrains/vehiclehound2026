@@ -70,6 +70,10 @@ export function VehicleDetail({ vehicle, images }: Props) {
         </Button>
         <div className="flex-1">
           <PageHeader title={title}>
+            <StatusBadge
+              status={isLease ? "Lease" : "For Sale"}
+              variant="default"
+            />
             <StatusBadge status={VEHICLE_STATUS_LABELS[vehicle.status] ?? "Unknown"} />
             <Button variant="outline" size="sm" asChild>
               <Link href={routes.vehicleEdit(vehicle.id)}>
@@ -87,7 +91,7 @@ export function VehicleDetail({ vehicle, images }: Props) {
         {/* Image gallery */}
         <div className="lg:col-span-2 space-y-3">
           {/* Main image */}
-          <div className="relative flex h-80 items-center justify-center rounded-xl border border-border bg-card overflow-hidden">
+          <div className="relative flex aspect-[4/3] items-center justify-center rounded-xl border border-border bg-card overflow-hidden">
             {imageUrls.length > 0 ? (
               <>
                 <img
@@ -196,7 +200,6 @@ export function VehicleDetail({ vehicle, images }: Props) {
           </h3>
           <DetailRow label="Exterior" value={vehicle.exterior_color} />
           <DetailRow label="Interior" value={vehicle.interior_color} />
-          <DetailRow label="Type" value={isLease ? "Lease" : "Sale"} />
           {!isLease && <DetailRow label="Title Status" value={vehicle.title_status} />}
         </div>
       </div>
