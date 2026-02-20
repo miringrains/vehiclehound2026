@@ -454,66 +454,89 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
       {/* Preview Tab */}
       {activeTab === "preview" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Live preview of how your inventory widget will appear on an external site.
-            </p>
-          </div>
-          <div className="rounded-xl border-2 border-dashed border-border/60 bg-white p-6 min-h-[400px]">
-            <div className="space-y-4">
-              {/* Mock search bar */}
-              <div className="flex gap-2">
-                <div className="flex-1 h-9 rounded-md border bg-white px-3 flex items-center text-xs text-muted-foreground">
-                  Search vehicles...
-                </div>
-                <div className="h-9 w-[100px] rounded-md border bg-white px-3 flex items-center text-xs text-muted-foreground">
-                  All Types
-                </div>
-                <div className="h-9 w-[100px] rounded-md border bg-white px-3 flex items-center text-xs text-muted-foreground">
-                  Newest
-                </div>
-              </div>
-              {/* Mock cards */}
-              <div className="grid grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="rounded-lg border overflow-hidden">
-                    <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
-                      <span className="text-xs text-gray-300">Vehicle Image</span>
-                    </div>
-                    <div className="p-3 space-y-1.5">
-                      <span
-                        className="inline-block text-[9px] font-semibold uppercase tracking-wider text-white px-1.5 py-0.5 rounded"
-                        style={{ backgroundColor: primaryColor }}
-                      >
-                        {i % 2 === 0 ? "Lease" : "Sale"}
-                      </span>
-                      <p className="text-sm font-semibold text-gray-900">2025 Vehicle Model</p>
-                      <p className="text-xs text-gray-400">Trim · 12,000 mi · Color</p>
-                      {showPricing && (
-                        <p className="text-sm font-bold text-gray-900">
-                          {i % 2 === 0 ? "$599/mo" : "$45,999"}
-                        </p>
-                      )}
-                    </div>
+          <p className="text-xs text-muted-foreground">
+            Preview of how your widget will appear on an external website. Colors update in real-time.
+          </p>
+          <div className="rounded-xl border bg-white p-6 min-h-[500px]">
+            {/* Mock search */}
+            <div className="flex items-center border border-gray-200 rounded-[10px] px-4 py-3 mb-5 gap-2.5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span className="text-sm text-gray-400">Search by make, model, or keyword...</span>
+            </div>
+            <div className="flex gap-6">
+              {/* Mock sidebar */}
+              <div className="w-[200px] shrink-0 hidden lg:block">
+                <div className="border border-gray-100 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[13px] font-bold text-gray-900">Filters</span>
+                    <span className="text-[10px] text-gray-400 underline">Clear All</span>
                   </div>
-                ))}
+                  <div className="border-t pt-3 pb-3">
+                    <p className="text-[11px] font-semibold text-gray-500 mb-2">Monthly Payment</p>
+                    <div className="h-1 bg-gray-200 rounded-full mb-1"><div className="h-1 bg-gray-900 rounded-full w-3/4" /></div>
+                    <div className="flex justify-between text-[10px] text-gray-400"><span>$200/mo</span><span>$1,000/mo</span></div>
+                  </div>
+                  <div className="border-t pt-3 pb-3">
+                    <p className="text-[11px] font-semibold text-gray-500 mb-2">Make</p>
+                    {["BMW", "Mercedes-Benz", "Audi"].map((m) => (
+                      <label key={m} className="flex items-center gap-2 text-[12px] text-gray-700 mb-1.5 cursor-pointer">
+                        <input type="checkbox" className="accent-gray-900 w-3.5 h-3.5" readOnly /> {m}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="border-t pt-3">
+                    <p className="text-[11px] font-semibold text-gray-500 mb-2">Vehicle Type</p>
+                    {["Sedan", "SUV"].map((t) => (
+                      <label key={t} className="flex items-center gap-2 text-[12px] text-gray-700 mb-1.5 cursor-pointer">
+                        <input type="checkbox" className="accent-gray-900 w-3.5 h-3.5" readOnly /> {t}
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
-              {/* Mock CTA */}
-              <div className="flex justify-center pt-2">
-                <button
-                  className="text-white text-xs font-semibold px-5 py-2 rounded-lg transition-colors"
-                  style={{ backgroundColor: primaryColor }}
-                  onMouseEnter={(e) => { (e.target as HTMLElement).style.backgroundColor = hoverColor; }}
-                  onMouseLeave={(e) => { (e.target as HTMLElement).style.backgroundColor = primaryColor; }}
-                >
-                  Apply for Financing
-                </button>
+              {/* Mock grid */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[12px] text-gray-500 font-medium">9 vehicles found</span>
+                  <span className="text-[12px] text-gray-400 border rounded-lg px-3 py-1.5">Featured</span>
+                </div>
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
+                  {[
+                    { name: "2025 BMW X7", price: "$999/mo", type: "Lease", term: "39 mo", mi: "7,500 mi" },
+                    { name: "2025 Mercedes C300", price: "$348/mo", type: "Lease", term: "24 mo", mi: "7,500 mi" },
+                    { name: "2025 BMW 330i", price: "$429/mo", type: "Lease", term: "39 mo", mi: "7,500 mi" },
+                  ].map((car, i) => (
+                    <div key={i} className="border border-gray-100 rounded-xl overflow-hidden">
+                      <div className="relative aspect-[4/3] bg-gray-100">
+                        <span className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider text-white px-2.5 py-1 rounded-md bg-green-500">Available</span>
+                        {showPricing && (
+                          <span className="absolute top-2.5 right-2.5 text-[13px] font-extrabold text-gray-900 bg-white px-3 py-1 rounded-lg shadow-sm">{car.price}</span>
+                        )}
+                        <div className="flex items-center justify-center h-full text-[11px] text-gray-300">Vehicle Image</div>
+                      </div>
+                      <div className="p-3.5">
+                        <p className="text-[13px] font-bold text-gray-900 mb-1.5">{car.name}</p>
+                        {showPricing && (
+                          <div className="flex gap-3 text-[10px] text-gray-400 mb-3">
+                            <span><strong className="text-gray-500">TERM:</strong> {car.term}</span>
+                            <span>{car.mi}</span>
+                          </div>
+                        )}
+                        <button
+                          className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-white transition-colors"
+                          style={{ backgroundColor: primaryColor }}
+                          onMouseEnter={(e) => { (e.target as HTMLElement).style.backgroundColor = hoverColor; }}
+                          onMouseLeave={(e) => { (e.target as HTMLElement).style.backgroundColor = primaryColor; }}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground text-center">
-            Colors and pricing visibility update in real-time as you change settings.
-          </p>
         </div>
       )}
     </motion.div>
