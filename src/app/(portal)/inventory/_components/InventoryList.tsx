@@ -176,7 +176,7 @@ export function InventoryList({ vehicles }: { vehicles: VehicleSummary[] }) {
                       <img
                         src={v.preview_image}
                         alt=""
-                        className="h-full w-full rounded-t-xl object-cover"
+                        className="h-full w-full rounded-t-xl object-contain"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">

@@ -97,7 +97,7 @@ export function VehicleDetail({ vehicle, images }: Props) {
                 <img
                   src={imageUrls[activeImage]}
                   alt={`${title} - Photo ${activeImage + 1}`}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
                 {imageUrls.length > 1 && (
                   <>
@@ -120,7 +120,7 @@ export function VehicleDetail({ vehicle, images }: Props) {
                 )}
               </>
             ) : vehicle.preview_image ? (
-              <img src={vehicle.preview_image} alt={title} className="h-full w-full object-cover" />
+              <img src={vehicle.preview_image} alt={title} className="h-full w-full object-contain" />
             ) : (
               <Car size={48} strokeWidth={1.5} className="text-muted-foreground/30" />
             )}
