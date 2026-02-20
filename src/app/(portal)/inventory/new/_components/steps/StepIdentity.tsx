@@ -30,29 +30,32 @@ export function StepIdentity() {
   const isSale = data.inventory_type === "sale";
 
   const [makes, setMakes] = useState<string[]>([]);
+  const [popularMakeCount, setPopularMakeCount] = useState(0);
   const [models, setModels] = useState<string[]>([]);
   const [loadingMakes, setLoadingMakes] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
 
-  // VIN decode state (sale only)
   const [decoding, setDecoding] = useState(false);
   const [decodeError, setDecodeError] = useState<string | null>(null);
   const [decoded, setDecoded] = useState(false);
 
-  // Fetch makes when year changes
   useEffect(() => {
     if (!data.year) { setMakes([]); return; }
     let cancelled = false;
     setLoadingMakes(true);
     fetch(`/api/vehicles/makes?year=${data.year}`)
       .then((r) => r.json())
-      .then((json) => { if (!cancelled) setMakes(json.makes || []); })
+      .then((json) => {
+        if (!cancelled) {
+          setMakes(json.makes || []);
+          setPopularMakeCount(json.popular_count || 0);
+        }
+      })
       .catch(() => { if (!cancelled) setMakes([]); })
       .finally(() => { if (!cancelled) setLoadingMakes(false); });
     return () => { cancelled = true; };
   }, [data.year]);
 
-  // Fetch models when make changes
   useEffect(() => {
     if (!data.make || !data.year) { setModels([]); return; }
     let cancelled = false;
@@ -65,7 +68,6 @@ export function StepIdentity() {
     return () => { cancelled = true; };
   }, [data.make, data.year]);
 
-  // Clear downstream when upstream changes
   const handleYearChange = useCallback((year: string) => {
     setData({ year: year ? Number(year) : null, make: "", model: "", trim: "" });
     setDecoded(false);
@@ -88,16 +90,10 @@ export function StepIdentity() {
     }
     setDecoding(true);
     setDecodeError(null);
-
     try {
       const res = await fetch(`/api/vin/${data.vin}`);
       const json = await res.json();
-
-      if (!res.ok) {
-        setDecodeError(json.error || "Decode failed");
-        return;
-      }
-
+      if (!res.ok) { setDecodeError(json.error || "Decode failed"); return; }
       const d = json.decoded as Record<string, string | number | null>;
       setData({
         year: (d.year as number) ?? data.year,
@@ -124,7 +120,6 @@ export function StepIdentity() {
   }
 
   const hasVehicle = !!(data.year && data.make && data.model);
-  const canProceed = hasVehicle;
 
   return (
     <div className="space-y-0">
@@ -139,79 +134,72 @@ export function StepIdentity() {
         </p>
       </div>
 
-      {/* ─── Section 1: Vehicle Selection (progressive) ─── */}
+      {/* ─── Vehicle Selection ─── */}
       <div className="rounded-xl border border-border bg-card p-6">
         <h3 className="text-heading-4 mb-5">Vehicle Selection</h3>
 
-        {/* Row 1: Year */}
-        <div className="max-w-[200px]">
-          <Label>Year</Label>
-          <Select
-            value={data.year ? String(data.year) : undefined}
-            onValueChange={handleYearChange}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select year" />
-            </SelectTrigger>
-            <SelectContent>
-              {YEARS.map((y) => (
-                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-4">
+          {/* Year — spans 1 col */}
+          <div className="space-y-1.5">
+            <Label>Year</Label>
+            <Select
+              value={data.year ? String(data.year) : undefined}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
+              <SelectContent>
+                {YEARS.map((y) => (
+                  <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Make — spans 1 col */}
+          <div className="space-y-1.5">
+            <Label>Make</Label>
+            <Combobox
+              value={data.make}
+              onValueChange={handleMakeChange}
+              options={makes}
+              placeholder="Select make"
+              searchPlaceholder="Type to filter..."
+              emptyText={loadingMakes ? "Loading..." : "No makes found."}
+              loading={loadingMakes}
+              disabled={!data.year}
+              popularCount={popularMakeCount}
+            />
+          </div>
+
+          {/* Model — spans 1 col */}
+          <div className="space-y-1.5">
+            <Label>Model</Label>
+            <Combobox
+              value={data.model}
+              onValueChange={handleModelChange}
+              options={models}
+              placeholder={data.make ? "Select model" : "Select make first"}
+              searchPlaceholder="Type to filter..."
+              emptyText={loadingModels ? "Loading..." : "No models found."}
+              loading={loadingModels}
+              disabled={!data.make}
+            />
+          </div>
+
+          {/* Trim — spans 1 col */}
+          <div className="space-y-1.5">
+            <Label>Trim</Label>
+            <Input
+              placeholder="e.g. XSE, Sport"
+              value={data.trim}
+              onChange={(e) => setData({ trim: e.target.value })}
+              disabled={!data.model}
+            />
+          </div>
         </div>
-
-        {/* Row 2: Make + Model (unlocks after year) */}
-        <AnimatePresence>
-          {data.year && (
-            <motion.div {...reveal} className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Make</Label>
-                <Combobox
-                  value={data.make}
-                  onValueChange={handleMakeChange}
-                  options={makes}
-                  placeholder="Search makes..."
-                  searchPlaceholder="Type to filter makes..."
-                  emptyText={loadingMakes ? "Loading..." : "No makes found."}
-                  loading={loadingMakes}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Model</Label>
-                <Combobox
-                  value={data.model}
-                  onValueChange={handleModelChange}
-                  options={models}
-                  placeholder={data.make ? "Search models..." : "Select a make first"}
-                  searchPlaceholder="Type to filter models..."
-                  emptyText={loadingModels ? "Loading..." : "No models found."}
-                  loading={loadingModels}
-                  disabled={!data.make}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Row 3: Trim (unlocks after model) */}
-        <AnimatePresence>
-          {data.model && (
-            <motion.div {...reveal} className="max-w-sm">
-              <div className="space-y-1.5">
-                <Label>Trim</Label>
-                <Input
-                  placeholder="e.g. XSE, Sport, Limited"
-                  value={data.trim}
-                  onChange={(e) => setData({ trim: e.target.value })}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* ─── Section 2: VIN Decode (sale only, unlocks after vehicle selected) ─── */}
+      {/* ─── VIN Decode (sale only) ─── */}
       <AnimatePresence>
         {isSale && hasVehicle && (
           <motion.div {...reveal}>
@@ -259,89 +247,82 @@ export function StepIdentity() {
         )}
       </AnimatePresence>
 
-      {/* ─── Section 3: Additional Details (unlocks after vehicle selected) ─── */}
+      {/* ─── Additional Details ─── */}
       <AnimatePresence>
         {hasVehicle && (
           <motion.div {...reveal}>
             <div className="rounded-xl border border-border bg-card p-6">
               <h3 className="text-heading-4 mb-5">Additional Details</h3>
-              <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="space-y-1.5">
-                  <Label>Vehicle Type</Label>
-                  <Select
-                    value={data.vehicle_type || undefined}
-                    onValueChange={(v) => setData({ vehicle_type: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vehicleTypes.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div className="space-y-1.5">
-                  <Label>Doors</Label>
-                  <Select
-                    value={data.doors ? String(data.doors) : undefined}
-                    onValueChange={(v) => setData({ doors: Number(v) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[2, 3, 4, 5].map((d) => (
-                        <SelectItem key={d} value={String(d)}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {isSale && (
-                  <>
+              {isSale ? (
+                <>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-4">
+                    <div className="space-y-1.5">
+                      <Label>Vehicle Type</Label>
+                      <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{vehicleTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Doors</Label>
+                      <Select value={data.doors ? String(data.doors) : undefined} onValueChange={(v) => setData({ doors: Number(v) })}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{[2, 3, 4, 5].map((d) => <SelectItem key={d} value={String(d)}>{d}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-1.5">
                       <Label>Stock #</Label>
-                      <Input
-                        placeholder="STK-001"
-                        value={data.stock_number}
-                        onChange={(e) => setData({ stock_number: e.target.value })}
-                      />
+                      <Input placeholder="STK-001" value={data.stock_number} onChange={(e) => setData({ stock_number: e.target.value })} />
                     </div>
-
                     <div className="space-y-1.5">
                       <Label>Mileage</Label>
-                      <Input
-                        type="number"
-                        placeholder="25,000"
-                        value={data.mileage ?? ""}
-                        onChange={(e) => setData({ mileage: e.target.value ? Number(e.target.value) : null })}
-                      />
+                      <Input type="number" placeholder="25,000" value={data.mileage ?? ""} onChange={(e) => setData({ mileage: e.target.value ? Number(e.target.value) : null })} />
                     </div>
-                  </>
-                )}
-
-                <div className="space-y-1.5">
-                  <Label>Status</Label>
-                  <Select
-                    value={String(data.status)}
-                    onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={String(VEHICLE_STATUSES.FOR_SALE)}>
-                        {isSale ? "For Sale" : "Available"}
-                      </SelectItem>
-                      <SelectItem value={String(VEHICLE_STATUSES.COMING_SOON)}>Coming Soon</SelectItem>
-                      <SelectItem value={String(VEHICLE_STATUSES.DREAM_BUILD)}>Dream Build</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-4 mt-4">
+                    <div className="space-y-1.5">
+                      <Label>Status</Label>
+                      <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={String(VEHICLE_STATUSES.AVAILABLE)}>Available</SelectItem>
+                          <SelectItem value={String(VEHICLE_STATUSES.PENDING)}>Pending</SelectItem>
+                          <SelectItem value={String(VEHICLE_STATUSES.IN_TRANSIT)}>In Transit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+                  <div className="space-y-1.5">
+                    <Label>Vehicle Type</Label>
+                    <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{vehicleTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Doors</Label>
+                    <Select value={data.doors ? String(data.doors) : undefined} onValueChange={(v) => setData({ doors: Number(v) })}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{[2, 3, 4, 5].map((d) => <SelectItem key={d} value={String(d)}>{d}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Status</Label>
+                    <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={String(VEHICLE_STATUSES.AVAILABLE)}>Available</SelectItem>
+                        <SelectItem value={String(VEHICLE_STATUSES.PENDING)}>Pending</SelectItem>
+                        <SelectItem value={String(VEHICLE_STATUSES.IN_TRANSIT)}>In Transit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -349,7 +330,7 @@ export function StepIdentity() {
 
       {/* Continue */}
       <AnimatePresence>
-        {canProceed && (
+        {hasVehicle && (
           <motion.div {...reveal} className="flex justify-end pt-2">
             <Button size="lg" onClick={next}>
               Continue to Pricing

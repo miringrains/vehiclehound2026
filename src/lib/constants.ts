@@ -17,17 +17,17 @@ export const MAX_DEFAULT_USERS = 4;
 export const VIN_CACHE_TTL_MS = 3_600_000;
 
 export const VEHICLE_STATUSES = {
-  FOR_SALE: 1,
+  AVAILABLE: 1,
   SOLD: 0,
-  COMING_SOON: 2,
-  DREAM_BUILD: 3,
+  PENDING: 2,
+  IN_TRANSIT: 3,
 } as const;
 
 export const VEHICLE_STATUS_LABELS: Record<number, string> = {
-  [VEHICLE_STATUSES.FOR_SALE]: "For Sale",
+  [VEHICLE_STATUSES.AVAILABLE]: "Available",
   [VEHICLE_STATUSES.SOLD]: "Sold",
-  [VEHICLE_STATUSES.COMING_SOON]: "Coming Soon",
-  [VEHICLE_STATUSES.DREAM_BUILD]: "Dream Build",
+  [VEHICLE_STATUSES.PENDING]: "Pending",
+  [VEHICLE_STATUSES.IN_TRANSIT]: "In Transit",
 };
 
 export const INVENTORY_TYPES = {

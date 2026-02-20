@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -19,6 +20,7 @@ type ComboboxProps = {
   disabled?: boolean;
   loading?: boolean;
   className?: string;
+  popularCount?: number;
 };
 
 export function Combobox({
@@ -31,8 +33,13 @@ export function Combobox({
   disabled = false,
   loading = false,
   className,
+  popularCount,
 }: ComboboxProps) {
   const [open, setOpen] = useState(false);
+
+  const hasGroups = popularCount && popularCount > 0 && options.length > popularCount;
+  const popular = hasGroups ? options.slice(0, popularCount) : [];
+  const rest = hasGroups ? options.slice(popularCount) : options;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -48,9 +55,7 @@ export function Combobox({
             className
           )}
         >
-          <span className="truncate">
-            {value || placeholder}
-          </span>
+          <span className="truncate">{value || placeholder}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -63,31 +68,53 @@ export function Combobox({
             ) : (
               <>
                 <CommandEmpty>{emptyText}</CommandEmpty>
-                <CommandGroup>
-                  {options.map((option) => (
-                    <CommandItem
-                      key={option}
-                      value={option}
-                      onSelect={(currentValue) => {
-                        onValueChange(currentValue === value ? "" : currentValue);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value?.toLowerCase() === option.toLowerCase() ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {option}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
+                {hasGroups ? (
+                  <>
+                    <CommandGroup heading="Popular">
+                      {popular.map((option) => (
+                        <OptionItem key={option} option={option} value={value} onSelect={(v) => { onValueChange(v); setOpen(false); }} />
+                      ))}
+                    </CommandGroup>
+                    <CommandSeparator />
+                    <CommandGroup heading="All">
+                      {rest.map((option) => (
+                        <OptionItem key={option} option={option} value={value} onSelect={(v) => { onValueChange(v); setOpen(false); }} />
+                      ))}
+                    </CommandGroup>
+                  </>
+                ) : (
+                  <CommandGroup>
+                    {rest.map((option) => (
+                      <OptionItem key={option} option={option} value={value} onSelect={(v) => { onValueChange(v); setOpen(false); }} />
+                    ))}
+                  </CommandGroup>
+                )}
               </>
             )}
           </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
+  );
+}
+
+function OptionItem({
+  option, value, onSelect,
+}: {
+  option: string; value: string; onSelect: (v: string) => void;
+}) {
+  return (
+    <CommandItem
+      value={option}
+      onSelect={(currentValue) => onSelect(currentValue === value ? "" : currentValue)}
+    >
+      <Check
+        className={cn(
+          "mr-2 h-4 w-4",
+          value?.toLowerCase() === option.toLowerCase() ? "opacity-100" : "opacity-0"
+        )}
+      />
+      {option}
+    </CommandItem>
   );
 }

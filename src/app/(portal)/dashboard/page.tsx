@@ -37,7 +37,7 @@ export default async function DashboardPage() {
       .from("vehicles")
       .select("id", { count: "exact", head: true })
       .eq("dealership_id", dealershipId)
-      .eq("status", VEHICLE_STATUSES.FOR_SALE),
+      .eq("status", VEHICLE_STATUSES.AVAILABLE),
     supabase
       .from("vehicles")
       .select("id", { count: "exact", head: true })

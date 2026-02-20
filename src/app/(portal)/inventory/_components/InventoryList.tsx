@@ -98,16 +98,10 @@ export function InventoryList({ vehicles }: { vehicles: VehicleSummary[] }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value={String(VEHICLE_STATUSES.FOR_SALE)}>
-              For Sale
-            </SelectItem>
+            <SelectItem value={String(VEHICLE_STATUSES.AVAILABLE)}>Available</SelectItem>
+            <SelectItem value={String(VEHICLE_STATUSES.PENDING)}>Pending</SelectItem>
+            <SelectItem value={String(VEHICLE_STATUSES.IN_TRANSIT)}>In Transit</SelectItem>
             <SelectItem value={String(VEHICLE_STATUSES.SOLD)}>Sold</SelectItem>
-            <SelectItem value={String(VEHICLE_STATUSES.COMING_SOON)}>
-              Coming Soon
-            </SelectItem>
-            <SelectItem value={String(VEHICLE_STATUSES.DREAM_BUILD)}>
-              Dream Build
-            </SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -88,7 +88,7 @@ export function VehicleForm({ dealershipId, vehicle }: Props) {
       interior_color: strOrNull("interior_color"),
       description: strOrNull("description"),
       title_status: strOrNull("title_status"),
-      status: Number(fd.get("status")) || VEHICLE_STATUSES.FOR_SALE,
+      status: Number(fd.get("status")) || VEHICLE_STATUSES.AVAILABLE,
     };
 
     const url = isEditing ? `/api/vehicles/${vehicle.id}` : "/api/vehicles";
@@ -197,13 +197,13 @@ export function VehicleForm({ dealershipId, vehicle }: Props) {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="status">Status</Label>
-              <Select name="status" defaultValue={String(vehicle?.status ?? VEHICLE_STATUSES.FOR_SALE)}>
+              <Select name="status" defaultValue={String(vehicle?.status ?? VEHICLE_STATUSES.AVAILABLE)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={String(VEHICLE_STATUSES.FOR_SALE)}>For Sale</SelectItem>
-                  <SelectItem value={String(VEHICLE_STATUSES.COMING_SOON)}>Coming Soon</SelectItem>
+                  <SelectItem value={String(VEHICLE_STATUSES.AVAILABLE)}>Available</SelectItem>
+                  <SelectItem value={String(VEHICLE_STATUSES.PENDING)}>Pending</SelectItem>
+                  <SelectItem value={String(VEHICLE_STATUSES.IN_TRANSIT)}>In Transit</SelectItem>
                   <SelectItem value={String(VEHICLE_STATUSES.SOLD)}>Sold</SelectItem>
-                  <SelectItem value={String(VEHICLE_STATUSES.DREAM_BUILD)}>Dream Build</SelectItem>
                 </SelectContent>
               </Select>
             </div>

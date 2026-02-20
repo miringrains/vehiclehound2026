@@ -97,7 +97,7 @@ const INITIAL_DATA: WizardData = {
   doors: null,
   stock_number: "",
   mileage: null,
-  status: VEHICLE_STATUSES.FOR_SALE,
+  status: VEHICLE_STATUSES.AVAILABLE,
   online_price: null,
   sale_price: null,
   msrp: null,

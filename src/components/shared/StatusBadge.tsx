@@ -4,17 +4,17 @@ import { cn } from "@/lib/utils";
 type StatusStyle = "primary" | "success" | "warning" | "destructive" | "muted";
 
 const statusStyleMap: Record<string, StatusStyle> = {
-  "For Sale": "success",
+  Available: "success",
   active: "success",
   trialing: "success",
   approved: "success",
   new: "primary",
-  "Coming Soon": "warning",
+  Pending: "warning",
+  "In Transit": "warning",
   past_due: "warning",
   reviewed: "warning",
   Sold: "muted",
   canceled: "muted",
-  "Dream Build": "muted",
   denied: "destructive",
 };
 
