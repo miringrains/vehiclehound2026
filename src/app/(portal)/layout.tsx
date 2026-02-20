@@ -20,11 +20,13 @@ export default function PortalLayout({
 
       {/* Light floating content panel */}
       <div className="relative z-[1] flex flex-col lg:pl-[var(--sidebar-width)] h-screen p-2 lg:p-3">
-        <div className="light-panel flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-2xl bg-background shadow-xl">
-          <TopBar />
-          <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
-            {children}
-          </main>
+        <div className="light-panel flex-1 min-h-0 rounded-2xl bg-background shadow-xl overflow-hidden">
+          <div className="h-full overflow-y-auto overflow-x-hidden light-scroll">
+            <TopBar />
+            <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
 
