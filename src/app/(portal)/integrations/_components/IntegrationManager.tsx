@@ -14,7 +14,7 @@ import {
   X,
   Eye,
   Palette,
-  Link as LinkIcon,
+  LinkIcon,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -112,8 +112,17 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
     setTimeout(() => setCopied(null), 2000);
   }, []);
 
+  const cleanDomain = (raw: string): string => {
+    let d = raw.trim().toLowerCase();
+    d = d.replace(/^https?:\/\//, "");
+    d = d.replace(/^www\./, "");
+    d = d.replace(/\/.*$/, "");
+    d = d.replace(/:\d+$/, "");
+    return d;
+  };
+
   const addDomain = (raw: string) => {
-    const cleaned = raw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    const cleaned = cleanDomain(raw);
     if (!cleaned || domainList.includes(cleaned)) return;
     setDomainList((prev) => [...prev, cleaned]);
   };
@@ -163,8 +172,9 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
     );
   }
 
-  const inventoryEmbed = `<div id="vh-inventory" data-api-key="${config.api_key}"></div>\n<script src="${appUrl}/widgets/inventory-widget.js"></script>`;
+  const inventoryEmbed = `<div id="vh-inventory" data-api-key="${config.api_key}" data-detail-url="/vehicle-details"></div>\n<script src="${appUrl}/widgets/inventory-widget.js"></script>`;
   const detailEmbed = `<div id="vh-vehicle" data-api-key="${config.api_key}"></div>\n<script src="${appUrl}/widgets/vehicle-detail-widget.js"></script>`;
+  const creditAppEmbed = `<iframe src="${creditAppDefault}?embed=true" width="100%" height="800" frameborder="0"></iframe>`;
 
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-6">
@@ -352,28 +362,91 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
       {/* Embed Codes Tab */}
       {activeTab === "embed" && (
         <div className="space-y-6 max-w-2xl">
-          <EmbedBlock
-            title="Inventory List Widget"
-            description="Displays a searchable, filterable grid of your available vehicles. Place this on your inventory or homepage."
-            code={inventoryEmbed}
-            copied={copied === "inv"}
-            onCopy={() => copyToClipboard(inventoryEmbed, "inv")}
-          />
-          <EmbedBlock
-            title="Vehicle Detail Widget"
-            description="Displays a single vehicle with image gallery, specs, and a financing CTA. The widget reads the vehicle ID from the page URL (?id=...) automatically."
-            code={detailEmbed}
-            copied={copied === "det"}
-            onCopy={() => copyToClipboard(detailEmbed, "det")}
-          />
-          <div className="rounded-lg bg-muted/50 border p-4">
-            <h4 className="text-xs font-semibold mb-1">How it works</h4>
-            <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-              <li>Copy the embed code for the widget you need</li>
-              <li>Paste it into your website&apos;s HTML where you want the widget to appear</li>
-              <li>The widget loads your inventory data automatically using your API key</li>
-              <li>Customize colors and behavior in the Settings tab</li>
-            </ol>
+          {/* Step 1 */}
+          <div className="rounded-lg border p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-bold shrink-0">1</span>
+              <div>
+                <h3 className="text-sm font-semibold">Inventory Page</h3>
+                <p className="text-xs text-muted-foreground">Create a page on your website (e.g. <code className="bg-muted px-1 py-0.5 rounded text-[10px]">yoursite.com/inventory</code>) and paste this embed code.</p>
+              </div>
+            </div>
+            <div className="relative">
+              <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-20">
+                {inventoryEmbed}
+              </pre>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(inventoryEmbed, "inv")}
+                className="absolute top-2 right-2 h-7 text-xs"
+              >
+                {copied === "inv" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
+                {copied === "inv" ? "Copied" : "Copy"}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              When a user clicks a vehicle, they&apos;ll be directed to your vehicle details page. Set the <code className="bg-muted px-1 py-0.5 rounded text-[10px]">data-detail-url</code> attribute to your detail page path:
+            </p>
+            <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
+              {`<div id="vh-inventory"\n  data-api-key="${config.api_key}"\n  data-detail-url="/vehicle-details"></div>`}
+            </pre>
+          </div>
+
+          {/* Step 2 */}
+          <div className="rounded-lg border p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-bold shrink-0">2</span>
+              <div>
+                <h3 className="text-sm font-semibold">Vehicle Details Page</h3>
+                <p className="text-xs text-muted-foreground">Create a second page (e.g. <code className="bg-muted px-1 py-0.5 rounded text-[10px]">yoursite.com/vehicle-details</code>) and paste this embed code.</p>
+              </div>
+            </div>
+            <div className="relative">
+              <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-20">
+                {detailEmbed}
+              </pre>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(detailEmbed, "det")}
+                className="absolute top-2 right-2 h-7 text-xs"
+              >
+                {copied === "det" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
+                {copied === "det" ? "Copied" : "Copy"}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              The widget automatically reads <code className="bg-muted px-1 py-0.5 rounded text-[10px]">?id=</code> from the URL to load the correct vehicle. When users click a car on the inventory page, it navigates to <code className="bg-muted px-1 py-0.5 rounded text-[10px]">/vehicle-details?id=UUID</code> and the detail widget takes over.
+            </p>
+          </div>
+
+          {/* Credit App */}
+          <div className="rounded-lg border border-dashed p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-bold shrink-0">+</span>
+              <div>
+                <h3 className="text-sm font-semibold">Credit Application (Optional)</h3>
+                <p className="text-xs text-muted-foreground">A &ldquo;Apply for Financing&rdquo; button appears on vehicle detail pages. Link it to your credit app page.</p>
+              </div>
+            </div>
+            <div className="relative">
+              <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-20">
+                {creditAppEmbed}
+              </pre>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyToClipboard(creditAppEmbed, "credit")}
+                className="absolute top-2 right-2 h-7 text-xs"
+              >
+                {copied === "credit" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
+                {copied === "credit" ? "Copied" : "Copy"}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Or use our hosted page directly: <code className="bg-muted px-1 py-0.5 rounded text-[10px]">{creditAppDefault}</code>
+            </p>
           </div>
         </div>
       )}
@@ -447,34 +520,3 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   );
 }
 
-function EmbedBlock({
-  title,
-  description,
-  code,
-  copied,
-  onCopy,
-}: {
-  title: string;
-  description: string;
-  code: string;
-  copied: boolean;
-  onCopy: () => void;
-}) {
-  return (
-    <div className="rounded-lg border p-4 space-y-3">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
-        </div>
-        <Button variant="outline" size="sm" onClick={onCopy} className="shrink-0">
-          {copied ? <Check size={13} className="mr-1.5 text-green-500" /> : <Copy size={13} className="mr-1.5" strokeWidth={ICON_STROKE_WIDTH} />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
-      <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
-        {code}
-      </pre>
-    </div>
-  );
-}

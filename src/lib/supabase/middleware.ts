@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
     "/verify-email",
     "/s/",
     "/vehicles/",
+    "/apply/",
   ];
 
   const isPublicPath = publicPaths.some((p) => pathname.startsWith(p));
