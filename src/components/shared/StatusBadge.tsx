@@ -8,6 +8,10 @@ const statusVariantMap: Record<string, BadgeVariant> = {
   Pending: "outline",
   "In Transit": "outline",
   Sold: "outline",
+  new: "default",
+  reviewed: "outline",
+  approved: "accent",
+  denied: "outline",
 };
 
 const variantClasses: Record<BadgeVariant, string> = {
