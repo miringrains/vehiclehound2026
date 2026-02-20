@@ -2,26 +2,62 @@ import { NextResponse } from "next/server";
 
 const NHTSA_BASE = "https://vpic.nhtsa.dot.gov/api/vehicles";
 
-const POPULAR_MAKES = new Set([
-  "Acura", "Alfa Romeo", "Aston Martin", "Audi",
-  "Bentley", "BMW", "Buick",
-  "Cadillac", "Chevrolet", "Chrysler",
-  "Dodge",
-  "Ferrari", "Fiat", "Ford",
-  "Genesis", "GMC",
-  "Honda", "Hyundai",
-  "INFINITI",
-  "Jaguar", "Jeep",
-  "Kia",
-  "Lamborghini", "Land Rover", "Lexus", "Lincoln", "Lotus", "Lucid",
-  "Maserati", "Mazda", "McLaren", "Mercedes-Benz", "MINI", "Mitsubishi",
-  "Nissan",
-  "Polestar", "Porsche",
-  "Ram", "Rivian", "Rolls-Royce",
-  "Subaru",
-  "Tesla", "Toyota",
-  "Volkswagen", "Volvo",
-]);
+// Canonical display names for popular makes — keyed by uppercase for matching
+const POPULAR_DISPLAY: Record<string, string> = {
+  "ACURA": "Acura",
+  "ALFA ROMEO": "Alfa Romeo",
+  "ASTON MARTIN": "Aston Martin",
+  "AUDI": "Audi",
+  "BENTLEY": "Bentley",
+  "BMW": "BMW",
+  "BUICK": "Buick",
+  "CADILLAC": "Cadillac",
+  "CHEVROLET": "Chevrolet",
+  "CHRYSLER": "Chrysler",
+  "DODGE": "Dodge",
+  "FERRARI": "Ferrari",
+  "FIAT": "Fiat",
+  "FORD": "Ford",
+  "GENESIS": "Genesis",
+  "GMC": "GMC",
+  "HONDA": "Honda",
+  "HYUNDAI": "Hyundai",
+  "INFINITI": "INFINITI",
+  "JAGUAR": "Jaguar",
+  "JEEP": "Jeep",
+  "KIA": "Kia",
+  "LAMBORGHINI": "Lamborghini",
+  "LAND ROVER": "Land Rover",
+  "LEXUS": "Lexus",
+  "LINCOLN": "Lincoln",
+  "LOTUS": "Lotus",
+  "LUCID": "Lucid",
+  "MASERATI": "Maserati",
+  "MAZDA": "Mazda",
+  "MCLAREN": "McLaren",
+  "MERCEDES-BENZ": "Mercedes-Benz",
+  "MINI": "MINI",
+  "MITSUBISHI": "Mitsubishi",
+  "NISSAN": "Nissan",
+  "POLESTAR": "Polestar",
+  "PORSCHE": "Porsche",
+  "RAM": "Ram",
+  "RIVIAN": "Rivian",
+  "ROLLS-ROYCE": "Rolls-Royce",
+  "SUBARU": "Subaru",
+  "TESLA": "Tesla",
+  "TOYOTA": "Toyota",
+  "VOLKSWAGEN": "Volkswagen",
+  "VOLVO": "Volvo",
+};
+
+function titleCase(str: string): string {
+  return str
+    .toLowerCase()
+    .split(/(\s+|-)/g)
+    .map((seg) => (/[\s-]/.test(seg) ? seg : seg.charAt(0).toUpperCase() + seg.slice(1)))
+    .join("");
+}
 
 export async function GET(request: Request) {
   try {
@@ -49,17 +85,31 @@ export async function GET(request: Request) {
       .map((n: string) => n.trim())
       .filter((n: string) => n.length > 0);
 
-    const unique = [...new Set(rawMakes)];
+    const seen = new Set<string>();
+    const popular: string[] = [];
+    const rest: string[] = [];
 
-    const popular = unique
-      .filter((m) => POPULAR_MAKES.has(m))
-      .sort((a, b) => a.localeCompare(b));
+    for (const raw of rawMakes) {
+      const key = raw.toUpperCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
 
-    const rest = unique
-      .filter((m) => !POPULAR_MAKES.has(m))
-      .sort((a, b) => a.localeCompare(b));
+      const display = POPULAR_DISPLAY[key] || titleCase(raw);
 
-    return NextResponse.json({ makes: [...popular, ...rest], popular_count: popular.length });
+      if (POPULAR_DISPLAY[key]) {
+        popular.push(display);
+      } else {
+        rest.push(display);
+      }
+    }
+
+    popular.sort((a, b) => a.localeCompare(b));
+    rest.sort((a, b) => a.localeCompare(b));
+
+    return NextResponse.json({
+      makes: [...popular, ...rest],
+      popular_count: popular.length,
+    });
   } catch {
     return NextResponse.json({ error: "An unexpected error occurred." }, { status: 500 });
   }
