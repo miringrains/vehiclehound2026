@@ -282,3 +282,41 @@
     border-color: oklch(0.33 0.10 280 / 0.2);
   }
 }
+
+/* ============================================================
+   Light Panel — semantic token overrides for light content areas.
+   Wrap any content region in .light-panel and all nested
+   components automatically get light-mode colors.
+   ============================================================ */
+
+.light-panel {
+  --background:           oklch(0.98 0.002 285);
+  --foreground:           oklch(0.145 0.005 285);
+
+  --card:                 oklch(1.0 0 0);
+  --card-foreground:      oklch(0.145 0.005 285);
+
+  --popover:              oklch(1.0 0 0);
+  --popover-foreground:   oklch(0.145 0.005 285);
+
+  --secondary:            oklch(0.955 0.003 285);
+  --secondary-foreground: oklch(0.145 0.005 285);
+
+  --muted:                oklch(0.955 0.003 285);
+  --muted-foreground:     oklch(0.44 0.02 280);
+
+  --border:               oklch(0.91 0.005 280);
+  --input:                oklch(0.91 0.005 280);
+
+  --shadow-sm:  0 1px 2px 0 oklch(0.50 0.01 280 / 0.06);
+  --shadow-md:  0 4px 12px 0 oklch(0.40 0.01 280 / 0.08);
+  --shadow-lg:  0 8px 32px 0 oklch(0.30 0.01 280 / 0.10);
+}
+
+.light-panel ::-webkit-scrollbar-thumb {
+  background: oklch(0.82 0.005 280);
+}
+
+.light-panel ::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.72 0.01 280);
+}

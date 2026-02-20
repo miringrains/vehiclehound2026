@@ -33,7 +33,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-md p-1 transition-colors hover:bg-muted outline-none">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-violet-900 text-violet-200 text-caption">
+            <AvatarFallback className="bg-primary text-primary-foreground text-caption">
               {initials}
             </AvatarFallback>
           </Avatar>

@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { AuroraBackdrop } from "@/components/shared/AuroraBackdrop";
 
 export default function PortalLayout({
   children,
@@ -8,16 +9,19 @@ export default function PortalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Desktop sidebar */}
+    <div className="h-screen bg-background">
+      {/* Aurora behind everything */}
+      <AuroraBackdrop subtle />
+
+      {/* Desktop sidebar — dark layer on aurora */}
       <div className="hidden lg:block">
         <AppSidebar />
       </div>
 
-      {/* Content panel — elevated surface on dark backdrop */}
-      <div className="lg:pl-[var(--sidebar-width)]">
-        <div className="p-2 lg:p-3">
-          <div className="min-h-[calc(100vh-1rem)] lg:min-h-[calc(100vh-1.5rem)] overflow-hidden rounded-2xl border border-border/50 bg-card">
+      {/* Light floating content panel */}
+      <div className="relative z-[1] lg:pl-[var(--sidebar-width)] h-screen">
+        <div className="p-2 lg:p-3 h-full">
+          <div className="light-panel h-full overflow-y-auto rounded-2xl bg-background shadow-xl">
             <TopBar />
             <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
               {children}
@@ -26,7 +30,7 @@ export default function PortalLayout({
         </div>
       </div>
 
-      {/* Mobile nav */}
+      {/* Mobile nav — dark layer */}
       <div className="fixed top-0 left-0 z-[var(--z-sticky)] flex h-[calc(var(--topbar-height)+0.5rem)] items-center px-4 pt-2 lg:hidden">
         <MobileNav />
       </div>

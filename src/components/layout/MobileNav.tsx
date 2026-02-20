@@ -36,7 +36,7 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 bg-sidebar">
         <div className="flex h-[var(--topbar-height)] items-center px-5">
-          <Logo height={24} />
+          <Logo height={28} />
         </div>
 
         <Separator className="bg-sidebar-border" />

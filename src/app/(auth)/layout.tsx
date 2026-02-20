@@ -1,5 +1,5 @@
 import { Logo } from "@/components/shared/Logo";
-import { AuroraBackground } from "./_components/AuroraBackground";
+import { AuroraBackdrop } from "@/components/shared/AuroraBackdrop";
 
 export default function AuthLayout({
   children,
@@ -8,22 +8,21 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center px-4">
-      <AuroraBackground />
+      <AuroraBackdrop />
 
-      {/* Logo */}
-      <div className="relative z-10 mb-10">
-        <Logo height={38} />
-      </div>
-
-      {/* Auth card — glass effect over aurora */}
+      {/* Auth card — light floating panel */}
       <div className="relative z-10 w-full max-w-[420px]">
-        <div className="rounded-2xl border border-white/[0.08] bg-background/70 p-8 shadow-lg backdrop-blur-2xl">
+        <div className="light-panel rounded-2xl bg-background p-8 shadow-lg">
+          {/* Logo inside card */}
+          <div className="mb-8 flex justify-center">
+            <Logo height={34} dark />
+          </div>
           {children}
         </div>
       </div>
 
-      {/* Footer */}
-      <p className="relative z-10 mt-8 text-caption text-muted-foreground/60">
+      {/* Footer — on the dark aurora layer */}
+      <p className="relative z-10 mt-8 text-caption text-white/40">
         &copy; {new Date().getFullYear()} VehicleHound. All rights reserved.
       </p>
     </div>
