@@ -29,8 +29,17 @@
   const fmt = v => v ? "$" + Number(v).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "—";
   const fmtMi = v => v ? Number(v).toLocaleString("en-US") + " mi" : "—";
 
-  function injectStyles() {
-    if (document.getElementById("vh-det-css")) return;
+  const RADIUS_MAP = { sharp: 4, rounded: 12, soft: 20 };
+
+  function getRadius(config) {
+    const preset = config.borderRadius || "rounded";
+    const base = RADIUS_MAP[preset] || 12;
+    return { card: base, btn: Math.round(base * 0.83), badge: Math.round(base * 0.5), gallery: Math.round(base * 1.17) };
+  }
+
+  function injectStyles(r) {
+    const existing = document.getElementById("vh-det-css");
+    if (existing) existing.remove();
     const s = document.createElement("style");
     s.id = "vh-det-css";
     s.textContent = `
@@ -38,33 +47,33 @@
 .vhd *{box-sizing:border-box;margin:0;padding:0}
 .vhd-top{display:flex;gap:32px;margin-bottom:32px}
 .vhd-gallery{flex:1;min-width:0}
-.vhd-main-img{width:100%;aspect-ratio:16/10;background:#f7f7f7;border-radius:14px;overflow:hidden;margin-bottom:10px;position:relative}
+.vhd-main-img{width:100%;aspect-ratio:16/10;background:#f7f7f7;border-radius:${r.gallery}px;overflow:hidden;margin-bottom:10px;position:relative}
 .vhd-main-img img{width:100%;height:100%;object-fit:contain}
 .vhd-main-img .vhd-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .vhd-main-img .vhd-nav:hover{background:rgba(0,0,0,.75)}
 .vhd-main-img .vhd-nav.prev{left:12px}
 .vhd-main-img .vhd-nav.next{right:12px}
 .vhd-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
-.vhd-thumbs img{width:80px;height:60px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:border-color .15s,opacity .15s;opacity:.6}
+.vhd-thumbs img{width:80px;height:60px;object-fit:cover;border-radius:${r.badge}px;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:border-color .15s,opacity .15s;opacity:.6}
 .vhd-thumbs img.active{border-color:#1a1d1e;opacity:1}
 .vhd-thumbs img:hover{opacity:1}
 .vhd-info{width:380px;flex-shrink:0}
-.vhd-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:4px 12px;border-radius:6px;color:#fff;margin-bottom:10px}
+.vhd-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:4px 12px;border-radius:${r.badge}px;color:#fff;margin-bottom:10px}
 .vhd-title{font-size:26px;font-weight:800;color:#1a1d1e;margin-bottom:4px;line-height:1.2}
 .vhd-subtitle{font-size:14px;color:#888;margin-bottom:16px}
 .vhd-price{font-size:32px;font-weight:800;color:#1a1d1e;margin-bottom:4px}
 .vhd-price-sub{font-size:12px;color:#999;margin-bottom:20px}
-.vhd-details{border:1px solid #eee;border-radius:12px;overflow:hidden;margin-bottom:20px}
+.vhd-details{border:1px solid #eee;border-radius:${r.card}px;overflow:hidden;margin-bottom:20px}
 .vhd-detail-row{display:flex;justify-content:space-between;padding:10px 16px;font-size:13px;border-bottom:1px solid #f5f5f5}
 .vhd-detail-row:last-child{border-bottom:none}
 .vhd-detail-row .label{color:#888}
 .vhd-detail-row .value{font-weight:600;color:#1a1d1e;text-align:right}
-.vhd-cta{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;text-align:center;text-decoration:none;color:#fff}
-.vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid #e5e5e5;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;color:#333;background:#fff;transition:border-color .15s;margin-top:10px}
+.vhd-cta{display:block;width:100%;padding:14px;border:none;border-radius:${r.btn}px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;text-align:center;text-decoration:none;color:#fff}
+.vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid #e5e5e5;border-radius:${r.btn}px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;color:#333;background:#fff;transition:border-color .15s;margin-top:10px}
 .vhd-cta-secondary:hover{border-color:#999}
 .vhd-specs{margin-top:32px}
 .vhd-specs h2{font-size:18px;font-weight:700;margin-bottom:16px}
-.vhd-spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;border:1px solid #eee;border-radius:12px;overflow:hidden;background:#eee}
+.vhd-spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;border:1px solid #eee;border-radius:${r.card}px;overflow:hidden;background:#eee}
 .vhd-spec-cell{background:#fff;padding:14px 18px}
 .vhd-spec-cell .label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:2px}
 .vhd-spec-cell .value{font-size:14px;font-weight:600;color:#1a1d1e}
@@ -94,6 +103,7 @@
 
   function renderVehicle(v, config) {
     container.innerHTML = "";
+    injectStyles(getRadius(config));
     const pc = config.primaryColor || "#1a1d1e";
     const hc = config.hoverColor || "#374151";
     const images = v.image_urls || [];
@@ -248,6 +258,6 @@
     thumbs.forEach((t, i) => t.classList.toggle("active", i === currentImg));
   }
 
-  injectStyles();
+  injectStyles(getRadius({}));
   load();
 })();

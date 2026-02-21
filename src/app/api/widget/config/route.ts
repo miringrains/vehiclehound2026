@@ -1,9 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Darken a hex color by mixing it toward black.
+ * factor 0 = unchanged, 1 = fully black.
+ */
+function darkenHex(hex: string, factor = 0.12): string {
+  const h = hex.replace("#", "");
+  const r = Math.round(parseInt(h.substring(0, 2), 16) * (1 - factor));
+  const g = Math.round(parseInt(h.substring(2, 4), 16) * (1 - factor));
+  const b = Math.round(parseInt(h.substring(4, 6), 16) * (1 - factor));
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
+const DEFAULT_CONFIG = {
+  primaryColor: "#1a1d1e",
+  hoverColor: "#171919",
+  showPricing: true,
+  itemsPerPage: 12,
+  defaultSort: "newest",
+  creditAppUrl: "",
+  borderRadius: "rounded" as const,
+};
+
+function withDerivedHover(config: Record<string, unknown>) {
+  if (config.primaryColor && typeof config.primaryColor === "string") {
+    config.hoverColor = darkenHex(config.primaryColor, 0.12);
+  }
+  if (!config.borderRadius) {
+    config.borderRadius = "rounded";
+  }
+  return config;
+}
+
 /* ────────────────────────────────────────────────
    GET /api/widget/config
-   Returns the widget config for the authenticated user's dealership
    ──────────────────────────────────────────────── */
 export async function GET() {
   try {
@@ -24,7 +55,6 @@ export async function GET() {
 
 /* ────────────────────────────────────────────────
    POST /api/widget/config
-   Creates a new widget config (one per dealership)
    ──────────────────────────────────────────────── */
 export async function POST(request: NextRequest) {
   try {
@@ -43,13 +73,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const config = withDerivedHover({ ...DEFAULT_CONFIG, ...(body.config || {}) });
 
     const { data, error } = await supabase
       .from("widget_configs")
       .insert({
         dealership_id: profile.dealership_id,
-        name: body.name || "My Integration",
-        config: body.config || undefined,
+        name: body.name || "Website Widget",
+        config,
         allowed_domains: body.allowed_domains || [],
       })
       .select()
@@ -70,7 +101,6 @@ export async function POST(request: NextRequest) {
 
 /* ────────────────────────────────────────────────
    PATCH /api/widget/config
-   Updates the widget config
    ──────────────────────────────────────────────── */
 export async function PATCH(request: NextRequest) {
   try {
@@ -91,7 +121,7 @@ export async function PATCH(request: NextRequest) {
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (body.name !== undefined) updates.name = body.name;
-    if (body.config !== undefined) updates.config = body.config;
+    if (body.config !== undefined) updates.config = withDerivedHover({ ...body.config });
     if (body.allowed_domains !== undefined) updates.allowed_domains = body.allowed_domains;
     if (body.status !== undefined) updates.status = body.status;
 

@@ -141,6 +141,7 @@ export type WidgetConfig = {
     itemsPerPage: number;
     defaultSort: string;
     creditAppUrl: string;
+    borderRadius: "sharp" | "rounded" | "soft";
   };
   allowed_domains: string[];
   status: "active" | "paused";

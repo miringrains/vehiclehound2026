@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, type KeyboardEvent } from "react";
+import { useState, useCallback, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
 import {
   Code2,
@@ -12,23 +12,31 @@ import {
   Trash2,
   Loader2,
   X,
-  Eye,
-  Palette,
-  LinkIcon,
+  ChevronDown,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { fadeUp } from "@/lib/motion";
 import type { WidgetConfig } from "@/types/credit-application";
+import { WidgetPreview } from "./WidgetPreview";
+
+type RadiusPreset = "sharp" | "rounded" | "soft";
 
 type Props = {
   initialConfig: WidgetConfig | null;
   dealershipId: string;
 };
+
+const RADIUS_OPTIONS: { value: RadiusPreset; label: string; px: number }[] = [
+  { value: "sharp", label: "Sharp", px: 4 },
+  { value: "rounded", label: "Rounded", px: 12 },
+  { value: "soft", label: "Soft", px: 20 },
+];
 
 export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const [config, setConfig] = useState<WidgetConfig | null>(initialConfig);
@@ -36,17 +44,16 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const [name, setName] = useState(config?.name ?? "My Integration");
   const [primaryColor, setPrimaryColor] = useState(config?.config?.primaryColor ?? "#1a1d1e");
-  const [hoverColor, setHoverColor] = useState(config?.config?.hoverColor ?? "#374151");
+  const [borderRadius, setBorderRadius] = useState<RadiusPreset>(config?.config?.borderRadius ?? "rounded");
   const [showPricing, setShowPricing] = useState(config?.config?.showPricing ?? true);
   const [creditAppUrl, setCreditAppUrl] = useState(config?.config?.creditAppUrl ?? "");
   const [domainList, setDomainList] = useState<string[]>(config?.allowed_domains ?? []);
   const [domainInput, setDomainInput] = useState("");
 
   const [copied, setCopied] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"settings" | "embed" | "preview">("settings");
-  const domainInputRef = useRef<HTMLInputElement>(null);
+  const [embedOpen, setEmbedOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const handleCreate = async () => {
     setCreating(true);
@@ -54,14 +61,13 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
       const res = await fetch("/api/widget/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name: "Website Widget" }),
       });
       const { config: created } = await res.json();
       if (created) {
         setConfig(created);
-        setName(created.name);
         setPrimaryColor(created.config?.primaryColor ?? "#1a1d1e");
-        setHoverColor(created.config?.hoverColor ?? "#374151");
+        setBorderRadius(created.config?.borderRadius ?? "rounded");
         setShowPricing(created.config?.showPricing ?? true);
         setCreditAppUrl(created.config?.creditAppUrl ?? "");
         setDomainList(created.allowed_domains ?? []);
@@ -79,12 +85,11 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
           config: {
             primaryColor,
-            hoverColor,
             showPricing,
             creditAppUrl,
+            borderRadius,
             itemsPerPage: config.config?.itemsPerPage ?? 12,
             defaultSort: config.config?.defaultSort ?? "newest",
           },
@@ -130,16 +135,14 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const handleDomainKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      const parts = domainInput.split(",");
-      parts.forEach(addDomain);
+      domainInput.split(",").forEach(addDomain);
       setDomainInput("");
     }
   };
 
   const handleDomainBlur = () => {
     if (domainInput.trim()) {
-      const parts = domainInput.split(",");
-      parts.forEach(addDomain);
+      domainInput.split(",").forEach(addDomain);
       setDomainInput("");
     }
   };
@@ -151,6 +154,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
   const creditAppDefault = `${appUrl}/apply/${dealershipId}`;
 
+  /* ─── Empty state ─── */
   if (!config) {
     return (
       <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-6">
@@ -174,372 +178,243 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
 
   const inventoryEmbed = `<div id="vh-inventory" data-api-key="${config.api_key}" data-detail-url="/vehicle-details"></div>\n<script src="${appUrl}/widgets/inventory-widget.js"></script>`;
   const detailEmbed = `<div id="vh-vehicle" data-api-key="${config.api_key}"></div>\n<script src="${appUrl}/widgets/vehicle-detail-widget.js"></script>`;
-  const creditAppEmbed = `<iframe src="${creditAppDefault}?embed=true" width="100%" height="800" frameborder="0"></iframe>`;
 
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-6">
-      <PageHeader title="Integrations" description="Manage your website embed and configuration">
-        <div className="flex items-center gap-2">
-          <Button onClick={handleSave} disabled={saving} size="sm">
-            {saving ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : saved ? <Check size={14} className="mr-1.5 text-green-500" /> : null}
-            {saved ? "Saved" : "Save Changes"}
-          </Button>
-        </div>
+      <PageHeader title="Integrations" description="Customize and embed your inventory widget">
+        <Button onClick={handleSave} disabled={saving} size="sm">
+          {saving ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : saved ? <Check size={14} className="mr-1.5 text-green-500" /> : null}
+          {saved ? "Saved" : "Save Changes"}
+        </Button>
       </PageHeader>
 
-      {/* Tab navigation */}
-      <div className="flex items-center gap-1 border-b">
-        {([
-          { key: "settings", label: "Settings", icon: Palette },
-          { key: "embed", label: "Embed Codes", icon: Code2 },
-          { key: "preview", label: "Preview", icon: Eye },
-        ] as const).map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveTab(key)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === key
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Icon size={14} strokeWidth={ICON_STROKE_WIDTH} />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Settings Tab */}
-      {activeTab === "settings" && (
-        <div className="space-y-6 max-w-2xl">
-          {/* General */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">General</h3>
-            <div>
-              <Label htmlFor="int-name">Integration Name</Label>
-              <Input id="int-name" value={name} onChange={(e) => setName(e.target.value)} className="max-w-sm" />
-            </div>
-          </div>
-
-          {/* Theme */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Theme</h3>
-            <div className="grid grid-cols-2 gap-4 max-w-sm">
-              <div>
-                <Label htmlFor="pc">Button Color</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <input
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="w-9 h-9 rounded-lg border cursor-pointer p-0.5"
-                  />
-                  <Input
-                    id="pc"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="font-mono text-xs"
-                  />
-                </div>
+      {/* ─── Split layout ─── */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left: settings */}
+        <div className="w-full lg:w-[380px] shrink-0 space-y-5">
+          {/* Color */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h3 className="text-heading-4">Accent Color</h3>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <input
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div
+                  className="w-10 h-10 rounded-lg border border-border shadow-sm"
+                  style={{ backgroundColor: primaryColor }}
+                />
               </div>
-              <div>
-                <Label htmlFor="hc">Hover Color</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <input
-                    type="color"
-                    value={hoverColor}
-                    onChange={(e) => setHoverColor(e.target.value)}
-                    className="w-9 h-9 rounded-lg border cursor-pointer p-0.5"
-                  />
-                  <Input
-                    id="hc"
-                    value={hoverColor}
-                    onChange={(e) => setHoverColor(e.target.value)}
-                    className="font-mono text-xs"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox id="sp" checked={showPricing} onCheckedChange={(v) => setShowPricing(!!v)} />
-              <Label htmlFor="sp" className="cursor-pointer text-sm">Show pricing on widgets</Label>
-            </div>
-          </div>
-
-          {/* Credit App URL */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <LinkIcon size={12} strokeWidth={ICON_STROKE_WIDTH} />
-              Credit Application
-            </h3>
-            <div>
-              <Label htmlFor="ca-url">Custom Credit App URL</Label>
               <Input
-                id="ca-url"
-                value={creditAppUrl}
-                onChange={(e) => setCreditAppUrl(e.target.value)}
-                placeholder={creditAppDefault}
-                className="max-w-md"
-              />
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Leave empty to use default: <code className="bg-muted px-1 py-0.5 rounded text-[10px]">{creditAppDefault}</code>
-              </p>
-            </div>
-          </div>
-
-          {/* Allowed Domains */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <Globe size={12} strokeWidth={ICON_STROKE_WIDTH} />
-              Allowed Domains
-            </h3>
-            <p className="text-xs text-muted-foreground -mt-2">
-              Restrict which domains can load your widget. Leave empty to allow all.
-            </p>
-            <div>
-              <Input
-                ref={domainInputRef}
-                value={domainInput}
-                onChange={(e) => setDomainInput(e.target.value)}
-                onKeyDown={handleDomainKeyDown}
-                onBlur={handleDomainBlur}
-                placeholder="Type a domain and press Enter (e.g. example.com)"
-                className="max-w-md"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                className="font-mono text-xs max-w-[120px]"
               />
             </div>
-            {domainList.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {domainList.map((d) => (
-                  <span
-                    key={d}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-xs font-medium"
-                  >
-                    <Globe size={11} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
-                    {d}
-                    <button
-                      onClick={() => removeDomain(d)}
-                      className="ml-0.5 rounded-full p-0.5 hover:bg-foreground/10 transition-colors"
+          </div>
+
+          {/* Corner Radius */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <h3 className="text-heading-4">Corner Radius</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {RADIUS_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setBorderRadius(opt.value)}
+                  className={cn(
+                    "flex flex-col items-center gap-2 rounded-lg border p-3 transition-all",
+                    borderRadius === opt.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-muted-foreground/30"
+                  )}
+                >
+                  <div
+                    className="w-10 h-8 border-2 border-foreground/70"
+                    style={{ borderRadius: opt.px }}
+                  />
+                  <span className="text-caption">{opt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Display */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-heading-4">Show Pricing</h3>
+                <p className="text-caption text-muted-foreground mt-0.5">Display prices on vehicle cards</p>
+              </div>
+              <Switch checked={showPricing} onCheckedChange={setShowPricing} />
+            </div>
+          </div>
+
+          {/* Advanced — collapsible */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <button
+              onClick={() => setAdvancedOpen(!advancedOpen)}
+              className="flex items-center justify-between w-full p-5 text-left"
+            >
+              <h3 className="text-heading-4">Advanced</h3>
+              <ChevronDown
+                size={16}
+                strokeWidth={ICON_STROKE_WIDTH}
+                className={cn("text-muted-foreground transition-transform", advancedOpen && "rotate-180")}
+              />
+            </button>
+            {advancedOpen && (
+              <div className="px-5 pb-5 space-y-5 border-t border-border pt-5">
+                {/* Credit App URL */}
+                <div className="space-y-1.5">
+                  <Label>Credit App URL</Label>
+                  <Input
+                    value={creditAppUrl}
+                    onChange={(e) => setCreditAppUrl(e.target.value)}
+                    placeholder={creditAppDefault}
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Leave empty for default
+                  </p>
+                </div>
+
+                {/* Domains */}
+                <div className="space-y-2">
+                  <Label>Allowed Domains</Label>
+                  <p className="text-[11px] text-muted-foreground -mt-1">
+                    Leave empty to allow all domains
+                  </p>
+                  <Input
+                    value={domainInput}
+                    onChange={(e) => setDomainInput(e.target.value)}
+                    onKeyDown={handleDomainKeyDown}
+                    onBlur={handleDomainBlur}
+                    placeholder="example.com"
+                  />
+                  {domainList.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {domainList.map((d) => (
+                        <span
+                          key={d}
+                          className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] font-medium"
+                        >
+                          <Globe size={10} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
+                          {d}
+                          <button
+                            onClick={() => removeDomain(d)}
+                            className="ml-0.5 rounded p-0.5 hover:bg-foreground/10 transition-colors"
+                          >
+                            <X size={10} strokeWidth={ICON_STROKE_WIDTH} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* API Key */}
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-1.5">
+                    <Key size={12} strokeWidth={ICON_STROKE_WIDTH} />
+                    API Key
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-[11px] font-mono bg-muted rounded-lg px-3 py-2 truncate select-all">
+                      {config.api_key}
+                    </code>
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      onClick={() => copyToClipboard(config.api_key, "apikey")}
                     >
-                      <X size={11} strokeWidth={ICON_STROKE_WIDTH} />
-                    </button>
-                  </span>
-                ))}
+                      {copied === "apikey" ? <Check size={12} className="text-green-500" /> : <Copy size={12} strokeWidth={ICON_STROKE_WIDTH} />}
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* API Key */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <Key size={12} strokeWidth={ICON_STROKE_WIDTH} />
-              API Key
-            </h3>
-            <div className="flex items-center gap-2 max-w-md">
-              <code className="flex-1 text-xs font-mono bg-muted rounded-lg px-3 py-2.5 truncate select-all">
-                {config.api_key}
-              </code>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0"
-                onClick={() => copyToClipboard(config.api_key, "apikey")}
-              >
-                {copied === "apikey" ? <Check size={14} className="text-green-500" /> : <Copy size={14} strokeWidth={ICON_STROKE_WIDTH} />}
-              </Button>
-            </div>
-          </div>
-
           {/* Danger zone */}
-          <div className="pt-4 border-t">
-            <Button variant="ghost" size="sm" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-              <Trash2 size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />
-              Delete Integration
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={handleDelete} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+            <Trash2 size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />
+            Delete Integration
+          </Button>
         </div>
-      )}
 
-      {/* Embed Codes Tab */}
-      {activeTab === "embed" && (
-        <div className="space-y-6 max-w-2xl">
-          {/* Step 1 */}
-          <div className="rounded-lg border p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-bold shrink-0">1</span>
-              <div>
-                <h3 className="text-sm font-semibold">Inventory Page</h3>
-                <p className="text-xs text-muted-foreground">Create a page on your website (e.g. <code className="bg-muted px-1 py-0.5 rounded text-[10px]">yoursite.com/inventory</code>) and paste this embed code.</p>
-              </div>
-            </div>
-            <div className="relative">
-              <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-20">
-                {inventoryEmbed}
-              </pre>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(inventoryEmbed, "inv")}
-                className="absolute top-2 right-2 h-7 text-xs"
-              >
-                {copied === "inv" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
-                {copied === "inv" ? "Copied" : "Copy"}
-              </Button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              When a user clicks a vehicle, they&apos;ll be directed to your vehicle details page. Set the <code className="bg-muted px-1 py-0.5 rounded text-[10px]">data-detail-url</code> attribute to your detail page path:
-            </p>
-            <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
-              {`<div id="vh-inventory"\n  data-api-key="${config.api_key}"\n  data-detail-url="/vehicle-details"></div>`}
-            </pre>
+        {/* Right: preview + embed codes */}
+        <div className="flex-1 min-w-0 space-y-5">
+          {/* Live preview */}
+          <div className="lg:sticky lg:top-[calc(var(--topbar-height)+24px)]">
+            <WidgetPreview
+              primaryColor={primaryColor}
+              borderRadius={borderRadius}
+              showPricing={showPricing}
+            />
           </div>
 
-          {/* Step 2 */}
-          <div className="rounded-lg border p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-background text-xs font-bold shrink-0">2</span>
-              <div>
-                <h3 className="text-sm font-semibold">Vehicle Details Page</h3>
-                <p className="text-xs text-muted-foreground">Create a second page (e.g. <code className="bg-muted px-1 py-0.5 rounded text-[10px]">yoursite.com/vehicle-details</code>) and paste this embed code.</p>
+          {/* Embed codes — collapsible */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <button
+              onClick={() => setEmbedOpen(!embedOpen)}
+              className="flex items-center justify-between w-full p-5 text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Code2 size={16} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
+                <h3 className="text-heading-4">Embed Codes</h3>
               </div>
-            </div>
-            <div className="relative">
-              <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-20">
-                {detailEmbed}
-              </pre>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(detailEmbed, "det")}
-                className="absolute top-2 right-2 h-7 text-xs"
-              >
-                {copied === "det" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
-                {copied === "det" ? "Copied" : "Copy"}
-              </Button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              The widget automatically reads <code className="bg-muted px-1 py-0.5 rounded text-[10px]">?id=</code> from the URL to load the correct vehicle. When users click a car on the inventory page, it navigates to <code className="bg-muted px-1 py-0.5 rounded text-[10px]">/vehicle-details?id=UUID</code> and the detail widget takes over.
-            </p>
-          </div>
+              <ChevronDown
+                size={16}
+                strokeWidth={ICON_STROKE_WIDTH}
+                className={cn("text-muted-foreground transition-transform", embedOpen && "rotate-180")}
+              />
+            </button>
+            {embedOpen && (
+              <div className="px-5 pb-5 space-y-4 border-t border-border pt-5">
+                {/* Inventory widget */}
+                <div className="space-y-2">
+                  <Label>Inventory Page</Label>
+                  <div className="relative">
+                    <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-16">
+                      {inventoryEmbed}
+                    </pre>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(inventoryEmbed, "inv")}
+                      className="absolute top-2 right-2 h-7 text-xs"
+                    >
+                      {copied === "inv" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
+                      {copied === "inv" ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
 
-          {/* Credit App */}
-          <div className="rounded-lg border border-dashed p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-bold shrink-0">+</span>
-              <div>
-                <h3 className="text-sm font-semibold">Credit Application (Optional)</h3>
-                <p className="text-xs text-muted-foreground">A &ldquo;Apply for Financing&rdquo; button appears on vehicle detail pages. Link it to your credit app page.</p>
-              </div>
-            </div>
-            <div className="relative">
-              <pre className="text-[11px] font-mono bg-muted/70 rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-20">
-                {creditAppEmbed}
-              </pre>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(creditAppEmbed, "credit")}
-                className="absolute top-2 right-2 h-7 text-xs"
-              >
-                {copied === "credit" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
-                {copied === "credit" ? "Copied" : "Copy"}
-              </Button>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Or use our hosted page directly: <code className="bg-muted px-1 py-0.5 rounded text-[10px]">{creditAppDefault}</code>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Tab */}
-      {activeTab === "preview" && (
-        <div className="space-y-4">
-          <p className="text-xs text-muted-foreground">
-            Preview of how your widget will appear on an external website. Colors update in real-time.
-          </p>
-          <div className="rounded-xl border bg-white p-6 min-h-[500px]">
-            {/* Mock search */}
-            <div className="flex items-center border border-gray-200 rounded-[10px] px-4 py-3 mb-5 gap-2.5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <span className="text-sm text-gray-400">Search by make, model, or keyword...</span>
-            </div>
-            <div className="flex gap-6">
-              {/* Mock sidebar */}
-              <div className="w-[200px] shrink-0 hidden lg:block">
-                <div className="border border-gray-100 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[13px] font-bold text-gray-900">Filters</span>
-                    <span className="text-[10px] text-gray-400 underline">Clear All</span>
-                  </div>
-                  <div className="border-t pt-3 pb-3">
-                    <p className="text-[11px] font-semibold text-gray-500 mb-2">Monthly Payment</p>
-                    <div className="h-1 bg-gray-200 rounded-full mb-1"><div className="h-1 bg-gray-900 rounded-full w-3/4" /></div>
-                    <div className="flex justify-between text-[10px] text-gray-400"><span>$200/mo</span><span>$1,000/mo</span></div>
-                  </div>
-                  <div className="border-t pt-3 pb-3">
-                    <p className="text-[11px] font-semibold text-gray-500 mb-2">Make</p>
-                    {["BMW", "Mercedes-Benz", "Audi"].map((m) => (
-                      <label key={m} className="flex items-center gap-2 text-[12px] text-gray-700 mb-1.5 cursor-pointer">
-                        <input type="checkbox" className="accent-gray-900 w-3.5 h-3.5" readOnly /> {m}
-                      </label>
-                    ))}
-                  </div>
-                  <div className="border-t pt-3">
-                    <p className="text-[11px] font-semibold text-gray-500 mb-2">Vehicle Type</p>
-                    {["Sedan", "SUV"].map((t) => (
-                      <label key={t} className="flex items-center gap-2 text-[12px] text-gray-700 mb-1.5 cursor-pointer">
-                        <input type="checkbox" className="accent-gray-900 w-3.5 h-3.5" readOnly /> {t}
-                      </label>
-                    ))}
+                {/* Detail widget */}
+                <div className="space-y-2">
+                  <Label>Vehicle Detail Page</Label>
+                  <div className="relative">
+                    <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-16">
+                      {detailEmbed}
+                    </pre>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(detailEmbed, "det")}
+                      className="absolute top-2 right-2 h-7 text-xs"
+                    >
+                      {copied === "det" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
+                      {copied === "det" ? "Copied" : "Copy"}
+                    </Button>
                   </div>
                 </div>
               </div>
-              {/* Mock grid */}
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[12px] text-gray-500 font-medium">9 vehicles found</span>
-                  <span className="text-[12px] text-gray-400 border rounded-lg px-3 py-1.5">Featured</span>
-                </div>
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
-                  {[
-                    { name: "2025 BMW X7", price: "$999/mo", type: "Lease", term: "39 mo", mi: "7,500 mi" },
-                    { name: "2025 Mercedes C300", price: "$348/mo", type: "Lease", term: "24 mo", mi: "7,500 mi" },
-                    { name: "2025 BMW 330i", price: "$429/mo", type: "Lease", term: "39 mo", mi: "7,500 mi" },
-                  ].map((car, i) => (
-                    <div key={i} className="border border-gray-100 rounded-xl overflow-hidden">
-                      <div className="relative aspect-[4/3] bg-gray-100">
-                        <span className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider text-white px-2.5 py-1 rounded-md bg-green-500">Available</span>
-                        {showPricing && (
-                          <span className="absolute top-2.5 right-2.5 text-[13px] font-extrabold text-gray-900 bg-white px-3 py-1 rounded-lg shadow-sm">{car.price}</span>
-                        )}
-                        <div className="flex items-center justify-center h-full text-[11px] text-gray-300">Vehicle Image</div>
-                      </div>
-                      <div className="p-3.5">
-                        <p className="text-[13px] font-bold text-gray-900 mb-1.5">{car.name}</p>
-                        {showPricing && (
-                          <div className="flex gap-3 text-[10px] text-gray-400 mb-3">
-                            <span><strong className="text-gray-500">TERM:</strong> {car.term}</span>
-                            <span>{car.mi}</span>
-                          </div>
-                        )}
-                        <button
-                          className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-white transition-colors"
-                          style={{ backgroundColor: primaryColor }}
-                          onMouseEnter={(e) => { (e.target as HTMLElement).style.backgroundColor = hoverColor; }}
-                          onMouseLeave={(e) => { (e.target as HTMLElement).style.backgroundColor = primaryColor; }}
-                        >
-                          View Details
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
-
