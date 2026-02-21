@@ -170,95 +170,54 @@ export function StepPhotos() {
   }
 
   return (
-    <div className="space-y-7">
-      {/* Step header */}
-      <div>
-        <p className="text-overline text-primary mb-2">STEP 4 OF 4</p>
-        <h2 className="text-heading-1 mb-1">Photos & Description</h2>
-        <p className="text-body text-muted-foreground">
-          Upload images and write a compelling description.
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Photo upload card */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="flex items-start gap-3 px-6 pt-5 pb-4">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary mt-0.5">
-            01
-          </span>
-          <div>
-            <h3 className="text-heading-4">Photos</h3>
-            <p className="text-caption text-muted-foreground mt-0.5">
-              Drag to reorder, star to set cover photo
-            </p>
-          </div>
-        </div>
-        <div className="border-t border-border px-6 py-5 space-y-4">
-          <ImageUploader onFilesReady={handleFilesReady} disabled={submitting} />
-          <ImageGallery
-            images={images}
-            onReorder={handleReorder}
-            onSetPrimary={handleSetPrimary}
-            onDelete={handleDelete}
-          />
-          {images.length > 0 && (
-            <p className="text-caption text-muted-foreground">
-              {images.length} image{images.length !== 1 ? "s" : ""} added
-            </p>
-          )}
-        </div>
+      {/* Photos */}
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <ImageUploader onFilesReady={handleFilesReady} disabled={submitting} />
+        <ImageGallery
+          images={images}
+          onReorder={handleReorder}
+          onSetPrimary={handleSetPrimary}
+          onDelete={handleDelete}
+        />
+        {images.length > 0 && (
+          <p className="text-caption text-muted-foreground">
+            {images.length} image{images.length !== 1 ? "s" : ""} &middot; drag to reorder, star for cover
+          </p>
+        )}
       </div>
 
-      {/* Description card */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="flex items-start gap-3 px-6 pt-5 pb-4">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-bold text-muted-foreground mt-0.5">
-            02
-          </span>
-          <div>
-            <h3 className="text-heading-4">Description</h3>
-            <p className="text-caption text-muted-foreground mt-0.5">Optional — helps buyers understand the vehicle</p>
-          </div>
-        </div>
-        <div className="border-t border-border px-6 py-5">
-          <div className="space-y-1.5">
-            <Label>Vehicle Description</Label>
-            <Textarea
-              rows={5}
-              placeholder="Describe the vehicle's condition, history, and highlights..."
-              value={data.description}
-              onChange={(e) => setData({ description: e.target.value })}
-            />
-          </div>
+      {/* Description */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="space-y-1.5">
+          <Label>Description</Label>
+          <Textarea
+            rows={5}
+            placeholder="Describe the vehicle's condition, history, and highlights..."
+            value={data.description}
+            onChange={(e) => setData({ description: e.target.value })}
+          />
         </div>
       </div>
 
       {/* Submit */}
-      <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-body-sm font-medium">Ready to publish?</p>
-            <p className="text-caption text-muted-foreground mt-0.5">
-              You can edit all details after creating the listing.
-            </p>
-          </div>
-          <Button size="lg" onClick={handleSubmit} disabled={submitting} className="min-w-[180px] gap-2">
-            {submitting ? (
-              <LoadingSpinner size={18} className="text-primary-foreground" />
-            ) : (
-              <>
-                <Check size={16} strokeWidth={ICON_STROKE_WIDTH} />
-                Add Vehicle
-              </>
-            )}
-          </Button>
-        </div>
+      <div className="flex justify-end">
+        <Button size="lg" onClick={handleSubmit} disabled={submitting} className="min-w-[180px] gap-2">
+          {submitting ? (
+            <LoadingSpinner size={18} className="text-primary-foreground" />
+          ) : (
+            <>
+              <Check size={16} strokeWidth={ICON_STROKE_WIDTH} />
+              Add Vehicle
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );

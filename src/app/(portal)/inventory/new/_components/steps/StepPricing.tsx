@@ -67,170 +67,114 @@ export function StepPricing() {
   }
 
   return (
-    <div className="space-y-7">
-      {/* Step header */}
-      <div>
-        <p className="text-overline text-primary mb-2">STEP 2 OF 4</p>
-        <h2 className="text-heading-1 mb-1">Pricing</h2>
-        <p className="text-body text-muted-foreground">
-          {isSale
-            ? "Set your asking prices and dealer cost."
-            : "Define the lease terms and payment."}
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {isSale ? (
         <>
           {/* Customer Pricing */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="flex items-start gap-3 px-6 pt-5 pb-4">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary mt-0.5">
-                01
-              </span>
-              <div>
-                <h3 className="text-heading-4">Customer Pricing</h3>
-                <p className="text-caption text-muted-foreground mt-0.5">What the buyer sees</p>
-              </div>
-            </div>
-            <div className="border-t border-border px-6 py-5">
-              <div className="grid grid-cols-2 gap-6">
-                <PriceField label="List / Online Price" value={data.online_price} onChange={numChange("online_price")} placeholder="29,999" />
-                <PriceField label="Sale Price" value={data.sale_price} onChange={numChange("sale_price")} placeholder="28,500" />
-              </div>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h3 className="text-heading-4 mb-5">Customer Pricing</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <PriceField label="List / Online Price" value={data.online_price} onChange={numChange("online_price")} placeholder="29,999" />
+              <PriceField label="Sale Price" value={data.sale_price} onChange={numChange("sale_price")} placeholder="28,500" />
             </div>
           </div>
 
           {/* Dealer Cost */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="flex items-start gap-3 px-6 pt-5 pb-4">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-bold text-muted-foreground mt-0.5">
-                02
-              </span>
-              <div>
-                <h3 className="text-heading-4">Dealer Cost</h3>
-                <p className="text-caption text-muted-foreground mt-0.5">Internal pricing — not shown to customers</p>
-              </div>
-            </div>
-            <div className="border-t border-border px-6 py-5">
-              <div className="grid grid-cols-2 gap-6">
-                <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="32,000" />
-                <PriceField label="Purchase Price" value={data.purchase_price} onChange={numChange("purchase_price")} placeholder="24,000" />
-              </div>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h3 className="text-heading-4 mb-5">Dealer Cost</h3>
+            <div className="grid grid-cols-2 gap-6">
+              <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="32,000" />
+              <PriceField label="Purchase Price" value={data.purchase_price} onChange={numChange("purchase_price")} placeholder="24,000" />
             </div>
           </div>
         </>
       ) : (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <div className="flex items-start gap-3 px-6 pt-5 pb-4">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary mt-0.5">
-              01
-            </span>
-            <div>
-              <h3 className="text-heading-4">Lease Terms</h3>
-              <p className="text-caption text-muted-foreground mt-0.5">Monthly payment, term length, and mileage</p>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h3 className="text-heading-4 mb-5">Lease Terms</h3>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
+            <div className="space-y-1.5">
+              <Label>Monthly Payment <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input
+                  type="number" step="0.01" placeholder="599"
+                  value={data.lease_payment ?? ""}
+                  onChange={numChange("lease_payment")}
+                  className="pl-7"
+                />
+              </div>
+              {errors.lease_payment && <p className="text-caption text-destructive">{errors.lease_payment}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Term <span className="text-destructive">*</span></Label>
+              <Select
+                value={data.lease_term ? String(data.lease_term) : undefined}
+                onValueChange={(v) => { setData({ lease_term: Number(v) }); setErrors((p) => ({ ...p, lease_term: "" })); }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select term" /></SelectTrigger>
+                <SelectContent>
+                  {TERM_OPTIONS.map((t) => <SelectItem key={t.value} value={String(t.value)}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.lease_term && <p className="text-caption text-destructive">{errors.lease_term}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Mileage <span className="text-destructive">*</span></Label>
+              <Select
+                value={data.lease_annual_mileage ? String(data.lease_annual_mileage) : undefined}
+                onValueChange={(v) => { setData({ lease_annual_mileage: Number(v) }); setErrors((p) => ({ ...p, lease_annual_mileage: "" })); }}
+              >
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {MILEAGE_OPTIONS.map((m) => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {errors.lease_annual_mileage && <p className="text-caption text-destructive">{errors.lease_annual_mileage}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Due at Signing <span className="text-destructive">*</span></Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input
+                  type="number" step="0.01" placeholder="2,999"
+                  value={data.lease_down_payment ?? ""}
+                  onChange={numChange("lease_down_payment")}
+                  className="pl-7"
+                />
+              </div>
+              {errors.lease_down_payment && <p className="text-caption text-destructive">{errors.lease_down_payment}</p>}
             </div>
           </div>
-          <div className="border-t border-border px-6 py-5">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
-              <div className="space-y-1.5">
-                <Label>Monthly Payment <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                  <Input
-                    type="number" step="0.01" placeholder="599"
-                    value={data.lease_payment ?? ""}
-                    onChange={numChange("lease_payment")}
-                    className="pl-7"
-                  />
-                </div>
-                {errors.lease_payment && <p className="text-caption text-destructive">{errors.lease_payment}</p>}
-              </div>
 
-              <div className="space-y-1.5">
-                <Label>Term <span className="text-destructive">*</span></Label>
-                <Select
-                  value={data.lease_term ? String(data.lease_term) : undefined}
-                  onValueChange={(v) => { setData({ lease_term: Number(v) }); setErrors((p) => ({ ...p, lease_term: "" })); }}
-                >
-                  <SelectTrigger><SelectValue placeholder="Select term" /></SelectTrigger>
-                  <SelectContent>
-                    {TERM_OPTIONS.map((t) => <SelectItem key={t.value} value={String(t.value)}>{t.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                {errors.lease_term && <p className="text-caption text-destructive">{errors.lease_term}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Mileage <span className="text-destructive">*</span></Label>
-                <Select
-                  value={data.lease_annual_mileage ? String(data.lease_annual_mileage) : undefined}
-                  onValueChange={(v) => { setData({ lease_annual_mileage: Number(v) }); setErrors((p) => ({ ...p, lease_annual_mileage: "" })); }}
-                >
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    {MILEAGE_OPTIONS.map((m) => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                {errors.lease_annual_mileage && <p className="text-caption text-destructive">{errors.lease_annual_mileage}</p>}
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Due at Signing <span className="text-destructive">*</span></Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
-                  <Input
-                    type="number" step="0.01" placeholder="2,999"
-                    value={data.lease_down_payment ?? ""}
-                    onChange={numChange("lease_down_payment")}
-                    className="pl-7"
-                  />
-                </div>
-                {errors.lease_down_payment && <p className="text-caption text-destructive">{errors.lease_down_payment}</p>}
-              </div>
-            </div>
-
-            <div className="border-t border-border mt-5 pt-5">
-              <div className="grid grid-cols-2 gap-6">
-                <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="52,000" />
-                <PriceField label="Taxes & Fees" value={data.taxes_and_fees} onChange={numChange("taxes_and_fees")} placeholder="450" />
-              </div>
-            </div>
+          <div className="grid grid-cols-2 gap-6 mt-5 pt-5 border-t border-border">
+            <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="52,000" />
+            <PriceField label="Taxes & Fees" value={data.taxes_and_fees} onChange={numChange("taxes_and_fees")} placeholder="450" />
           </div>
         </div>
       )}
 
       {/* Location */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="flex items-start gap-3 px-6 pt-5 pb-4">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-bold text-muted-foreground mt-0.5">
-            {isSale ? "03" : "02"}
-          </span>
-          <div>
-            <h3 className="text-heading-4">Location</h3>
-            <p className="text-caption text-muted-foreground mt-0.5">Where is this vehicle available?</p>
-          </div>
-        </div>
-        <div className="border-t border-border px-6 py-5">
-          <div className="max-w-xs">
-            <div className="space-y-1.5">
-              <Label>State / Region</Label>
-              <Select
-                value={data.location_detail || undefined}
-                onValueChange={(v) => setData({ location_detail: v })}
-              >
-                <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
-                <SelectContent>
-                  {LOCATION_OPTIONS.map((loc) => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+      <div className="rounded-xl border border-border bg-card p-6">
+        <div className="max-w-xs space-y-1.5">
+          <Label>Location</Label>
+          <Select
+            value={data.location_detail || undefined}
+            onValueChange={(v) => setData({ location_detail: v })}
+          >
+            <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
+            <SelectContent>
+              {LOCATION_OPTIONS.map((loc) => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div className="flex justify-end pt-2">
+      <div className="flex justify-end">
         <Button size="lg" onClick={validateAndContinue} className="gap-2">
-          Continue to Details
+          Continue
           <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />
         </Button>
       </div>

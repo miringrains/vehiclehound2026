@@ -45,14 +45,7 @@ function WizardContent() {
               </Link>
             </Button>
           )}
-          <div>
-            <h1 className="text-heading-2">New Vehicle</h1>
-            {step !== "type" && (
-              <p className="text-caption text-muted-foreground mt-0.5">
-                Fill in each section to list your vehicle
-              </p>
-            )}
-          </div>
+          <h1 className="text-heading-2">New Vehicle</h1>
         </div>
         <StepIndicator />
       </div>
