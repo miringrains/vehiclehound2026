@@ -91,7 +91,8 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
         return data.publicUrl;
       });
 
-    const creditAppUrl = config.config?.creditAppUrl || "";
+    const appOrigin = new URL(request.url).origin;
+    const creditAppUrl = config.config?.creditAppUrl || `${appOrigin}/apply/${config.dealership_id}`;
 
     return NextResponse.json({
       vehicle: { ...vehicle, images, image_urls: images },
