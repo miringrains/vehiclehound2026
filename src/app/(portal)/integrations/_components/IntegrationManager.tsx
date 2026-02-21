@@ -8,7 +8,6 @@ import {
   Check,
   Plus,
   Globe,
-  Key,
   Trash2,
   Loader2,
   X,
@@ -45,6 +44,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const [saved, setSaved] = useState(false);
 
   const [primaryColor, setPrimaryColor] = useState(config?.config?.primaryColor ?? "#1a1d1e");
+  const [backgroundColor, setBackgroundColor] = useState(config?.config?.backgroundColor ?? "#ffffff");
   const [borderRadius, setBorderRadius] = useState<RadiusPreset>(config?.config?.borderRadius ?? "rounded");
   const [showPricing, setShowPricing] = useState(config?.config?.showPricing ?? true);
   const [creditAppUrl, setCreditAppUrl] = useState(config?.config?.creditAppUrl ?? "");
@@ -67,6 +67,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
       if (created) {
         setConfig(created);
         setPrimaryColor(created.config?.primaryColor ?? "#1a1d1e");
+        setBackgroundColor(created.config?.backgroundColor ?? "#ffffff");
         setBorderRadius(created.config?.borderRadius ?? "rounded");
         setShowPricing(created.config?.showPricing ?? true);
         setCreditAppUrl(created.config?.creditAppUrl ?? "");
@@ -87,6 +88,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
         body: JSON.stringify({
           config: {
             primaryColor,
+            backgroundColor,
             showPricing,
             creditAppUrl,
             borderRadius,
@@ -192,27 +194,54 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left: settings */}
         <div className="w-full lg:w-[380px] shrink-0 space-y-5">
-          {/* Color */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <h3 className="text-heading-4">Accent Color</h3>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <input
-                  type="color"
+          {/* Colors */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-5">
+            <div className="space-y-3">
+              <h3 className="text-heading-4">Accent Color</h3>
+              <p className="text-caption text-muted-foreground -mt-1.5">Buttons and interactive elements</p>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div
+                    className="w-10 h-10 rounded-lg border border-border shadow-sm"
+                    style={{ backgroundColor: primaryColor }}
+                  />
+                </div>
+                <Input
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div
-                  className="w-10 h-10 rounded-lg border border-border shadow-sm"
-                  style={{ backgroundColor: primaryColor }}
+                  className="font-mono text-xs max-w-[120px]"
                 />
               </div>
-              <Input
-                value={primaryColor}
-                onChange={(e) => setPrimaryColor(e.target.value)}
-                className="font-mono text-xs max-w-[120px]"
-              />
+            </div>
+
+            <div className="border-t border-border pt-5 space-y-3">
+              <h3 className="text-heading-4">Background</h3>
+              <p className="text-caption text-muted-foreground -mt-1.5">Page background — text and surfaces adjust automatically</p>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div
+                    className="w-10 h-10 rounded-lg border border-border shadow-sm"
+                    style={{ backgroundColor }}
+                  />
+                </div>
+                <Input
+                  value={backgroundColor}
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                  className="font-mono text-xs max-w-[120px]"
+                />
+              </div>
             </div>
           </div>
 
@@ -313,26 +342,6 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
                     </div>
                   )}
                 </div>
-
-                {/* API Key */}
-                <div className="space-y-1.5">
-                  <Label className="flex items-center gap-1.5">
-                    <Key size={12} strokeWidth={ICON_STROKE_WIDTH} />
-                    API Key
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-[11px] font-mono bg-muted rounded-lg px-3 py-2 truncate select-all">
-                      {config.api_key}
-                    </code>
-                    <Button
-                      variant="outline"
-                      size="icon-sm"
-                      onClick={() => copyToClipboard(config.api_key, "apikey")}
-                    >
-                      {copied === "apikey" ? <Check size={12} className="text-green-500" /> : <Copy size={12} strokeWidth={ICON_STROKE_WIDTH} />}
-                    </Button>
-                  </div>
-                </div>
               </div>
             )}
           </div>
@@ -350,6 +359,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
           <div className="lg:sticky lg:top-[calc(var(--topbar-height)+24px)]">
             <WidgetPreview
               primaryColor={primaryColor}
+              backgroundColor={backgroundColor}
               borderRadius={borderRadius}
               showPricing={showPricing}
             />

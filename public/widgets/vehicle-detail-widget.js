@@ -37,17 +37,53 @@
     return { card: base, btn: Math.round(base * 0.83), badge: Math.round(base * 0.5), gallery: Math.round(base * 1.17) };
   }
 
-  function injectStyles(r) {
+  function hexToRgb(hex) {
+    const h = hex.replace("#", "");
+    return [parseInt(h.substring(0, 2), 16), parseInt(h.substring(2, 4), 16), parseInt(h.substring(4, 6), 16)];
+  }
+
+  function rgbToHex(r, g, b) {
+    return "#" + [r, g, b].map(c => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0")).join("");
+  }
+
+  function mixHex(hex, target, factor) {
+    const [r1, g1, b1] = hexToRgb(hex);
+    const [r2, g2, b2] = hexToRgb(target);
+    return rgbToHex(r1 + (r2 - r1) * factor, g1 + (g2 - g1) * factor, b1 + (b2 - b1) * factor);
+  }
+
+  function luminance(r, g, b) {
+    const [rs, gs, bs] = [r, g, b].map(c => { const s = c / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); });
+    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+  }
+
+  function deriveColors(bg) {
+    if (!bg || typeof bg !== "string") bg = "#ffffff";
+    const [r, g, b] = hexToRgb(bg);
+    const light = luminance(r, g, b) > 0.4;
+    return {
+      bg: bg,
+      card: light ? mixHex(bg, "#ffffff", 0.6) : mixHex(bg, "#ffffff", 0.06),
+      border: light ? mixHex(bg, "#000000", 0.1) : mixHex(bg, "#ffffff", 0.12),
+      text: light ? "#1a1d1e" : "#f5f5f5",
+      textMuted: light ? "#888888" : "#999999",
+      textStrong: light ? "#555555" : "#cccccc",
+      imgBg: light ? mixHex(bg, "#000000", 0.04) : mixHex(bg, "#ffffff", 0.04),
+    };
+  }
+
+  function injectStyles(r, cl) {
     const existing = document.getElementById("vh-det-css");
     if (existing) existing.remove();
     const s = document.createElement("style");
     s.id = "vh-det-css";
+    if (!cl) cl = deriveColors("#ffffff");
     s.textContent = `
-.vhd{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1a1d1e;-webkit-font-smoothing:antialiased;line-height:1.5;max-width:1100px;margin:0 auto}
+.vhd{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:${cl.text};-webkit-font-smoothing:antialiased;line-height:1.5;max-width:1100px;margin:0 auto;background:${cl.bg}}
 .vhd *{box-sizing:border-box;margin:0;padding:0}
 .vhd-top{display:flex;gap:32px;margin-bottom:32px}
 .vhd-gallery{flex:1;min-width:0}
-.vhd-main-img{width:100%;aspect-ratio:16/10;background:#f7f7f7;border-radius:${r.gallery}px;overflow:hidden;margin-bottom:10px;position:relative}
+.vhd-main-img{width:100%;aspect-ratio:16/10;background:${cl.imgBg};border-radius:${r.gallery}px;overflow:hidden;margin-bottom:10px;position:relative}
 .vhd-main-img img{width:100%;height:100%;object-fit:contain}
 .vhd-main-img .vhd-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .vhd-main-img .vhd-nav:hover{background:rgba(0,0,0,.75)}
@@ -55,31 +91,31 @@
 .vhd-main-img .vhd-nav.next{right:12px}
 .vhd-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
 .vhd-thumbs img{width:80px;height:60px;object-fit:cover;border-radius:${r.badge}px;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:border-color .15s,opacity .15s;opacity:.6}
-.vhd-thumbs img.active{border-color:#1a1d1e;opacity:1}
+.vhd-thumbs img.active{border-color:${cl.text};opacity:1}
 .vhd-thumbs img:hover{opacity:1}
 .vhd-info{width:380px;flex-shrink:0}
 .vhd-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:4px 12px;border-radius:${r.badge}px;color:#fff;margin-bottom:10px}
-.vhd-title{font-size:26px;font-weight:800;color:#1a1d1e;margin-bottom:4px;line-height:1.2}
-.vhd-subtitle{font-size:14px;color:#888;margin-bottom:16px}
-.vhd-price{font-size:32px;font-weight:800;color:#1a1d1e;margin-bottom:4px}
-.vhd-price-sub{font-size:12px;color:#999;margin-bottom:20px}
-.vhd-details{border:1px solid #eee;border-radius:${r.card}px;overflow:hidden;margin-bottom:20px}
-.vhd-detail-row{display:flex;justify-content:space-between;padding:10px 16px;font-size:13px;border-bottom:1px solid #f5f5f5}
+.vhd-title{font-size:26px;font-weight:800;color:${cl.text};margin-bottom:4px;line-height:1.2}
+.vhd-subtitle{font-size:14px;color:${cl.textMuted};margin-bottom:16px}
+.vhd-price{font-size:32px;font-weight:800;color:${cl.text};margin-bottom:4px}
+.vhd-price-sub{font-size:12px;color:${cl.textMuted};margin-bottom:20px}
+.vhd-details{border:1px solid ${cl.border};border-radius:${r.card}px;overflow:hidden;margin-bottom:20px}
+.vhd-detail-row{display:flex;justify-content:space-between;padding:10px 16px;font-size:13px;border-bottom:1px solid ${cl.border}}
 .vhd-detail-row:last-child{border-bottom:none}
-.vhd-detail-row .label{color:#888}
-.vhd-detail-row .value{font-weight:600;color:#1a1d1e;text-align:right}
+.vhd-detail-row .label{color:${cl.textMuted}}
+.vhd-detail-row .value{font-weight:600;color:${cl.text};text-align:right}
 .vhd-cta{display:block;width:100%;padding:14px;border:none;border-radius:${r.btn}px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;text-align:center;text-decoration:none;color:#fff}
-.vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid #e5e5e5;border-radius:${r.btn}px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;color:#333;background:#fff;transition:border-color .15s;margin-top:10px}
-.vhd-cta-secondary:hover{border-color:#999}
+.vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid ${cl.border};border-radius:${r.btn}px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;color:${cl.text};background:${cl.card};transition:border-color .15s;margin-top:10px}
+.vhd-cta-secondary:hover{border-color:${cl.textMuted}}
 .vhd-specs{margin-top:32px}
 .vhd-specs h2{font-size:18px;font-weight:700;margin-bottom:16px}
-.vhd-spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;border:1px solid #eee;border-radius:${r.card}px;overflow:hidden;background:#eee}
-.vhd-spec-cell{background:#fff;padding:14px 18px}
-.vhd-spec-cell .label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#999;margin-bottom:2px}
-.vhd-spec-cell .value{font-size:14px;font-weight:600;color:#1a1d1e}
-.vhd-desc{margin-top:24px;font-size:14px;color:#555;line-height:1.7;white-space:pre-wrap}
-.vhd-loading{text-align:center;padding:60px;font-size:14px;color:#999}
-.vhd-error{text-align:center;padding:60px;color:#999;font-size:14px}
+.vhd-spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;border:1px solid ${cl.border};border-radius:${r.card}px;overflow:hidden;background:${cl.border}}
+.vhd-spec-cell{background:${cl.card};padding:14px 18px}
+.vhd-spec-cell .label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:${cl.textMuted};margin-bottom:2px}
+.vhd-spec-cell .value{font-size:14px;font-weight:600;color:${cl.text}}
+.vhd-desc{margin-top:24px;font-size:14px;color:${cl.textStrong};line-height:1.7;white-space:pre-wrap}
+.vhd-loading{text-align:center;padding:60px;font-size:14px;color:${cl.textMuted}}
+.vhd-error{text-align:center;padding:60px;color:${cl.textMuted};font-size:14px}
 @media(max-width:768px){.vhd-top{flex-direction:column}.vhd-info{width:100%}}
 `;
     document.head.appendChild(s);
@@ -103,7 +139,8 @@
 
   function renderVehicle(v, config) {
     container.innerHTML = "";
-    injectStyles(getRadius(config));
+    const cl = deriveColors(config.backgroundColor);
+    injectStyles(getRadius(config), cl);
     const pc = config.primaryColor || "#1a1d1e";
     const hc = config.hoverColor || "#374151";
     const images = v.image_urls || [];
@@ -258,6 +295,6 @@
     thumbs.forEach((t, i) => t.classList.toggle("active", i === currentImg));
   }
 
-  injectStyles(getRadius({}));
+  injectStyles(getRadius({}), deriveColors("#ffffff"));
   load();
 })();

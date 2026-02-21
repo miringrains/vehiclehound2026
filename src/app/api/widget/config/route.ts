@@ -21,6 +21,7 @@ const DEFAULT_CONFIG = {
   defaultSort: "newest",
   creditAppUrl: "",
   borderRadius: "rounded" as const,
+  backgroundColor: "#ffffff",
 };
 
 function withDerivedHover(config: Record<string, unknown>) {

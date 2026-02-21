@@ -15,21 +15,68 @@ const MOCK_CARS = [
 
 type WidgetPreviewProps = {
   primaryColor: string;
+  backgroundColor: string;
   borderRadius: RadiusPreset;
   showPricing: boolean;
 };
 
-function darkenHex(hex: string, factor = 0.12): string {
+function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
-  const r = Math.round(parseInt(h.substring(0, 2), 16) * (1 - factor));
-  const g = Math.round(parseInt(h.substring(2, 4), 16) * (1 - factor));
-  const b = Math.round(parseInt(h.substring(4, 6), 16) * (1 - factor));
-  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+  return [
+    parseInt(h.substring(0, 2), 16),
+    parseInt(h.substring(2, 4), 16),
+    parseInt(h.substring(4, 6), 16),
+  ];
 }
 
-export function WidgetPreview({ primaryColor, borderRadius, showPricing }: WidgetPreviewProps) {
+function rgbToHex(r: number, g: number, b: number): string {
+  return `#${[r, g, b].map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function luminance(r: number, g: number, b: number): number {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+function isLightColor(hex: string): boolean {
+  const [r, g, b] = hexToRgb(hex);
+  return luminance(r, g, b) > 0.4;
+}
+
+function mixHex(hex: string, target: string, factor: number): string {
+  const [r1, g1, b1] = hexToRgb(hex);
+  const [r2, g2, b2] = hexToRgb(target);
+  return rgbToHex(
+    r1 + (r2 - r1) * factor,
+    g1 + (g2 - g1) * factor,
+    b1 + (b2 - b1) * factor,
+  );
+}
+
+function deriveColors(bg: string) {
+  const light = isLightColor(bg);
+  return {
+    bg,
+    card: light ? mixHex(bg, "#ffffff", 0.6) : mixHex(bg, "#ffffff", 0.06),
+    border: light ? mixHex(bg, "#000000", 0.1) : mixHex(bg, "#ffffff", 0.12),
+    text: light ? "#1a1d1e" : "#f5f5f5",
+    textMuted: light ? "#888888" : "#999999",
+    imgBg: light ? mixHex(bg, "#000000", 0.04) : mixHex(bg, "#ffffff", 0.04),
+    priceBg: light ? "#ffffff" : mixHex(bg, "#ffffff", 0.12),
+  };
+}
+
+function darkenHex(hex: string, factor = 0.12): string {
+  return mixHex(hex, "#000000", factor);
+}
+
+export function WidgetPreview({ primaryColor, backgroundColor, borderRadius, showPricing }: WidgetPreviewProps) {
   const r = RADIUS_MAP[borderRadius] ?? RADIUS_MAP.rounded;
   const hoverColor = darkenHex(primaryColor);
+  const c = deriveColors(backgroundColor);
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -47,23 +94,23 @@ export function WidgetPreview({ primaryColor, borderRadius, showPricing }: Widge
         </div>
       </div>
 
-      {/* Widget content — white background to simulate third-party site */}
-      <div className="bg-white p-5" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      {/* Widget content */}
+      <div className="p-5" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: c.bg }}>
         {/* Search bar */}
         <div
           className="flex items-center gap-2.5 border px-3.5 py-2.5 mb-4"
-          style={{ borderColor: "#e5e5e5", borderRadius: r.search }}
+          style={{ borderColor: c.border, borderRadius: r.search, backgroundColor: c.card }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={c.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <span style={{ fontSize: 12, color: "#aaa" }}>Search by make, model, or keyword...</span>
+          <span style={{ fontSize: 12, color: c.textMuted }}>Search by make, model, or keyword...</span>
         </div>
 
         {/* Vehicle grid */}
         <div className="flex items-center justify-between mb-3">
-          <span style={{ fontSize: 11, color: "#666", fontWeight: 500 }}>12 vehicles found</span>
-          <span style={{ fontSize: 11, color: "#999", border: "1px solid #e5e5e5", borderRadius: r.button, padding: "4px 10px" }}>Featured</span>
+          <span style={{ fontSize: 11, color: c.textMuted, fontWeight: 500 }}>12 vehicles found</span>
+          <span style={{ fontSize: 11, color: c.textMuted, border: `1px solid ${c.border}`, borderRadius: r.button, padding: "4px 10px" }}>Featured</span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -71,13 +118,14 @@ export function WidgetPreview({ primaryColor, borderRadius, showPricing }: Widge
             <div
               key={i}
               style={{
-                border: "1px solid #eee",
+                border: `1px solid ${c.border}`,
                 borderRadius: r.card,
                 overflow: "hidden",
+                backgroundColor: c.card,
               }}
             >
               {/* Image area */}
-              <div style={{ position: "relative", aspectRatio: "4/3", background: "#f5f5f5" }}>
+              <div style={{ position: "relative", aspectRatio: "4/3", background: c.imgBg }}>
                 <span
                   style={{
                     position: "absolute", top: 8, left: 8,
@@ -93,8 +141,8 @@ export function WidgetPreview({ primaryColor, borderRadius, showPricing }: Widge
                   <span
                     style={{
                       position: "absolute", top: 8, right: 8,
-                      fontSize: 11, fontWeight: 800, color: "#1a1d1e",
-                      background: "#fff", padding: "3px 8px",
+                      fontSize: 11, fontWeight: 800, color: c.text,
+                      background: c.priceBg, padding: "3px 8px",
                       borderRadius: r.button,
                       boxShadow: "0 1px 4px rgba(0,0,0,.08)",
                     }}
@@ -102,19 +150,19 @@ export function WidgetPreview({ primaryColor, borderRadius, showPricing }: Widge
                     {car.price}
                   </span>
                 )}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#d4d4d4", fontSize: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: c.textMuted, fontSize: 10, opacity: 0.5 }}>
                   Vehicle Image
                 </div>
               </div>
 
               {/* Card body */}
               <div style={{ padding: "10px 12px 12px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1d1e", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: c.text, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {car.name}
                 </p>
                 {showPricing && (
-                  <div style={{ display: "flex", gap: 8, fontSize: 9, color: "#999", marginBottom: 8 }}>
-                    <span><strong style={{ color: "#666" }}>TERM:</strong> {car.term}</span>
+                  <div style={{ display: "flex", gap: 8, fontSize: 9, color: c.textMuted, marginBottom: 8 }}>
+                    <span><strong style={{ color: c.text, opacity: 0.6 }}>TERM:</strong> {car.term}</span>
                     <span>{car.mileage}</span>
                   </div>
                 )}
@@ -140,9 +188,9 @@ export function WidgetPreview({ primaryColor, borderRadius, showPricing }: Widge
 
         {/* Pagination mock */}
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 14 }}>
-          <span style={{ fontSize: 9, color: "#ccc", border: "1px solid #eee", borderRadius: r.button, padding: "4px 12px" }}>Previous</span>
-          <span style={{ fontSize: 9, color: "#999" }}>1 of 3</span>
-          <span style={{ fontSize: 9, color: "#666", border: "1px solid #e5e5e5", borderRadius: r.button, padding: "4px 12px" }}>Next</span>
+          <span style={{ fontSize: 9, color: c.textMuted, border: `1px solid ${c.border}`, borderRadius: r.button, padding: "4px 12px", opacity: 0.5 }}>Previous</span>
+          <span style={{ fontSize: 9, color: c.textMuted }}>1 of 3</span>
+          <span style={{ fontSize: 9, color: c.textMuted, border: `1px solid ${c.border}`, borderRadius: r.button, padding: "4px 12px" }}>Next</span>
         </div>
       </div>
     </div>
