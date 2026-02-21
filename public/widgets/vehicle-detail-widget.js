@@ -107,6 +107,17 @@
 .vhd-cta{display:block;width:100%;padding:14px;border:none;border-radius:${r.btn}px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;text-align:center;text-decoration:none;color:#fff}
 .vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid ${cl.border};border-radius:${r.btn}px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;color:${cl.text};background:${cl.card};transition:border-color .15s;margin-top:10px}
 .vhd-cta-secondary:hover{border-color:${cl.textMuted}}
+.vhd-cta-row{display:flex;gap:10px;margin-top:10px}
+.vhd-cta-row .vhd-cta-secondary{margin-top:0;flex:1}
+.vhd-modal-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .2s}
+.vhd-modal-overlay.vhd-modal--open{opacity:1}
+.vhd-modal{background:${cl.card};border-radius:${r.card}px;width:100%;max-width:640px;max-height:90vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;transform:translateY(20px);transition:transform .25s ease}
+.vhd-modal-overlay.vhd-modal--open .vhd-modal{transform:translateY(0)}
+.vhd-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid ${cl.border}}
+.vhd-modal-header h2{font-size:16px;font-weight:700;color:${cl.text}}
+.vhd-modal-close{background:none;border:none;cursor:pointer;color:${cl.textMuted};padding:4px;border-radius:6px;transition:background .15s;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+.vhd-modal-close:hover{background:${cl.border}}
+.vhd-modal iframe{width:100%;flex:1;border:none;min-height:min(75vh,700px)}
 .vhd-specs{margin-top:32px}
 .vhd-specs h2{font-size:18px;font-weight:700;margin-bottom:16px}
 .vhd-spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;border:1px solid ${cl.border};border-radius:${r.card}px;overflow:hidden;background:${cl.border}}
@@ -222,22 +233,33 @@
     if (detailRows.length) info.appendChild(details);
 
     // CTAs
-    if (config.creditAppUrl) {
-      const appUrl = config.creditAppUrl + (config.creditAppUrl.includes("?") ? "&" : "?") + "vehicle=" + v.id;
+    if (config.showCreditApp !== false && config.creditAppUrl) {
+      const appUrl = config.creditAppUrl + (config.creditAppUrl.includes("?") ? "&" : "?") + "vehicle=" + v.id + "&embed=true";
       const cta = $("a", {
-        class: "vhd-cta", href: appUrl,
+        class: "vhd-cta", href: "javascript:void(0)",
         style: { background: pc },
         onMouseenter: e => { e.currentTarget.style.background = hc; },
         onMouseleave: e => { e.currentTarget.style.background = pc; },
+        onClick: () => openCreditModal(appUrl, title),
       }, "Apply for Financing");
       info.appendChild(cta);
     }
 
-    info.appendChild($("a", {
+    // Call + Back row
+    const ctaRow = $("div", { class: "vhd-cta-row" });
+    if (config.phone) {
+      const cleanPhone = config.phone.replace(/[^\d+]/g, "");
+      ctaRow.appendChild($("a", {
+        class: "vhd-cta-secondary",
+        href: "tel:" + cleanPhone,
+      }, "📞 Call Dealer"));
+    }
+    ctaRow.appendChild($("a", {
       class: "vhd-cta-secondary",
       href: "javascript:void(0)",
       onClick: () => { window.history.back(); },
     }, "← Back to Inventory"));
+    info.appendChild(ctaRow);
 
     top.appendChild(info);
     wrap.appendChild(top);
@@ -293,6 +315,35 @@
     imgs[currentImg].style.display = "block";
     const thumbs = wrapEl.querySelectorAll(".vhd-thumbs img");
     thumbs.forEach((t, i) => t.classList.toggle("active", i === currentImg));
+  }
+
+  function openCreditModal(url, vehicleTitle) {
+    const overlay = $("div", { class: "vhd-modal-overlay", onClick: e => { if (e.target === overlay) closeCreditModal(overlay); } });
+    const svgNS = "http://www.w3.org/2000/svg";
+    const xSvg = document.createElementNS(svgNS, "svg");
+    xSvg.setAttribute("width", "18"); xSvg.setAttribute("height", "18"); xSvg.setAttribute("viewBox", "0 0 24 24");
+    xSvg.setAttribute("fill", "none"); xSvg.setAttribute("stroke", "currentColor"); xSvg.setAttribute("stroke-width", "2");
+    xSvg.setAttribute("stroke-linecap", "round"); xSvg.setAttribute("stroke-linejoin", "round");
+    const l1 = document.createElementNS(svgNS, "line"); l1.setAttribute("x1","18");l1.setAttribute("y1","6");l1.setAttribute("x2","6");l1.setAttribute("y2","18");
+    const l2 = document.createElementNS(svgNS, "line"); l2.setAttribute("x1","6");l2.setAttribute("y1","6");l2.setAttribute("x2","18");l2.setAttribute("y2","18");
+    xSvg.appendChild(l1); xSvg.appendChild(l2);
+
+    const modal = $("div", { class: "vhd-modal" },
+      $("div", { class: "vhd-modal-header" },
+        $("h2", null, "Apply for Financing" + (vehicleTitle ? " — " + vehicleTitle : "")),
+        $("button", { class: "vhd-modal-close", onClick: () => closeCreditModal(overlay) }, xSvg),
+      ),
+      $("iframe", { src: url, title: "Credit Application" }),
+    );
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => overlay.classList.add("vhd-modal--open"));
+  }
+
+  function closeCreditModal(overlay) {
+    overlay.classList.remove("vhd-modal--open");
+    setTimeout(() => { overlay.remove(); document.body.style.overflow = ""; }, 250);
   }
 
   injectStyles(getRadius({}), deriveColors("#ffffff"));

@@ -22,6 +22,7 @@ const DEFAULT_CONFIG = {
   creditAppUrl: "",
   borderRadius: "rounded" as const,
   backgroundColor: "#ffffff",
+  showCreditApp: true,
 };
 
 function withDerivedHover(config: Record<string, unknown>) {

@@ -47,6 +47,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const [backgroundColor, setBackgroundColor] = useState(config?.config?.backgroundColor ?? "#ffffff");
   const [borderRadius, setBorderRadius] = useState<RadiusPreset>(config?.config?.borderRadius ?? "rounded");
   const [showPricing, setShowPricing] = useState(config?.config?.showPricing ?? true);
+  const [showCreditApp, setShowCreditApp] = useState(config?.config?.showCreditApp ?? true);
   const [creditAppUrl, setCreditAppUrl] = useState(config?.config?.creditAppUrl ?? "");
   const [domainList, setDomainList] = useState<string[]>(config?.allowed_domains ?? []);
   const [domainInput, setDomainInput] = useState("");
@@ -70,6 +71,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
         setBackgroundColor(created.config?.backgroundColor ?? "#ffffff");
         setBorderRadius(created.config?.borderRadius ?? "rounded");
         setShowPricing(created.config?.showPricing ?? true);
+        setShowCreditApp(created.config?.showCreditApp ?? true);
         setCreditAppUrl(created.config?.creditAppUrl ?? "");
         setDomainList(created.allowed_domains ?? []);
       }
@@ -90,6 +92,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
             primaryColor,
             backgroundColor,
             showPricing,
+            showCreditApp,
             creditAppUrl,
             borderRadius,
             itemsPerPage: config.config?.itemsPerPage ?? 12,
@@ -270,14 +273,23 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
             </div>
           </div>
 
-          {/* Display */}
-          <div className="rounded-xl border border-border bg-card p-5">
+          {/* Display toggles */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-heading-4">Show Pricing</h3>
                 <p className="text-caption text-muted-foreground mt-0.5">Display prices on vehicle cards</p>
               </div>
               <Switch checked={showPricing} onCheckedChange={setShowPricing} />
+            </div>
+            <div className="border-t border-border pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-heading-4">Credit Application</h3>
+                  <p className="text-caption text-muted-foreground mt-0.5">Apply for Financing button on vehicle details</p>
+                </div>
+                <Switch checked={showCreditApp} onCheckedChange={setShowCreditApp} />
+              </div>
             </div>
           </div>
 

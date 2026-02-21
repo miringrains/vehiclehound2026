@@ -57,6 +57,13 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
     }
 
     const showPricing = config.config?.showPricing !== false;
+    const showCreditApp = config.config?.showCreditApp !== false;
+
+    const { data: dealership } = await admin
+      .from("dealerships")
+      .select("phone")
+      .eq("id", config.dealership_id)
+      .single();
 
     const { data: vehicle, error } = await admin
       .from("vehicles")
@@ -84,15 +91,19 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
         return data.publicUrl;
       });
 
+    const creditAppUrl = config.config?.creditAppUrl || "";
+
     return NextResponse.json({
       vehicle: { ...vehicle, images, image_urls: images },
       config: {
         primaryColor: config.config?.primaryColor || "#1a1d1e",
         hoverColor: config.config?.hoverColor || "#374151",
         showPricing,
-        creditAppUrl: config.config?.creditAppUrl || "",
+        showCreditApp,
+        creditAppUrl,
         borderRadius: config.config?.borderRadius || "rounded",
         backgroundColor: config.config?.backgroundColor || "#ffffff",
+        phone: dealership?.phone || "",
       },
     }, { headers });
   } catch {

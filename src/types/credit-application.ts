@@ -143,6 +143,7 @@ export type WidgetConfig = {
     creditAppUrl: string;
     borderRadius: "sharp" | "rounded" | "soft";
     backgroundColor: string;
+    showCreditApp: boolean;
   };
   allowed_domains: string[];
   status: "active" | "paused";
