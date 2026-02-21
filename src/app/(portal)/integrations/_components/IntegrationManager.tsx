@@ -356,14 +356,12 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
         {/* Right: preview + embed codes */}
         <div className="flex-1 min-w-0 space-y-5">
           {/* Live preview */}
-          <div className="lg:sticky lg:top-[calc(var(--topbar-height)+24px)]">
-            <WidgetPreview
-              primaryColor={primaryColor}
-              backgroundColor={backgroundColor}
-              borderRadius={borderRadius}
-              showPricing={showPricing}
-            />
-          </div>
+          <WidgetPreview
+            primaryColor={primaryColor}
+            backgroundColor={backgroundColor}
+            borderRadius={borderRadius}
+            showPricing={showPricing}
+          />
 
           {/* Embed codes — collapsible */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -385,40 +383,40 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
               <div className="px-5 pb-5 space-y-4 border-t border-border pt-5">
                 {/* Inventory widget */}
                 <div className="space-y-2">
-                  <Label>Inventory Page</Label>
-                  <div className="relative">
-                    <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-16">
-                      {inventoryEmbed}
-                    </pre>
+                  <div className="flex items-center justify-between">
+                    <Label>Inventory Page</Label>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(inventoryEmbed, "inv")}
-                      className="absolute top-2 right-2 h-7 text-xs"
+                      className="h-7 text-xs"
                     >
                       {copied === "inv" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
                       {copied === "inv" ? "Copied" : "Copy"}
                     </Button>
                   </div>
+                  <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
+                    {inventoryEmbed}
+                  </pre>
                 </div>
 
                 {/* Detail widget */}
                 <div className="space-y-2">
-                  <Label>Vehicle Detail Page</Label>
-                  <div className="relative">
-                    <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all pr-16">
-                      {detailEmbed}
-                    </pre>
+                  <div className="flex items-center justify-between">
+                    <Label>Vehicle Detail Page</Label>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(detailEmbed, "det")}
-                      className="absolute top-2 right-2 h-7 text-xs"
+                      className="h-7 text-xs"
                     >
                       {copied === "det" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
                       {copied === "det" ? "Copied" : "Copy"}
                     </Button>
                   </div>
+                  <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
+                    {detailEmbed}
+                  </pre>
                 </div>
               </div>
             )}

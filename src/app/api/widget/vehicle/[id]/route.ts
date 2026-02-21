@@ -91,6 +91,8 @@ export async function GET(request: NextRequest, ctx: RouteContext) {
         hoverColor: config.config?.hoverColor || "#374151",
         showPricing,
         creditAppUrl: config.config?.creditAppUrl || "",
+        borderRadius: config.config?.borderRadius || "rounded",
+        backgroundColor: config.config?.backgroundColor || "#ffffff",
       },
     }, { headers });
   } catch {
