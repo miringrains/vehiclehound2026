@@ -39,7 +39,7 @@ export function TypeSelection() {
         What are you listing?
       </motion.h2>
 
-      <div className="grid gap-5 sm:grid-cols-2 w-full max-w-2xl">
+      <div className="grid gap-5 sm:grid-cols-2 w-full max-w-3xl">
         {types.map(({ key, label, badge, badgeSub }, i) => (
           <motion.button
             key={key}
@@ -87,7 +87,7 @@ export function TypeSelection() {
             </div>
 
             {/* Label */}
-            <div className="px-6 py-5 border-t border-border">
+            <div className="px-6 pb-5 pt-3">
               <p className="text-heading-3">{label}</p>
             </div>
           </motion.button>
