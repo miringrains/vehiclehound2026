@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Upload, X, Check, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Upload, X, Check, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 
 const US_STATES = [
@@ -30,7 +30,6 @@ const BUSINESS_TYPES = ["Sole Proprietorship", "Partnership", "LLC", "Corporatio
 const STEPS = [
   { id: "personal", label: "Personal" },
   { id: "employment", label: "Employment" },
-  { id: "co-applicant", label: "Co-Applicant" },
   { id: "documents", label: "Documents" },
 ] as const;
 
@@ -116,6 +115,15 @@ function formatPhoneInput(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
+function maskSSN(formatted: string): string {
+  const digits = formatted.replace(/\D/g, "");
+  if (digits.length <= 5) return formatted.replace(/\d/g, "•");
+  const masked = "•••-••-" + digits.slice(5);
+  return masked;
+}
+
+const INPUT_CLASS = "!border-foreground/20 !bg-foreground/5 placeholder:!text-muted-foreground/60";
+
 type CreditAppFormProps = {
   dealershipId: string;
   vehicleId?: string | null;
@@ -138,6 +146,8 @@ export function CreditAppForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [ssnVisible, setSsnVisible] = useState(false);
+  const [coSsnVisible, setCoSsnVisible] = useState(false);
   const [files, setFiles] = useState<{ front_id: File | null; insurance: File | null; registration: File | null }>({
     front_id: null, insurance: null, registration: null,
   });
@@ -164,6 +174,20 @@ export function CreditAppForm({
       if (!form.employer.trim()) errs.employer = "Required";
       if (!form.employment_status) errs.employment_status = "Required";
       if (!form.monthly_income.trim()) errs.monthly_income = "Required";
+      if (form.has_co_applicant) {
+        if (!form.co_first_name.trim()) errs.co_first_name = "Required";
+        if (!form.co_last_name.trim()) errs.co_last_name = "Required";
+        if (!form.co_email.trim()) errs.co_email = "Required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.co_email)) errs.co_email = "Invalid email";
+        if (!form.co_phone.trim()) errs.co_phone = "Required";
+      }
+      if (form.is_business_app) {
+        if (!form.business_name.trim()) errs.business_name = "Required";
+        if (!form.business_type) errs.business_type = "Required";
+      }
+    }
+    if (s === 2) {
+      if (!files.front_id) errs.front_id = "Photo ID is required";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -171,20 +195,12 @@ export function CreditAppForm({
 
   const goNext = () => {
     if (!validateStep(step)) return;
-    if (step === 1 && !form.has_co_applicant) {
-      setStep(3);
-    } else {
-      setStep((s) => Math.min(s + 1, STEPS.length - 1));
-    }
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goBack = () => {
-    if (step === 3 && !form.has_co_applicant) {
-      setStep(1);
-    } else {
-      setStep((s) => Math.max(s - 1, 0));
-    }
+    setStep((s) => Math.max(s - 1, 0));
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -286,8 +302,8 @@ export function CreditAppForm({
   if (submitted) {
     return (
       <div className={`flex flex-col items-center justify-center py-16 text-center ${embed ? "" : "max-w-lg mx-auto"}`}>
-        <div className="mb-4 rounded-full bg-green-100 p-4">
-          <Check size={32} className="text-green-600" />
+        <div className="mb-4 rounded-full bg-green-500/10 p-4">
+          <Check size={32} className="text-green-500" />
         </div>
         <h2 className="text-xl font-semibold mb-2">Application Submitted</h2>
         <p className="text-sm text-muted-foreground max-w-sm">
@@ -297,9 +313,7 @@ export function CreditAppForm({
     );
   }
 
-  const wrapClass = embed
-    ? "w-full"
-    : "max-w-2xl mx-auto";
+  const wrapClass = embed ? "w-full" : "max-w-2xl mx-auto";
 
   return (
     <div className={wrapClass}>
@@ -312,14 +326,13 @@ export function CreditAppForm({
       {/* Step indicator */}
       <div className="flex items-center gap-1 mb-6">
         {STEPS.map((s, i) => {
-          if (i === 2 && !form.has_co_applicant) return null;
           const active = i === step;
-          const done = i < step || (i === 2 && step === 3 && !form.has_co_applicant);
+          const done = i < step;
           return (
             <div key={s.id} className="flex-1">
               <div
                 className={`h-1 rounded-full transition-colors ${
-                  active ? "bg-foreground" : done ? "bg-foreground/40" : "bg-border"
+                  active ? "bg-foreground" : done ? "bg-foreground/40" : "bg-foreground/10"
                 }`}
               />
               <p className={`text-[10px] mt-1 ${active ? "text-foreground font-medium" : "text-muted-foreground"}`}>
@@ -331,7 +344,7 @@ export function CreditAppForm({
       </div>
 
       {errors._form && (
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
           {errors._form}
         </div>
       )}
@@ -345,23 +358,14 @@ export function CreditAppForm({
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            {step === 0 && (
-              <StepPersonal form={form} set={set} errors={errors} />
-            )}
-            {step === 1 && (
-              <StepEmployment form={form} set={set} errors={errors} />
-            )}
-            {step === 2 && (
-              <StepCoApplicant form={form} set={set} errors={errors} />
-            )}
-            {step === 3 && (
-              <StepDocuments form={form} set={set} errors={errors} files={files} setFiles={setFiles} />
-            )}
+            {step === 0 && <StepPersonal form={form} set={set} errors={errors} ssnVisible={ssnVisible} setSsnVisible={setSsnVisible} />}
+            {step === 1 && <StepEmployment form={form} set={set} errors={errors} coSsnVisible={coSsnVisible} setCoSsnVisible={setCoSsnVisible} />}
+            {step === 2 && <StepDocuments form={form} set={set} errors={errors} files={files} setFiles={setFiles} />}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="flex items-center justify-between mt-6 pt-4 border-t">
+      <div className="flex items-center justify-between mt-6 pt-4 border-t border-foreground/10">
         <Button variant="ghost" onClick={goBack} disabled={step === 0}>
           <ChevronLeft size={16} strokeWidth={ICON_STROKE_WIDTH} className="mr-1" />
           Back
@@ -392,62 +396,106 @@ type StepProps = {
 
 function FieldError({ error }: { error?: string }) {
   if (!error) return null;
-  return <p className="text-xs text-red-500 mt-1">{error}</p>;
+  return <p className="text-xs text-red-400 mt-1">{error}</p>;
 }
 
-function StepPersonal({ form, set, errors }: StepProps) {
+function SSNInput({
+  id,
+  value,
+  onChange,
+  visible,
+  onToggle,
+  error,
+  placeholder = "###-##-####",
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  visible: boolean;
+  onToggle: () => void;
+  error?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type="text"
+        inputMode="numeric"
+        value={visible ? value : maskSSN(value)}
+        onChange={(e) => {
+          if (visible) onChange(formatSSN(e.target.value));
+        }}
+        onFocus={() => { if (!visible) onToggle(); }}
+        placeholder={placeholder}
+        autoComplete="off"
+        className={`${INPUT_CLASS} pr-10 ${error ? "!border-red-400" : ""}`}
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        tabIndex={-1}
+      >
+        {visible ? <EyeOff size={16} strokeWidth={ICON_STROKE_WIDTH} /> : <Eye size={16} strokeWidth={ICON_STROKE_WIDTH} />}
+      </button>
+    </div>
+  );
+}
+
+function StepPersonal({ form, set, errors, ssnVisible, setSsnVisible }: StepProps & { ssnVisible: boolean; setSsnVisible: (v: boolean) => void }) {
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold mb-3">Personal Information</h3>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="first_name">First Name *</Label>
-          <Input id="first_name" value={form.first_name} onChange={(e) => set("first_name", e.target.value)} className={errors.first_name ? "border-red-400" : ""} />
+          <Input id="first_name" value={form.first_name} onChange={(e) => set("first_name", e.target.value)} className={`${INPUT_CLASS} ${errors.first_name ? "!border-red-400" : ""}`} />
           <FieldError error={errors.first_name} />
         </div>
         <div>
           <Label htmlFor="last_name">Last Name *</Label>
-          <Input id="last_name" value={form.last_name} onChange={(e) => set("last_name", e.target.value)} className={errors.last_name ? "border-red-400" : ""} />
+          <Input id="last_name" value={form.last_name} onChange={(e) => set("last_name", e.target.value)} className={`${INPUT_CLASS} ${errors.last_name ? "!border-red-400" : ""}`} />
           <FieldError error={errors.last_name} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="email">Email *</Label>
-          <Input id="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} className={errors.email ? "border-red-400" : ""} />
+          <Input id="email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} className={`${INPUT_CLASS} ${errors.email ? "!border-red-400" : ""}`} />
           <FieldError error={errors.email} />
         </div>
         <div>
           <Label htmlFor="phone">Phone *</Label>
-          <Input id="phone" value={form.phone} onChange={(e) => set("phone", formatPhoneInput(e.target.value))} className={errors.phone ? "border-red-400" : ""} />
+          <Input id="phone" value={form.phone} onChange={(e) => set("phone", formatPhoneInput(e.target.value))} className={`${INPUT_CLASS} ${errors.phone ? "!border-red-400" : ""}`} />
           <FieldError error={errors.phone} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="dob">Date of Birth</Label>
-          <Input id="dob" type="date" value={form.date_of_birth} onChange={(e) => set("date_of_birth", e.target.value)} />
+          <Input id="dob" type="date" value={form.date_of_birth} onChange={(e) => set("date_of_birth", e.target.value)} className={INPUT_CLASS} />
         </div>
         <div>
           <Label htmlFor="ssn">Social Security Number *</Label>
-          <Input id="ssn" value={form.ssn} onChange={(e) => set("ssn", formatSSN(e.target.value))} placeholder="###-##-####" className={errors.ssn ? "border-red-400" : ""} />
+          <SSNInput id="ssn" value={form.ssn} onChange={(v) => set("ssn", v)} visible={ssnVisible} onToggle={() => setSsnVisible(!ssnVisible)} error={errors.ssn} />
           <FieldError error={errors.ssn} />
         </div>
       </div>
 
       <div>
         <Label htmlFor="address">Address</Label>
-        <Input id="address" value={form.address} onChange={(e) => set("address", e.target.value)} />
+        <Input id="address" value={form.address} onChange={(e) => set("address", e.target.value)} className={INPUT_CLASS} />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
           <Label htmlFor="city">City</Label>
-          <Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} />
+          <Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} className={INPUT_CLASS} />
         </div>
         <div>
           <Label htmlFor="state">State</Label>
           <Select value={form.state} onValueChange={(v) => set("state", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -455,14 +503,14 @@ function StepPersonal({ form, set, errors }: StepProps) {
         </div>
         <div>
           <Label htmlFor="zip">Zip</Label>
-          <Input id="zip" value={form.zip} onChange={(e) => set("zip", e.target.value.replace(/\D/g, "").slice(0, 5))} />
+          <Input id="zip" value={form.zip} onChange={(e) => set("zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={INPUT_CLASS} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label>Residential Status</Label>
           <Select value={form.residential_status} onValueChange={(v) => set("residential_status", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {RESIDENTIAL_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -470,33 +518,33 @@ function StepPersonal({ form, set, errors }: StepProps) {
         </div>
         <div>
           <Label htmlFor="monthly_payment">Monthly Housing Payment</Label>
-          <Input id="monthly_payment" type="number" min="0" value={form.monthly_payment} onChange={(e) => set("monthly_payment", e.target.value)} placeholder="$" />
+          <Input id="monthly_payment" type="number" min="0" value={form.monthly_payment} onChange={(e) => set("monthly_payment", e.target.value)} placeholder="$" className={INPUT_CLASS} />
         </div>
       </div>
     </div>
   );
 }
 
-function StepEmployment({ form, set, errors }: StepProps) {
+function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: StepProps & { coSsnVisible: boolean; setCoSsnVisible: (v: boolean) => void }) {
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold mb-3">Employment & Income</h3>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="employer">Employer *</Label>
-          <Input id="employer" value={form.employer} onChange={(e) => set("employer", e.target.value)} className={errors.employer ? "border-red-400" : ""} />
+          <Input id="employer" value={form.employer} onChange={(e) => set("employer", e.target.value)} className={`${INPUT_CLASS} ${errors.employer ? "!border-red-400" : ""}`} />
           <FieldError error={errors.employer} />
         </div>
         <div>
           <Label htmlFor="occupation">Occupation</Label>
-          <Input id="occupation" value={form.occupation} onChange={(e) => set("occupation", e.target.value)} />
+          <Input id="occupation" value={form.occupation} onChange={(e) => set("occupation", e.target.value)} className={INPUT_CLASS} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label>Employment Status *</Label>
           <Select value={form.employment_status} onValueChange={(v) => set("employment_status", v)}>
-            <SelectTrigger className={errors.employment_status ? "border-red-400" : ""}><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={`${INPUT_CLASS} ${errors.employment_status ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {EMPLOYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -505,33 +553,33 @@ function StepEmployment({ form, set, errors }: StepProps) {
         </div>
         <div>
           <Label htmlFor="monthly_income">Monthly Income *</Label>
-          <Input id="monthly_income" type="number" min="0" value={form.monthly_income} onChange={(e) => set("monthly_income", e.target.value)} placeholder="$" className={errors.monthly_income ? "border-red-400" : ""} />
+          <Input id="monthly_income" type="number" min="0" value={form.monthly_income} onChange={(e) => set("monthly_income", e.target.value)} placeholder="$" className={`${INPUT_CLASS} ${errors.monthly_income ? "!border-red-400" : ""}`} />
           <FieldError error={errors.monthly_income} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="years_employed">Years at Employer</Label>
-          <Input id="years_employed" type="number" min="0" value={form.years_employed} onChange={(e) => set("years_employed", e.target.value)} />
+          <Input id="years_employed" type="number" min="0" value={form.years_employed} onChange={(e) => set("years_employed", e.target.value)} className={INPUT_CLASS} />
         </div>
         <div>
           <Label htmlFor="months_employed">Months</Label>
-          <Input id="months_employed" type="number" min="0" max="11" value={form.months_employed} onChange={(e) => set("months_employed", e.target.value)} />
+          <Input id="months_employed" type="number" min="0" max="11" value={form.months_employed} onChange={(e) => set("months_employed", e.target.value)} className={INPUT_CLASS} />
         </div>
       </div>
       <div>
         <Label htmlFor="employer_address">Employer Address</Label>
-        <Input id="employer_address" value={form.employer_address} onChange={(e) => set("employer_address", e.target.value)} />
+        <Input id="employer_address" value={form.employer_address} onChange={(e) => set("employer_address", e.target.value)} className={INPUT_CLASS} />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
           <Label htmlFor="employer_city">City</Label>
-          <Input id="employer_city" value={form.employer_city} onChange={(e) => set("employer_city", e.target.value)} />
+          <Input id="employer_city" value={form.employer_city} onChange={(e) => set("employer_city", e.target.value)} className={INPUT_CLASS} />
         </div>
         <div>
           <Label>State</Label>
           <Select value={form.employer_state} onValueChange={(v) => set("employer_state", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -539,64 +587,170 @@ function StepEmployment({ form, set, errors }: StepProps) {
         </div>
         <div>
           <Label htmlFor="employer_zip">Zip</Label>
-          <Input id="employer_zip" value={form.employer_zip} onChange={(e) => set("employer_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} />
+          <Input id="employer_zip" value={form.employer_zip} onChange={(e) => set("employer_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={INPUT_CLASS} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="employer_phone">Employer Phone</Label>
-          <Input id="employer_phone" value={form.employer_phone} onChange={(e) => set("employer_phone", formatPhoneInput(e.target.value))} />
+          <Input id="employer_phone" value={form.employer_phone} onChange={(e) => set("employer_phone", formatPhoneInput(e.target.value))} className={INPUT_CLASS} />
         </div>
         <div>
           <Label htmlFor="additional_monthly_income">Additional Monthly Income</Label>
-          <Input id="additional_monthly_income" type="number" min="0" value={form.additional_monthly_income} onChange={(e) => set("additional_monthly_income", e.target.value)} placeholder="$" />
+          <Input id="additional_monthly_income" type="number" min="0" value={form.additional_monthly_income} onChange={(e) => set("additional_monthly_income", e.target.value)} placeholder="$" className={INPUT_CLASS} />
         </div>
       </div>
       <div>
         <Label htmlFor="other_income_sources">Other Income Sources</Label>
-        <Input id="other_income_sources" value={form.other_income_sources} onChange={(e) => set("other_income_sources", e.target.value)} placeholder="e.g., rental income, investments" />
+        <Input id="other_income_sources" value={form.other_income_sources} onChange={(e) => set("other_income_sources", e.target.value)} placeholder="e.g., rental income, investments" className={INPUT_CLASS} />
       </div>
 
-      <div className="pt-3 border-t space-y-3">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="has_co"
-            checked={form.has_co_applicant}
-            onCheckedChange={(v) => set("has_co_applicant", !!v)}
-          />
-          <Label htmlFor="has_co" className="cursor-pointer">Add a co-applicant</Label>
+      {/* Toggles */}
+      <div className="pt-4 border-t border-foreground/10 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Co-Applicant</p>
+            <p className="text-xs text-muted-foreground">Add a second applicant to this application</p>
+          </div>
+          <Switch checked={form.has_co_applicant} onCheckedChange={(v) => set("has_co_applicant", v)} />
         </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="is_biz"
-            checked={form.is_business_app}
-            onCheckedChange={(v) => set("is_business_app", !!v)}
-          />
-          <Label htmlFor="is_biz" className="cursor-pointer">This is a business application</Label>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Business Application</p>
+            <p className="text-xs text-muted-foreground">Apply on behalf of a business entity</p>
+          </div>
+          <Switch checked={form.is_business_app} onCheckedChange={(v) => set("is_business_app", v)} />
         </div>
       </div>
 
-      {form.is_business_app && (
-        <div className="pt-3 border-t space-y-3">
-          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Business Details</h4>
+      {/* Co-applicant fields */}
+      {form.has_co_applicant && (
+        <div className="pt-4 border-t border-foreground/10 space-y-4">
+          <h4 className="text-sm font-semibold">Co-Applicant Details</h4>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="business_name">Business Name</Label>
-              <Input id="business_name" value={form.business_name} onChange={(e) => set("business_name", e.target.value)} />
+              <Label htmlFor="co_first">First Name *</Label>
+              <Input id="co_first" value={form.co_first_name} onChange={(e) => set("co_first_name", e.target.value)} className={`${INPUT_CLASS} ${errors.co_first_name ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_first_name} />
             </div>
             <div>
-              <Label>Business Type</Label>
+              <Label htmlFor="co_last">Last Name *</Label>
+              <Input id="co_last" value={form.co_last_name} onChange={(e) => set("co_last_name", e.target.value)} className={`${INPUT_CLASS} ${errors.co_last_name ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_last_name} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="co_email">Email *</Label>
+              <Input id="co_email" type="email" value={form.co_email} onChange={(e) => set("co_email", e.target.value)} className={`${INPUT_CLASS} ${errors.co_email ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_email} />
+            </div>
+            <div>
+              <Label htmlFor="co_phone">Phone *</Label>
+              <Input id="co_phone" value={form.co_phone} onChange={(e) => set("co_phone", formatPhoneInput(e.target.value))} className={`${INPUT_CLASS} ${errors.co_phone ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_phone} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="co_dob">Date of Birth</Label>
+              <Input id="co_dob" type="date" value={form.co_date_of_birth} onChange={(e) => set("co_date_of_birth", e.target.value)} className={INPUT_CLASS} />
+            </div>
+            <div>
+              <Label htmlFor="co_ssn">SSN</Label>
+              <SSNInput id="co_ssn" value={form.co_ssn} onChange={(v) => set("co_ssn", v)} visible={coSsnVisible} onToggle={() => setCoSsnVisible(!coSsnVisible)} />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="co_address">Address</Label>
+            <Input id="co_address" value={form.co_address} onChange={(e) => set("co_address", e.target.value)} className={INPUT_CLASS} />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="co_city">City</Label>
+              <Input id="co_city" value={form.co_city} onChange={(e) => set("co_city", e.target.value)} className={INPUT_CLASS} />
+            </div>
+            <div>
+              <Label>State</Label>
+              <Select value={form.co_state} onValueChange={(v) => set("co_state", v)}>
+                <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="co_zip">Zip</Label>
+              <Input id="co_zip" value={form.co_zip} onChange={(e) => set("co_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={INPUT_CLASS} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Residential Status</Label>
+              <Select value={form.co_residential_status} onValueChange={(v) => set("co_residential_status", v)}>
+                <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {RESIDENTIAL_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="co_monthly">Monthly Housing</Label>
+              <Input id="co_monthly" type="number" min="0" value={form.co_monthly_payment} onChange={(e) => set("co_monthly_payment", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="co_employer">Employer</Label>
+              <Input id="co_employer" value={form.co_employer} onChange={(e) => set("co_employer", e.target.value)} className={INPUT_CLASS} />
+            </div>
+            <div>
+              <Label htmlFor="co_occupation">Occupation</Label>
+              <Input id="co_occupation" value={form.co_occupation} onChange={(e) => set("co_occupation", e.target.value)} className={INPUT_CLASS} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Employment Status</Label>
+              <Select value={form.co_employment_status} onValueChange={(v) => set("co_employment_status", v)}>
+                <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {EMPLOYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="co_income">Monthly Income</Label>
+              <Input id="co_income" type="number" min="0" value={form.co_monthly_income} onChange={(e) => set("co_monthly_income", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Business fields */}
+      {form.is_business_app && (
+        <div className="pt-4 border-t border-foreground/10 space-y-4">
+          <h4 className="text-sm font-semibold">Business Details</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="business_name">Business Name *</Label>
+              <Input id="business_name" value={form.business_name} onChange={(e) => set("business_name", e.target.value)} className={`${INPUT_CLASS} ${errors.business_name ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.business_name} />
+            </div>
+            <div>
+              <Label>Business Type *</Label>
               <Select value={form.business_type} onValueChange={(v) => set("business_type", v)}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className={`${INPUT_CLASS} ${errors.business_type ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {BUSINESS_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <FieldError error={errors.business_type} />
             </div>
           </div>
           <div>
             <Label htmlFor="business_ein">EIN</Label>
-            <Input id="business_ein" value={form.business_ein} onChange={(e) => set("business_ein", e.target.value)} placeholder="XX-XXXXXXX" />
+            <Input id="business_ein" value={form.business_ein} onChange={(e) => set("business_ein", e.target.value)} placeholder="XX-XXXXXXX" className={INPUT_CLASS} />
           </div>
         </div>
       )}
@@ -604,112 +758,10 @@ function StepEmployment({ form, set, errors }: StepProps) {
   );
 }
 
-function StepCoApplicant({ form, set }: StepProps) {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold mb-3">Co-Applicant Information</h3>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="co_first">First Name</Label>
-          <Input id="co_first" value={form.co_first_name} onChange={(e) => set("co_first_name", e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="co_last">Last Name</Label>
-          <Input id="co_last" value={form.co_last_name} onChange={(e) => set("co_last_name", e.target.value)} />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="co_email">Email</Label>
-          <Input id="co_email" type="email" value={form.co_email} onChange={(e) => set("co_email", e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="co_phone">Phone</Label>
-          <Input id="co_phone" value={form.co_phone} onChange={(e) => set("co_phone", formatPhoneInput(e.target.value))} />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="co_dob">Date of Birth</Label>
-          <Input id="co_dob" type="date" value={form.co_date_of_birth} onChange={(e) => set("co_date_of_birth", e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="co_ssn">SSN</Label>
-          <Input id="co_ssn" value={form.co_ssn} onChange={(e) => set("co_ssn", formatSSN(e.target.value))} placeholder="###-##-####" />
-        </div>
-      </div>
-      <div>
-        <Label htmlFor="co_address">Address</Label>
-        <Input id="co_address" value={form.co_address} onChange={(e) => set("co_address", e.target.value)} />
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div>
-          <Label htmlFor="co_city">City</Label>
-          <Input id="co_city" value={form.co_city} onChange={(e) => set("co_city", e.target.value)} />
-        </div>
-        <div>
-          <Label>State</Label>
-          <Select value={form.co_state} onValueChange={(v) => set("co_state", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-            <SelectContent>
-              {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="co_zip">Zip</Label>
-          <Input id="co_zip" value={form.co_zip} onChange={(e) => set("co_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label>Residential Status</Label>
-          <Select value={form.co_residential_status} onValueChange={(v) => set("co_residential_status", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-            <SelectContent>
-              {RESIDENTIAL_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="co_monthly">Monthly Housing</Label>
-          <Input id="co_monthly" type="number" min="0" value={form.co_monthly_payment} onChange={(e) => set("co_monthly_payment", e.target.value)} placeholder="$" />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="co_employer">Employer</Label>
-          <Input id="co_employer" value={form.co_employer} onChange={(e) => set("co_employer", e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="co_occupation">Occupation</Label>
-          <Input id="co_occupation" value={form.co_occupation} onChange={(e) => set("co_occupation", e.target.value)} />
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label>Employment Status</Label>
-          <Select value={form.co_employment_status} onValueChange={(v) => set("co_employment_status", v)}>
-            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-            <SelectContent>
-              {EMPLOYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="co_income">Monthly Income</Label>
-          <Input id="co_income" type="number" min="0" value={form.co_monthly_income} onChange={(e) => set("co_monthly_income", e.target.value)} placeholder="$" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function StepDocuments({
-  form,
-  set,
   files,
   setFiles,
+  errors,
 }: StepProps & {
   files: { front_id: File | null; insurance: File | null; registration: File | null };
   setFiles: React.Dispatch<React.SetStateAction<typeof files>>;
@@ -723,38 +775,45 @@ function StepDocuments({
     setFiles((prev) => ({ ...prev, [key]: null }));
   };
 
-  void set;
-  void form;
+  const items: { key: keyof typeof files; label: string; required: boolean }[] = [
+    { key: "front_id", label: "Photo ID (Front)", required: true },
+    { key: "insurance", label: "Insurance Card", required: false },
+    { key: "registration", label: "Registration", required: false },
+  ];
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold mb-3">Documents (Optional)</h3>
+      <h3 className="text-sm font-semibold mb-1">Documents</h3>
       <p className="text-xs text-muted-foreground mb-4">
-        Upload a copy of your ID, insurance, and/or registration to speed up the process.
+        Photo ID is required. Insurance and registration are optional but help speed up the process.
       </p>
 
-      {(["front_id", "insurance", "registration"] as const).map((key) => {
-        const label = key === "front_id" ? "Photo ID (Front)" : key === "insurance" ? "Insurance Card" : "Registration";
+      {items.map(({ key, label, required }) => {
         const file = files[key];
+        const hasError = errors[key];
         return (
-          <div key={key} className="border rounded-lg p-3">
+          <div key={key} className={`border rounded-lg p-3.5 ${hasError ? "border-red-400" : "border-foreground/15"}`}>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{label}</span>
+              <span className="text-sm font-medium">
+                {label} {required && <span className="text-red-400">*</span>}
+              </span>
               {file ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Check size={14} className="text-green-500" />
                   <span className="truncate max-w-[140px]">{file.name}</span>
-                  <button onClick={removeFile(key)} className="p-0.5 rounded hover:bg-muted">
+                  <button onClick={removeFile(key)} className="p-0.5 rounded hover:bg-foreground/10">
                     <X size={14} strokeWidth={ICON_STROKE_WIDTH} />
                   </button>
                 </div>
               ) : (
-                <label className="cursor-pointer flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <label className="cursor-pointer flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md border border-foreground/15 hover:border-foreground/30">
                   <Upload size={14} strokeWidth={ICON_STROKE_WIDTH} />
                   Upload
                   <input type="file" accept="image/*,.pdf" onChange={handleFile(key)} className="hidden" />
                 </label>
               )}
             </div>
+            {hasError && <FieldError error={hasError} />}
           </div>
         );
       })}
