@@ -28,7 +28,7 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="flex items-center px-5 pb-6">
         <Link href={routes.dashboard}>
-          <Logo height={38} />
+          <Logo height={30} />
         </Link>
       </div>
 

@@ -305,7 +305,7 @@ export function CreditAppForm({
         <div className="mb-4 rounded-full bg-green-500/10 p-4">
           <Check size={32} className="text-green-500" />
         </div>
-        <h2 className="text-xl font-semibold mb-2">Application Submitted</h2>
+        <h2 className="text-heading-2 mb-2">Application Submitted</h2>
         <p className="text-sm text-muted-foreground max-w-sm">
           Thank you for your application. A team member will review it and contact you shortly.
         </p>

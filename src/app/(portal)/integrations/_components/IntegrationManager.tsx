@@ -168,7 +168,7 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
           <div className="mb-4 rounded-xl bg-muted p-4">
             <Code2 size={32} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold mb-1">No integration yet</h3>
+          <h3 className="text-heading-3 mb-1">No integration yet</h3>
           <p className="text-sm text-muted-foreground max-w-sm mb-6">
             Create an integration to generate embed codes for your inventory and vehicle detail pages.
           </p>
