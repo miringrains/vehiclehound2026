@@ -79,6 +79,8 @@ export async function POST(request: NextRequest) {
     try {
       const pdfBytes = generateCreditApplicationPDF({
         ...rest,
+        ssn,
+        co_ssn,
         dealership_id,
         has_co_applicant: rest.has_co_applicant ?? false,
         is_business_app: rest.is_business_app ?? false,

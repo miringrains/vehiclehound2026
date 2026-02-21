@@ -122,7 +122,7 @@ function maskSSN(formatted: string): string {
   return masked;
 }
 
-const INPUT_CLASS = "!border-foreground/20 !bg-foreground/5 placeholder:!text-muted-foreground/60";
+const INPUT_CLASS = "mt-1.5 !border-foreground/20 !bg-foreground/5 placeholder:!text-muted-foreground/60";
 
 type CreditAppFormProps = {
   dealershipId: string;
