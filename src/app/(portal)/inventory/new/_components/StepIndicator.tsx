@@ -1,6 +1,8 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { WIZARD_STEPS, useWizard, type WizardStep } from "./WizardContext";
 
 const STEP_LABELS: Record<WizardStep, string> = {
@@ -20,41 +22,55 @@ export function StepIndicator() {
   const adjustedIndex = stepIndex - 1;
 
   return (
-    <div className="flex items-center gap-2">
-      {activeSteps.map((s, i) => (
-        <div key={s} className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <div
-              className={cn(
-                "h-1.5 w-1.5 rounded-full transition-all duration-300",
-                i <= adjustedIndex
-                  ? "bg-primary scale-100"
-                  : "bg-border scale-75"
-              )}
-            />
-            <span
-              className={cn(
-                "text-caption transition-colors duration-300 hidden sm:inline",
-                i === adjustedIndex
-                  ? "text-foreground"
-                  : i < adjustedIndex
-                    ? "text-muted-foreground"
-                    : "text-muted-foreground/50"
-              )}
-            >
-              {STEP_LABELS[s]}
-            </span>
+    <nav aria-label="Wizard progress" className="flex items-center gap-1">
+      {activeSteps.map((s, i) => {
+        const isCompleted = i < adjustedIndex;
+        const isCurrent = i === adjustedIndex;
+
+        return (
+          <div key={s} className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold transition-all duration-300",
+                  isCompleted &&
+                    "bg-primary text-primary-foreground",
+                  isCurrent &&
+                    "bg-primary/15 text-primary ring-1 ring-primary/40",
+                  !isCompleted &&
+                    !isCurrent &&
+                    "bg-muted text-muted-foreground/60"
+                )}
+              >
+                {isCompleted ? (
+                  <Check size={12} strokeWidth={ICON_STROKE_WIDTH + 0.5} />
+                ) : (
+                  i + 1
+                )}
+              </div>
+              <span
+                className={cn(
+                  "text-caption transition-colors duration-300 hidden sm:inline",
+                  isCurrent && "text-foreground",
+                  isCompleted && "text-muted-foreground",
+                  !isCompleted && !isCurrent && "text-muted-foreground/40"
+                )}
+              >
+                {STEP_LABELS[s]}
+              </span>
+            </div>
+
+            {i < activeSteps.length - 1 && (
+              <div
+                className={cn(
+                  "h-px w-5 transition-colors duration-300 mx-0.5",
+                  isCompleted ? "bg-primary/50" : "bg-border"
+                )}
+              />
+            )}
           </div>
-          {i < activeSteps.length - 1 && (
-            <div
-              className={cn(
-                "h-px w-6 transition-colors duration-300",
-                i < adjustedIndex ? "bg-primary/40" : "bg-border"
-              )}
-            />
-          )}
-        </div>
-      ))}
-    </div>
+        );
+      })}
+    </nav>
   );
 }

@@ -78,10 +78,10 @@ export function ImageUploader({ onFilesReady, disabled }: ImageUploaderProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       className={cn(
-        "relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-12 cursor-pointer transition-all duration-200",
+        "relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed py-10 px-6 cursor-pointer transition-all duration-200",
         dragActive
-          ? "border-primary bg-primary/5 scale-[1.01]"
-          : "border-border hover:border-primary/40 hover:bg-muted/30",
+          ? "border-primary bg-primary/5 scale-[1.005]"
+          : "border-border hover:border-primary/30 hover:bg-muted/20",
         disabled && "pointer-events-none opacity-50"
       )}
     >
@@ -101,19 +101,24 @@ export function ImageUploader({ onFilesReady, disabled }: ImageUploaderProps) {
         </>
       ) : (
         <>
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+          <div
+            className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-xl transition-colors duration-200",
+              dragActive ? "bg-primary/15" : "bg-primary/10"
+            )}
+          >
             {dragActive ? (
-              <Upload size={24} strokeWidth={ICON_STROKE_WIDTH} className="text-primary" />
+              <Upload size={20} strokeWidth={ICON_STROKE_WIDTH} className="text-primary" />
             ) : (
-              <ImagePlus size={24} strokeWidth={ICON_STROKE_WIDTH} className="text-primary" />
+              <ImagePlus size={20} strokeWidth={ICON_STROKE_WIDTH} className="text-primary" />
             )}
           </div>
-          <div className="text-center">
+          <div className="text-center space-y-1">
             <p className="text-body-sm font-medium">
               {dragActive ? "Drop images here" : "Click or drag images to upload"}
             </p>
-            <p className="text-caption text-muted-foreground mt-1">
-              JPEG, PNG, or WebP. Auto-compressed to 2MB max.
+            <p className="text-caption text-muted-foreground">
+              JPEG, PNG, or WebP &middot; Auto-compressed to 2 MB
             </p>
           </div>
         </>

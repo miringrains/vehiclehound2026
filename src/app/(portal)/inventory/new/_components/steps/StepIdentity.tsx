@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Check } from "lucide-react";
+import { Search, Check, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +20,41 @@ const YEARS = Array.from({ length: CURRENT_YEAR - 1989 }, (_, i) => CURRENT_YEAR
 
 const reveal = {
   initial: { opacity: 0, height: 0, marginTop: 0 },
-  animate: { opacity: 1, height: "auto", marginTop: 24 },
+  animate: { opacity: 1, height: "auto", marginTop: 28 },
   exit: { opacity: 0, height: 0, marginTop: 0 },
   transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const },
 };
+
+function SectionCard({
+  number,
+  title,
+  subtitle,
+  children,
+}: {
+  number: string;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="flex items-start gap-3 px-6 pt-5 pb-4">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary mt-0.5">
+          {number}
+        </span>
+        <div className="min-w-0">
+          <h3 className="text-heading-4">{title}</h3>
+          {subtitle && (
+            <p className="text-caption text-muted-foreground mt-0.5">{subtitle}</p>
+          )}
+        </div>
+      </div>
+      <div className="border-t border-border px-6 py-5">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export function StepIdentity() {
   const { data, setData, next } = useWizard();
@@ -123,7 +154,9 @@ export function StepIdentity() {
 
   return (
     <div className="space-y-0">
-      <div className="mb-10">
+      {/* Step header */}
+      <div className="mb-8">
+        <p className="text-overline text-primary mb-2">STEP 1 OF 4</p>
         <h2 className="text-heading-1 mb-1">
           {isSale ? "Vehicle Details" : "Lease Vehicle"}
         </h2>
@@ -134,11 +167,9 @@ export function StepIdentity() {
         </p>
       </div>
 
-      {/* ─── Vehicle Selection ─── */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="text-heading-4 mb-5">Vehicle Selection</h3>
-
-        <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+      {/* Vehicle Selection */}
+      <SectionCard number="01" title="Vehicle Selection" subtitle="Year, make, model, and trim">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
           <div className="space-y-1.5">
             <Label>Year</Label>
             <Select value={data.year ? String(data.year) : undefined} onValueChange={handleYearChange}>
@@ -188,53 +219,62 @@ export function StepIdentity() {
             />
           </div>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* ─── VIN Decode (sale only) ─── */}
+      {/* VIN Decode (sale only) */}
       <AnimatePresence>
         {isSale && hasVehicle && (
           <motion.div {...reveal}>
-            <div className="rounded-xl border border-border bg-card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-heading-4">VIN Decode</h3>
-                  <p className="text-caption text-muted-foreground">Optional — auto-fills specs from the VIN.</p>
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-6 pt-5 pb-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary mt-0.5">
+                    02
+                  </span>
+                  <div>
+                    <h3 className="text-heading-4">VIN Decode</h3>
+                    <p className="text-caption text-muted-foreground mt-0.5">Optional — auto-fills specs from the VIN</p>
+                  </div>
                 </div>
                 {decoded && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-semibold text-success">
                     <Check size={12} strokeWidth={ICON_STROKE_WIDTH} /> Decoded
                   </span>
                 )}
               </div>
-              <div className="flex gap-3">
-                <Input
-                  placeholder="Enter 17-character VIN"
-                  value={data.vin}
-                  onChange={(e) => setData({ vin: e.target.value.toUpperCase() })}
-                  maxLength={17}
-                  className="font-mono tracking-wider"
-                />
-                <Button type="button" variant="outline" onClick={handleDecode} disabled={decoding || data.vin.length !== 17} className="shrink-0 gap-2">
-                  {decoding ? <LoadingSpinner size={16} /> : <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />}
-                  Decode
-                </Button>
+              <div className="border-t border-border px-6 py-5">
+                <div className="flex gap-3">
+                  <Input
+                    placeholder="Enter 17-character VIN"
+                    value={data.vin}
+                    onChange={(e) => setData({ vin: e.target.value.toUpperCase() })}
+                    maxLength={17}
+                    className="font-mono tracking-wider"
+                  />
+                  <Button type="button" variant="outline" onClick={handleDecode} disabled={decoding || data.vin.length !== 17} className="shrink-0 gap-2">
+                    {decoding ? <LoadingSpinner size={16} /> : <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />}
+                    Decode
+                  </Button>
+                </div>
+                {decodeError && <p className="text-caption text-destructive mt-2">{decodeError}</p>}
               </div>
-              {decodeError && <p className="text-caption text-destructive mt-2">{decodeError}</p>}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ─── Additional Details ─── */}
+      {/* Additional Details */}
       <AnimatePresence>
         {hasVehicle && (
           <motion.div {...reveal}>
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="text-heading-4 mb-5">Additional Details</h3>
-
+            <SectionCard
+              number={isSale ? "03" : "02"}
+              title="Additional Details"
+              subtitle="Vehicle type, status, and other info"
+            >
               {isSale ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
                     <div className="space-y-1.5">
                       <Label>Vehicle Type</Label>
                       <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
@@ -258,7 +298,7 @@ export function StepIdentity() {
                       <Input type="number" placeholder="25,000" value={data.mileage ?? ""} onChange={(e) => setData({ mileage: e.target.value ? Number(e.target.value) : null })} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
                     <div className="space-y-1.5">
                       <Label>Status</Label>
                       <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
@@ -273,7 +313,7 @@ export function StepIdentity() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-x-6 gap-y-5">
                   <div className="space-y-1.5">
                     <Label>Vehicle Type</Label>
                     <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
@@ -301,7 +341,7 @@ export function StepIdentity() {
                   </div>
                 </div>
               )}
-            </div>
+            </SectionCard>
           </motion.div>
         )}
       </AnimatePresence>
@@ -309,7 +349,10 @@ export function StepIdentity() {
       <AnimatePresence>
         {hasVehicle && (
           <motion.div {...reveal} className="flex justify-end pt-2">
-            <Button size="lg" onClick={next}>Continue to Pricing</Button>
+            <Button size="lg" onClick={next} className="gap-2">
+              Continue to Pricing
+              <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

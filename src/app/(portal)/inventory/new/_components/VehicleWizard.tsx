@@ -16,12 +16,12 @@ import { StepPhotos } from "./steps/StepPhotos";
 
 const stepVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 60 : -60,
+    x: direction > 0 ? 48 : -48,
     opacity: 0,
   }),
   center: { x: 0, opacity: 1 },
   exit: (direction: number) => ({
-    x: direction > 0 ? -60 : 60,
+    x: direction > 0 ? -48 : 48,
     opacity: 0,
   }),
 };
@@ -30,9 +30,9 @@ function WizardContent() {
   const { step, stepIndex, canGoBack, back } = useWizard();
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-[960px]">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-8">
         <div className="flex items-center gap-3">
           {canGoBack ? (
             <Button variant="ghost" size="icon" onClick={back}>
@@ -45,12 +45,19 @@ function WizardContent() {
               </Link>
             </Button>
           )}
-          <h1 className="text-heading-2">New Vehicle</h1>
+          <div>
+            <h1 className="text-heading-2">New Vehicle</h1>
+            {step !== "type" && (
+              <p className="text-caption text-muted-foreground mt-0.5">
+                Fill in each section to list your vehicle
+              </p>
+            )}
+          </div>
         </div>
         <StepIndicator />
       </div>
 
-      {/* Step content with transitions */}
+      {/* Step content */}
       <AnimatePresence mode="wait" custom={stepIndex}>
         <motion.div
           key={step}
@@ -59,7 +66,7 @@ function WizardContent() {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
           {step === "type" && <TypeSelection />}
           {step === "identity" && <StepIdentity />}

@@ -2,11 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
+import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { routes } from "@/config/routes";
 import { createClient } from "@/lib/supabase/client";
 import { useWizard, type UploadedImage } from "../WizardContext";
@@ -45,7 +47,6 @@ export function StepPhotos() {
         display_order: i === index ? 0 : img.display_order >= index ? img.display_order : img.display_order,
       }))
     );
-    // Move to first position
     setImages((prev) => {
       const copy = [...prev];
       const [item] = copy.splice(index, 1);
@@ -70,7 +71,6 @@ export function StepPhotos() {
     setSubmitting(true);
 
     try {
-      // 1. Create the vehicle record
       const vehiclePayload = {
         dealership_id: dealershipId,
         inventory_type: data.inventory_type,
@@ -127,7 +127,6 @@ export function StepPhotos() {
 
       const vehicleId = vehicleResult.id;
 
-      // 2. Upload images to Supabase Storage and save metadata
       if (images.length > 0) {
         const supabase = createClient();
 
@@ -171,8 +170,10 @@ export function StepPhotos() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-7">
+      {/* Step header */}
       <div>
+        <p className="text-overline text-primary mb-2">STEP 4 OF 4</p>
         <h2 className="text-heading-1 mb-1">Photos & Description</h2>
         <p className="text-body text-muted-foreground">
           Upload images and write a compelling description.
@@ -185,42 +186,79 @@ export function StepPhotos() {
         </Alert>
       )}
 
-      {/* Image upload */}
-      <div className="space-y-4">
-        <ImageUploader onFilesReady={handleFilesReady} disabled={submitting} />
-        <ImageGallery
-          images={images}
-          onReorder={handleReorder}
-          onSetPrimary={handleSetPrimary}
-          onDelete={handleDelete}
-        />
-        {images.length > 0 && (
-          <p className="text-caption text-muted-foreground">
-            {images.length} image{images.length !== 1 ? "s" : ""} — drag to reorder, star to set cover photo.
-          </p>
-        )}
+      {/* Photo upload card */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="flex items-start gap-3 px-6 pt-5 pb-4">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-bold text-primary mt-0.5">
+            01
+          </span>
+          <div>
+            <h3 className="text-heading-4">Photos</h3>
+            <p className="text-caption text-muted-foreground mt-0.5">
+              Drag to reorder, star to set cover photo
+            </p>
+          </div>
+        </div>
+        <div className="border-t border-border px-6 py-5 space-y-4">
+          <ImageUploader onFilesReady={handleFilesReady} disabled={submitting} />
+          <ImageGallery
+            images={images}
+            onReorder={handleReorder}
+            onSetPrimary={handleSetPrimary}
+            onDelete={handleDelete}
+          />
+          {images.length > 0 && (
+            <p className="text-caption text-muted-foreground">
+              {images.length} image{images.length !== 1 ? "s" : ""} added
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Description */}
-      <div className="space-y-1.5">
-        <Label>Vehicle Description</Label>
-        <Textarea
-          rows={5}
-          placeholder="Describe the vehicle's condition, history, and highlights..."
-          value={data.description}
-          onChange={(e) => setData({ description: e.target.value })}
-        />
+      {/* Description card */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="flex items-start gap-3 px-6 pt-5 pb-4">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-bold text-muted-foreground mt-0.5">
+            02
+          </span>
+          <div>
+            <h3 className="text-heading-4">Description</h3>
+            <p className="text-caption text-muted-foreground mt-0.5">Optional — helps buyers understand the vehicle</p>
+          </div>
+        </div>
+        <div className="border-t border-border px-6 py-5">
+          <div className="space-y-1.5">
+            <Label>Vehicle Description</Label>
+            <Textarea
+              rows={5}
+              placeholder="Describe the vehicle's condition, history, and highlights..."
+              value={data.description}
+              onChange={(e) => setData({ description: e.target.value })}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Submit */}
-      <div className="flex justify-end pt-4">
-        <Button size="lg" onClick={handleSubmit} disabled={submitting} className="min-w-[180px]">
-          {submitting ? (
-            <LoadingSpinner size={18} className="text-primary-foreground" />
-          ) : (
-            "Add Vehicle"
-          )}
-        </Button>
+      <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-body-sm font-medium">Ready to publish?</p>
+            <p className="text-caption text-muted-foreground mt-0.5">
+              You can edit all details after creating the listing.
+            </p>
+          </div>
+          <Button size="lg" onClick={handleSubmit} disabled={submitting} className="min-w-[180px] gap-2">
+            {submitting ? (
+              <LoadingSpinner size={18} className="text-primary-foreground" />
+            ) : (
+              <>
+                <Check size={16} strokeWidth={ICON_STROKE_WIDTH} />
+                Add Vehicle
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
