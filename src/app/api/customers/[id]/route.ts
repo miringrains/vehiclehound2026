@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 
     const { data: customer, error } = await admin
       .from("customers")
-      .select("*, profiles!customers_assigned_to_fkey(id, full_name, email)")
+      .select("*, profiles!customers_assigned_to_fkey(id, name, email)")
       .eq("id", id)
       .eq("dealership_id", auth.profile.dealership_id)
       .single();
@@ -44,7 +44,7 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
     if (customer.vehicle_interests?.length) {
       const { data: v } = await admin
         .from("vehicles")
-        .select("id, year, make, model, trim, stock_number, images, online_price, sale_price")
+        .select("id, year, make, model, trim, stock_number, preview_image, online_price, sale_price")
         .in("id", customer.vehicle_interests);
       vehicles = v ?? [];
     }

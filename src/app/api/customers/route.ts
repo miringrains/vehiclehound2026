@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const admin = createAdminClient();
     let query = admin
       .from("customers")
-      .select("*, profiles!customers_assigned_to_fkey(id, full_name, email)", { count: "exact" })
+      .select("*, profiles!customers_assigned_to_fkey(id, name, email)", { count: "exact" })
       .eq("dealership_id", auth.profile.dealership_id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);

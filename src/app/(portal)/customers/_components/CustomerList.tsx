@@ -68,7 +68,7 @@ type Customer = {
   source?: string | null;
   vehicle_interests?: string[];
   created_at: string;
-  profiles?: { id: string; full_name: string; email: string } | null;
+  profiles?: { id: string; name: string; email: string } | null;
 };
 
 export function CustomerList() {

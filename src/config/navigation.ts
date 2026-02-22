@@ -55,7 +55,7 @@ export const portalNav: NavGroup[] = [
     label: "Sales",
     items: [
       { label: "Customers", href: routes.customers, icon: Users },
-      { label: "Deal Sheets", href: routes.dealSheetNew, icon: FileSpreadsheet },
+      { label: "Deal Sheets", href: routes.dealSheets, icon: FileSpreadsheet },
     ],
   },
   {

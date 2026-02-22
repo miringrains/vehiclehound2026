@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("vehicles")
-      .select("id, year, make, model, trim, stock_number, vin, online_price, sale_price, mileage, exterior_color, preview_image, msrp, images")
+      .select("id, year, make, model, trim, stock_number, vin, online_price, sale_price, mileage, exterior_color, preview_image, msrp")
       .order("created_at", { ascending: false })
       .limit(limit);
 

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("dealership_id, full_name")
+      .select("dealership_id, name")
       .eq("id", user.id)
       .single();
 
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       text: body.text.trim(),
       created_at: new Date().toISOString(),
       created_by: user.id,
-      created_by_name: profile.full_name || user.email || "Unknown",
+      created_by_name: profile.name || user.email || "Unknown",
     };
 
     const existingNotes = Array.isArray(customer.notes) ? customer.notes : [];
