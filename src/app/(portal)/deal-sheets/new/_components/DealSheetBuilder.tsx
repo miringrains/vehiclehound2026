@@ -94,8 +94,9 @@ function OptionCard({
   const monthly = "monthly_payment" in result ? result.monthly_payment : 0;
 
   const searchVehicles = useCallback(async (q: string) => {
-    if (!q.trim()) { setVehicleResults([]); return; }
-    const res = await fetch(`/api/vehicles?search=${encodeURIComponent(q)}&limit=6`);
+    const params = new URLSearchParams({ limit: "6" });
+    if (q.trim()) params.set("search", q);
+    const res = await fetch(`/api/vehicles?${params}`);
     if (res.ok) {
       const data = await res.json();
       setVehicleResults(data.vehicles || []);
@@ -103,9 +104,11 @@ function OptionCard({
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => searchVehicles(vehicleSearch), 300);
-    return () => clearTimeout(t);
-  }, [vehicleSearch, searchVehicles]);
+    if (showSearch) {
+      const t = setTimeout(() => searchVehicles(vehicleSearch), vehicleSearch ? 300 : 0);
+      return () => clearTimeout(t);
+    }
+  }, [vehicleSearch, searchVehicles, showSearch]);
 
   const selectVehicle = (v: VehicleOption) => {
     const selling = v.online_price || v.sale_price || 0;

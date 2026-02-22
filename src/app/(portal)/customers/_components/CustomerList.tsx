@@ -2,13 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Users,
   Plus,
   Search,
   MoreHorizontal,
   Trash2,
+  Eye,
+  FileSpreadsheet,
+  Phone,
+  Mail,
+  ChevronRight,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -27,6 +32,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
@@ -38,8 +44,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
-import { formatDate } from "@/lib/utils/format-date";
-import { staggerContainer, staggerItem } from "@/lib/motion";
+import { formatDate, formatRelative } from "@/lib/utils/format-date";
+import { staggerContainer, staggerItem, fadeUp } from "@/lib/motion";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All" },
@@ -71,6 +77,15 @@ type Customer = {
   profiles?: { id: string; name: string; email: string } | null;
 };
 
+function StatCard({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+  return (
+    <div className={`rounded-lg border px-4 py-3 ${accent ? "border-primary/20 bg-primary/5" : "border-border"}`}>
+      <p className={`text-heading-2 tabular-nums ${accent ? "text-primary" : ""}`}>{value}</p>
+      <p className="text-caption text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
 export function CustomerList() {
   const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -80,7 +95,7 @@ export function CustomerList() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [showNew, setShowNew] = useState(false);
-  const [newForm, setNewForm] = useState({ first_name: "", last_name: "", email: "", phone: "" });
+  const [newForm, setNewForm] = useState({ first_name: "", last_name: "", email: "", phone: "", source: "" });
   const [saving, setSaving] = useState(false);
 
   const limit = 25;
@@ -119,7 +134,7 @@ export function CustomerList() {
     if (res.ok) {
       const { customer } = await res.json();
       setShowNew(false);
-      setNewForm({ first_name: "", last_name: "", email: "", phone: "" });
+      setNewForm({ first_name: "", last_name: "", email: "", phone: "", source: "" });
       router.push(`/customers/${customer.id}`);
     }
     setSaving(false);
@@ -133,17 +148,31 @@ export function CustomerList() {
 
   const totalPages = Math.ceil(total / limit);
 
+  const activeCount = customers.filter((c) => ["lead", "contacted", "negotiating"].includes(c.status)).length;
+  const soldCount = customers.filter((c) => c.status === "sold").length;
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Customers" description="Manage your customer relationships">
+      <PageHeader title="Customers" description="Manage your customer relationships and pipeline">
         <Button onClick={() => setShowNew(true)}>
           <Plus size={16} strokeWidth={ICON_STROKE_WIDTH} />
           New Customer
         </Button>
       </PageHeader>
 
+      {/* Stats row */}
+      {!loading && total > 0 && (
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard label="Total" value={total} />
+          <StatCard label="Active Pipeline" value={activeCount} accent />
+          <StatCard label="Closed / Sold" value={soldCount} />
+          <StatCard label="This Page" value={customers.length} />
+        </motion.div>
+      )}
+
+      {/* Search & filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-w-md">
           <Search
             size={16}
             strokeWidth={ICON_STROKE_WIDTH}
@@ -159,7 +188,7 @@ export function CustomerList() {
             className="pl-8"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 overflow-x-auto">
           {STATUS_OPTIONS.map((s) => (
             <button
               key={s.value}
@@ -167,10 +196,10 @@ export function CustomerList() {
                 setStatusFilter(s.value);
                 setPage(1);
               }}
-              className={`rounded-md px-3 py-1.5 text-[0.8125rem] font-medium transition-colors ${
+              className={`shrink-0 rounded-full px-3 py-1 text-[0.75rem] font-medium transition-all ${
                 statusFilter === s.value
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               {s.label}
@@ -193,75 +222,106 @@ export function CustomerList() {
         />
       ) : (
         <>
+          {/* Card-based list for better UX */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="overflow-hidden rounded-lg border border-border"
+            className="space-y-2"
           >
-            <table className="w-full text-[0.8125rem]">
-              <thead>
-                <tr className="border-b border-border bg-muted/40 text-left text-muted-foreground">
-                  <th className="px-4 py-2.5 font-medium">Name</th>
-                  <th className="px-4 py-2.5 font-medium hidden sm:table-cell">Contact</th>
-                  <th className="px-4 py-2.5 font-medium hidden md:table-cell">Status</th>
-                  <th className="px-4 py-2.5 font-medium hidden lg:table-cell">Source</th>
-                  <th className="px-4 py-2.5 font-medium hidden lg:table-cell">Vehicles</th>
-                  <th className="px-4 py-2.5 font-medium hidden md:table-cell">Created</th>
-                  <th className="px-4 py-2.5 font-medium w-10" />
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map((c) => (
-                  <motion.tr
-                    key={c.id}
-                    variants={staggerItem}
-                    className="border-b border-border last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/customers/${c.id}`)}
-                  >
-                    <td className="px-4 py-3 font-medium">
-                      {c.first_name} {c.last_name}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
-                      {c.email || c.phone || "—"}
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
+            <AnimatePresence mode="popLayout">
+              {customers.map((c) => (
+                <motion.div
+                  key={c.id}
+                  variants={staggerItem}
+                  layout
+                  className="group relative flex items-center gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-foreground/10 hover:bg-muted/30 cursor-pointer"
+                  onClick={() => router.push(`/customers/${c.id}`)}
+                >
+                  {/* Avatar */}
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/5 text-[0.8125rem] font-semibold uppercase tracking-wide text-foreground/60">
+                    {c.first_name[0]}{c.last_name[0]}
+                  </div>
+
+                  {/* Main info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[0.8125rem] font-semibold truncate">
+                        {c.first_name} {c.last_name}
+                      </span>
                       <StatusBadge
                         status={c.status}
                         variant={STATUS_VARIANT_MAP[c.status]}
                       />
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell capitalize">
-                      {c.source || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                      {c.vehicle_interests?.length || 0}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                      {formatDate(c.created_at)}
-                    </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <MoreHorizontal size={14} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDelete(c.id)}
-                          >
-                            <Trash2 size={14} className="mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-3 text-[0.75rem] text-muted-foreground">
+                      {c.email && (
+                        <span className="flex items-center gap-1 truncate">
+                          <Mail size={11} />
+                          {c.email}
+                        </span>
+                      )}
+                      {c.phone && (
+                        <span className="flex items-center gap-1">
+                          <Phone size={11} />
+                          {c.phone}
+                        </span>
+                      )}
+                      {!c.email && !c.phone && <span>No contact info</span>}
+                    </div>
+                  </div>
+
+                  {/* Meta */}
+                  <div className="hidden md:flex flex-col items-end gap-0.5 shrink-0 text-right">
+                    {c.source && (
+                      <span className="text-[0.6875rem] text-muted-foreground capitalize">{c.source}</span>
+                    )}
+                    <span className="text-[0.6875rem] text-muted-foreground">
+                      {formatRelative(c.created_at)}
+                    </span>
+                  </div>
+
+                  {/* Vehicles count */}
+                  {(c.vehicle_interests?.length ?? 0) > 0 && (
+                    <div className="hidden sm:flex items-center gap-1 shrink-0 rounded-md bg-muted px-2 py-1 text-[0.6875rem] text-muted-foreground">
+                      <FileSpreadsheet size={11} />
+                      {c.vehicle_interests!.length}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreHorizontal size={14} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/customers/${c.id}`)}>
+                          <Eye size={14} className="mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/deal-sheets/new?customer=${c.id}`)}>
+                          <FileSpreadsheet size={14} className="mr-2" />
+                          Create Deal Sheet
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDelete(c.id)}
+                        >
+                          <Trash2 size={14} className="mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <ChevronRight size={14} className="shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </motion.div>
 
           {totalPages > 1 && (
@@ -278,6 +338,9 @@ export function CustomerList() {
                 >
                   Previous
                 </Button>
+                <span className="flex items-center px-2 text-[0.75rem]">
+                  {page} / {totalPages}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
@@ -306,6 +369,7 @@ export function CustomerList() {
                   value={newForm.first_name}
                   onChange={(e) => setNewForm({ ...newForm, first_name: e.target.value })}
                   className="mt-1.5"
+                  placeholder="John"
                 />
               </div>
               <div>
@@ -314,6 +378,7 @@ export function CustomerList() {
                   value={newForm.last_name}
                   onChange={(e) => setNewForm({ ...newForm, last_name: e.target.value })}
                   className="mt-1.5"
+                  placeholder="Doe"
                 />
               </div>
             </div>
@@ -324,6 +389,7 @@ export function CustomerList() {
                 value={newForm.email}
                 onChange={(e) => setNewForm({ ...newForm, email: e.target.value })}
                 className="mt-1.5"
+                placeholder="john@example.com"
               />
             </div>
             <div>
@@ -332,7 +398,26 @@ export function CustomerList() {
                 value={newForm.phone}
                 onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })}
                 className="mt-1.5"
+                placeholder="(555) 123-4567"
               />
+            </div>
+            <div>
+              <Label>Source</Label>
+              <Select
+                value={newForm.source}
+                onValueChange={(v) => setNewForm({ ...newForm, source: v })}
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="How did they find you?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {["walk-in", "phone", "web", "credit-app", "referral", "other"].map((s) => (
+                    <SelectItem key={s} value={s} className="capitalize">
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
