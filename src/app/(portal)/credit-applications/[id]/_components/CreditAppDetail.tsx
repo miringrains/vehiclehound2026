@@ -9,6 +9,7 @@ import {
   Eye,
   EyeOff,
   User,
+  UserPlus,
   Briefcase,
   Building2,
   Users,
@@ -63,6 +64,7 @@ export function CreditAppDetail({ application: app }: Props) {
   const [ssnLoading, setSsnLoading] = useState(false);
   const [fileUrls, setFileUrls] = useState<Record<string, string | null> | null>(null);
   const [filesLoading, setFilesLoading] = useState(false);
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
 
   const handleStatusChange = async (newStatus: string) => {
     setStatus(newStatus as typeof status);
@@ -110,6 +112,46 @@ export function CreditAppDetail({ application: app }: Props) {
       setFileUrls(data);
     } finally {
       setFilesLoading(false);
+    }
+  };
+
+  const handleCreateCustomer = async () => {
+    setCreatingCustomer(true);
+    try {
+      const checkRes = await fetch(`/api/customers?search=${encodeURIComponent(app.email || "")}&limit=1`);
+      if (checkRes.ok) {
+        const checkData = await checkRes.json();
+        const existing = checkData.customers?.find(
+          (c: { credit_app_id?: string }) => c.credit_app_id === app.id
+        );
+        if (existing) {
+          router.push(`/customers/${existing.id}`);
+          return;
+        }
+      }
+      const res = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: app.first_name,
+          last_name: app.last_name,
+          email: app.email,
+          phone: app.phone,
+          address: app.address,
+          city: app.city,
+          state: app.state,
+          zip: app.zip,
+          source: "credit-app",
+          status: "lead",
+          credit_app_id: app.id,
+        }),
+      });
+      if (res.ok) {
+        const { customer } = await res.json();
+        router.push(`/customers/${customer.id}`);
+      }
+    } finally {
+      setCreatingCustomer(false);
     }
   };
 
@@ -162,6 +204,10 @@ export function CreditAppDetail({ application: app }: Props) {
             Download PDF
           </Button>
         )}
+        <Button variant="outline" size="sm" onClick={handleCreateCustomer} disabled={creatingCustomer}>
+          <UserPlus size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />
+          {creatingCustomer ? "Creating..." : "Create Customer"}
+        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

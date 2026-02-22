@@ -25,6 +25,12 @@ export const routes = {
   importVauto: "/import/vauto",
   importGwg: "/import/gwg",
 
+  customers: "/customers",
+  customerDetail: (id: string) => `/customers/${id}`,
+  dealSheets: "/deal-sheets",
+  dealSheetNew: "/deal-sheets/new",
+  dealSheetDetail: (id: string) => `/deal-sheets/${id}`,
+
   reports: "/reports",
   report: (type: string) => `/reports/${type}`,
 

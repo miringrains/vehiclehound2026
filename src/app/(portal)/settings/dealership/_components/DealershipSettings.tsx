@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Check, X, Plus } from "lucide-react";
+import { Loader2, Check, X, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { toast } from "sonner";
+import { DEFAULT_DEAL_DEFAULTS, type DealDefaults, type CreditTier } from "@/lib/deal-calc";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
@@ -27,6 +28,7 @@ type Dealership = {
   website: string | null;
   logo_url: string | null;
   credit_app_emails: string[];
+  deal_defaults?: DealDefaults | null;
 };
 
 type Props = { dealership: Dealership };
@@ -43,6 +45,9 @@ export function DealershipSettings({ dealership }: Props) {
   });
   const [emails, setEmails] = useState<string[]>(dealership.credit_app_emails ?? []);
   const [emailInput, setEmailInput] = useState("");
+  const [dealDefaults, setDealDefaults] = useState<DealDefaults>(
+    dealership.deal_defaults ? { ...DEFAULT_DEAL_DEFAULTS, ...dealership.deal_defaults } : DEFAULT_DEAL_DEFAULTS
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -76,7 +81,7 @@ export function DealershipSettings({ dealership }: Props) {
       const res = await fetch("/api/dealership", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, credit_app_emails: emails }),
+        body: JSON.stringify({ ...form, credit_app_emails: emails, deal_defaults: dealDefaults }),
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error); return; }
@@ -162,6 +167,191 @@ export function DealershipSettings({ dealership }: Props) {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-heading-4">Deal Defaults</h3>
+        <p className="text-caption text-muted-foreground -mt-2">
+          Default values for new deal sheets. These pre-fill when creating deals.
+        </p>
+
+        {/* Credit Tiers */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-[0.8125rem] font-medium">Credit Tiers</Label>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setDealDefaults({
+                  ...dealDefaults,
+                  credit_tiers: [
+                    ...dealDefaults.credit_tiers,
+                    { name: `Tier ${dealDefaults.credit_tiers.length + 1}`, apr: 5.99, money_factor: 0.0015 },
+                  ],
+                })
+              }
+            >
+              <Plus size={12} strokeWidth={ICON_STROKE_WIDTH} />
+              Add Tier
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {dealDefaults.credit_tiers.map((tier, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <Input
+                  value={tier.name}
+                  onChange={(e) => {
+                    const tiers = [...dealDefaults.credit_tiers];
+                    tiers[idx] = { ...tier, name: e.target.value };
+                    setDealDefaults({ ...dealDefaults, credit_tiers: tiers });
+                  }}
+                  placeholder="Tier name"
+                  className="flex-1"
+                />
+                <div className="w-24">
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={tier.apr}
+                    onChange={(e) => {
+                      const tiers = [...dealDefaults.credit_tiers];
+                      tiers[idx] = { ...tier, apr: Number(e.target.value) };
+                      setDealDefaults({ ...dealDefaults, credit_tiers: tiers });
+                    }}
+                    placeholder="APR %"
+                  />
+                </div>
+                <div className="w-28">
+                  <Input
+                    type="number"
+                    step="0.0001"
+                    value={tier.money_factor}
+                    onChange={(e) => {
+                      const tiers = [...dealDefaults.credit_tiers];
+                      tiers[idx] = { ...tier, money_factor: Number(e.target.value) };
+                      setDealDefaults({ ...dealDefaults, credit_tiers: tiers });
+                    }}
+                    placeholder="MF"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-destructive shrink-0"
+                  onClick={() => {
+                    const tiers = dealDefaults.credit_tiers.filter((_, i) => i !== idx);
+                    setDealDefaults({ ...dealDefaults, credit_tiers: tiers });
+                  }}
+                >
+                  <Trash2 size={12} />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-6 text-[0.6875rem] text-muted-foreground px-1">
+            <span className="flex-1">Name</span>
+            <span className="w-24">APR %</span>
+            <span className="w-28">Money Factor</span>
+            <span className="w-7" />
+          </div>
+        </div>
+
+        {/* Default Fees */}
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label>Doc Fee</Label>
+            <Input
+              type="number"
+              value={dealDefaults.doc_fee}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, doc_fee: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Title/Reg Fee</Label>
+            <Input
+              type="number"
+              value={dealDefaults.title_reg_fee}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, title_reg_fee: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Tax Rate %</Label>
+            <Input
+              type="number"
+              step="0.001"
+              value={dealDefaults.default_tax_rate}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, default_tax_rate: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+        </div>
+
+        {/* Default Terms */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label>Finance Term (months)</Label>
+            <Input
+              type="number"
+              value={dealDefaults.default_finance_term}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, default_finance_term: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Lease Term (months)</Label>
+            <Input
+              type="number"
+              value={dealDefaults.default_lease_term}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, default_lease_term: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+        </div>
+
+        {/* Lease Defaults */}
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label>Annual Mileage</Label>
+            <Input
+              type="number"
+              value={dealDefaults.default_annual_mileage}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, default_annual_mileage: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Acquisition Fee</Label>
+            <Input
+              type="number"
+              value={dealDefaults.acquisition_fee}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, acquisition_fee: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Disposition Fee</Label>
+            <Input
+              type="number"
+              value={dealDefaults.disposition_fee}
+              onChange={(e) => setDealDefaults({ ...dealDefaults, disposition_fee: Number(e.target.value) })}
+              className="mt-1.5"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label>Excess Mileage $/mi</Label>
+          <Input
+            type="number"
+            step="0.01"
+            value={dealDefaults.excess_mileage_charge}
+            onChange={(e) => setDealDefaults({ ...dealDefaults, excess_mileage_charge: Number(e.target.value) })}
+            className="mt-1.5 max-w-[200px]"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end">

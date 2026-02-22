@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const allowed = ["name", "phone", "address", "city", "state", "zip", "website", "logo_url", "credit_app_emails"];
+    const allowed = ["name", "phone", "address", "city", "state", "zip", "website", "logo_url", "credit_app_emails", "deal_defaults"];
     const update: Record<string, unknown> = {};
 
     for (const key of allowed) {

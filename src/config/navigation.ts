@@ -6,6 +6,7 @@ import {
   Upload,
   BarChart3,
   FileText,
+  FileSpreadsheet,
   Plug,
   Settings,
   CreditCard,
@@ -48,6 +49,13 @@ export const portalNav: NavGroup[] = [
         href: routes.creditApplications,
         icon: FileText,
       },
+    ],
+  },
+  {
+    label: "Sales",
+    items: [
+      { label: "Customers", href: routes.customers, icon: Users },
+      { label: "Deal Sheets", href: routes.dealSheetNew, icon: FileSpreadsheet },
     ],
   },
   {
