@@ -53,6 +53,7 @@ export async function POST(request: Request) {
         slug,
         phone: phone || null,
         subscription_status: "trialing",
+        plan: "starter",
         trial_ends_at: trialEndsAt.toISOString(),
         active_users_count: 1,
       })

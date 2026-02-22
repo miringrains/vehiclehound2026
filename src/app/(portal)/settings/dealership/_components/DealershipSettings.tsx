@@ -1,0 +1,175 @@
+"use client";
+
+import { useState } from "react";
+import { Loader2, Check, X, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ICON_STROKE_WIDTH } from "@/lib/constants";
+import { toast } from "sonner";
+
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
+  "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
+  "VA","WA","WV","WI","WY","DC",
+];
+
+type Dealership = {
+  id: string;
+  name: string;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  website: string | null;
+  logo_url: string | null;
+  credit_app_emails: string[];
+};
+
+type Props = { dealership: Dealership };
+
+export function DealershipSettings({ dealership }: Props) {
+  const [form, setForm] = useState({
+    name: dealership.name,
+    phone: dealership.phone ?? "",
+    address: dealership.address ?? "",
+    city: dealership.city ?? "",
+    state: dealership.state ?? "",
+    zip: dealership.zip ?? "",
+    website: dealership.website ?? "",
+  });
+  const [emails, setEmails] = useState<string[]>(dealership.credit_app_emails ?? []);
+  const [emailInput, setEmailInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const set = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const addEmail = () => {
+    const e = emailInput.trim().toLowerCase();
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      toast.error("Invalid email address");
+      return;
+    }
+    if (emails.includes(e)) {
+      toast.error("Email already added");
+      return;
+    }
+    setEmails((prev) => [...prev, e]);
+    setEmailInput("");
+  };
+
+  const removeEmail = (email: string) => {
+    setEmails((prev) => prev.filter((e) => e !== email));
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      toast.error("Dealership name is required");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/dealership", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, credit_app_emails: emails }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error); return; }
+      setSaved(true);
+      toast.success("Settings saved");
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      toast.error("Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-heading-4">General</h3>
+        <div>
+          <Label htmlFor="name">Dealership Name *</Label>
+          <Input id="name" value={form.name} onChange={(e) => set("name", e.target.value)} className="mt-1.5" />
+        </div>
+        <div>
+          <Label htmlFor="phone">Phone</Label>
+          <Input id="phone" value={form.phone} onChange={(e) => set("phone", e.target.value)} className="mt-1.5" />
+        </div>
+        <div>
+          <Label htmlFor="website">Website</Label>
+          <Input id="website" value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" className="mt-1.5" />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-heading-4">Address</h3>
+        <div>
+          <Label htmlFor="address">Street Address</Label>
+          <Input id="address" value={form.address} onChange={(e) => set("address", e.target.value)} className="mt-1.5" />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <Label htmlFor="city">City</Label>
+            <Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} className="mt-1.5" />
+          </div>
+          <div>
+            <Label>State</Label>
+            <Select value={form.state} onValueChange={(v) => set("state", v)}>
+              <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="zip">Zip</Label>
+            <Input id="zip" value={form.zip} onChange={(e) => set("zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className="mt-1.5" />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-heading-4">Credit Application Notifications</h3>
+        <p className="text-caption text-muted-foreground -mt-2">Email addresses that receive notifications when a credit application is submitted.</p>
+        <div className="flex items-center gap-2">
+          <Input
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addEmail())}
+            placeholder="email@dealership.com"
+            className="flex-1"
+          />
+          <Button variant="outline" size="sm" onClick={addEmail}>
+            <Plus size={14} strokeWidth={ICON_STROKE_WIDTH} />
+          </Button>
+        </div>
+        {emails.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {emails.map((e) => (
+              <span key={e} className="inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-caption">
+                {e}
+                <button onClick={() => removeEmail(e)} className="text-muted-foreground hover:text-foreground">
+                  <X size={12} strokeWidth={ICON_STROKE_WIDTH} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : saved ? <Check size={14} className="mr-1.5 text-green-500" /> : null}
+          {saved ? "Saved" : "Save Changes"}
+        </Button>
+      </div>
+    </div>
+  );
+}

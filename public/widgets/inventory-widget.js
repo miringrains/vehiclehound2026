@@ -80,6 +80,23 @@
     };
   }
 
+  // Analytics tracker
+  const _sid = Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b => b.toString(16).padStart(2, "0")).join("");
+  const _evtBuf = [];
+  function track(event, payload) {
+    if (typeof navigator !== "undefined" && navigator.doNotTrack === "1") return;
+    _evtBuf.push({ event, payload: payload || {}, session_id: _sid, vehicle_id: payload?.vehicle_id || null });
+  }
+  function _flushEvents() {
+    if (_evtBuf.length === 0) return;
+    const batch = _evtBuf.splice(0);
+    const body = JSON.stringify({ events: batch });
+    const url = API_BASE + "/api/widget/events";
+    fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API_KEY }, body, keepalive: true }).catch(() => {});
+  }
+  setInterval(_flushEvents, 5000);
+  window.addEventListener("beforeunload", _flushEvents);
+
   let filtersOpen = false;
 
   function injectStyles(r, cl) {
@@ -165,6 +182,7 @@
       state.config = data.config || {};
       buildFilterOptions();
       applyFilters();
+      track("page_view", { referrer: document.referrer });
     } catch (e) {
       console.error("[VH]", e);
       state.all = [];
@@ -244,6 +262,8 @@
   }
 
   function goToVehicle(id) {
+    track("vehicle_click", { vehicle_id: id });
+    _flushEvents();
     if (!DETAIL_URL) return;
     window.location.href = DETAIL_URL + (DETAIL_URL.includes("?") ? "&" : "?") + "id=" + id;
   }
@@ -275,7 +295,7 @@
         onInput: e => {
           state.search = e.target.value;
           clearTimeout(searchTimer);
-          searchTimer = setTimeout(() => { state.page = 1; applyFilters(); render(); }, 200);
+          searchTimer = setTimeout(() => { state.page = 1; applyFilters(); render(); if (state.search) track("search", { query: state.search }); }, 200);
         },
       })
     );

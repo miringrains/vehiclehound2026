@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
@@ -16,12 +17,31 @@ import { routes } from "@/config/routes";
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from("profiles").select("dealership_role").eq("id", user.id).single()
+        .then(({ data }) => { if (data) setUserRole(data.dealership_role); });
+    });
+  }, []);
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push(routes.login);
   }
+
+  const filteredNav = portalNav.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => {
+      if (!item.roles) return true;
+      if (!userRole) return false;
+      return item.roles.includes(userRole as "owner" | "manager" | "user");
+    }),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-[var(--z-sticky)] flex w-[var(--sidebar-width)] flex-col pt-5 lg:pt-6">
@@ -35,7 +55,7 @@ export function AppSidebar() {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-3">
         <nav className="flex flex-col gap-6">
-          {portalNav.map((group, i) => (
+          {filteredNav.map((group, i) => (
             <NavGroupSection key={i} group={group} pathname={pathname} />
           ))}
         </nav>

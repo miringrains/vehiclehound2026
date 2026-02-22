@@ -13,6 +13,7 @@ export type Dealership = {
   credit_app_emails: string[];
   max_users: number;
   active_users_count: number;
+  plan: string;
   subscription_status: string | null;
   is_free_account: boolean;
   trial_ends_at: string | null;

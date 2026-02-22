@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { InsightsContent } from "./_components/InsightsContent";
 
 export const metadata: Metadata = { title: "Insights" };
 
 export default function ReportsPage() {
-  return <ComingSoon title="Insights & Reports" />;
+  return (
+    <>
+      <PageHeader title="Insights" description="Track how visitors interact with your inventory" />
+      <InsightsContent />
+    </>
+  );
 }

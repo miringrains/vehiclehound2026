@@ -72,6 +72,22 @@
     };
   }
 
+  // Analytics tracker
+  const _sid = Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b => b.toString(16).padStart(2, "0")).join("");
+  const _evtBuf = [];
+  function track(event, payload) {
+    if (typeof navigator !== "undefined" && navigator.doNotTrack === "1") return;
+    _evtBuf.push({ event, payload: payload || {}, session_id: _sid, vehicle_id: payload?.vehicle_id || vehicleId || null });
+  }
+  function _flushEvents() {
+    if (_evtBuf.length === 0) return;
+    const batch = _evtBuf.splice(0);
+    const body = JSON.stringify({ events: batch });
+    fetch(API_BASE + "/api/widget/events", { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API_KEY }, body, keepalive: true }).catch(() => {});
+  }
+  setInterval(_flushEvents, 5000);
+  window.addEventListener("beforeunload", _flushEvents);
+
   function injectStyles(r, cl) {
     const existing = document.getElementById("vh-det-css");
     if (existing) existing.remove();
@@ -150,6 +166,7 @@
 
   function renderVehicle(v, config) {
     container.innerHTML = "";
+    track("detail_view", { vehicle_id: v.id });
     const cl = deriveColors(config.backgroundColor);
     injectStyles(getRadius(config), cl);
     const pc = config.primaryColor || "#1a1d1e";
@@ -240,7 +257,7 @@
         style: { background: pc },
         onMouseenter: e => { e.currentTarget.style.background = hc; },
         onMouseleave: e => { e.currentTarget.style.background = pc; },
-        onClick: () => openCreditModal(appUrl, title),
+        onClick: () => { track("apply_click", { vehicle_id: v.id }); openCreditModal(appUrl, title); },
       }, "Apply for Financing");
       info.appendChild(cta);
     }
@@ -252,12 +269,13 @@
       ctaRow.appendChild($("a", {
         class: "vhd-cta-secondary",
         href: "tel:" + cleanPhone,
+        onClick: () => track("call_click", { vehicle_id: v.id }),
       }, "📞 Call Dealer"));
     }
     ctaRow.appendChild($("a", {
       class: "vhd-cta-secondary",
       href: "javascript:void(0)",
-      onClick: () => { window.history.back(); },
+      onClick: () => { track("back_to_inventory"); _flushEvents(); window.history.back(); },
     }, "← Back to Inventory"));
     info.appendChild(ctaRow);
 
