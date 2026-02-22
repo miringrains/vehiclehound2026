@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Plus,
@@ -12,12 +12,14 @@ import {
   Save,
   Search,
   Car,
+  ChevronDown,
+  Settings2,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -66,24 +68,57 @@ function fmtMoneyShort(v: number) {
   return "$" + v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+function NumField({
+  label,
+  value,
+  onChange,
+  prefix,
+  step,
+  compact,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  prefix?: string;
+  step?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div>
+      <Label className={`text-muted-foreground ${compact ? "text-[0.625rem]" : "text-[0.6875rem]"}`}>{label}</Label>
+      <div className="relative mt-0.5">
+        {prefix && (
+          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[0.75rem] text-muted-foreground">{prefix}</span>
+        )}
+        <Input
+          type="number"
+          step={step || "1"}
+          value={value}
+          onChange={(e) => onChange(Number(e.target.value))}
+          className={`${compact ? "h-7 text-[0.75rem]" : ""} ${prefix ? "pl-5" : ""}`}
+        />
+      </div>
+    </div>
+  );
+}
+
 function OptionCard({
   option,
   onChange,
   onRemove,
   onDuplicate,
-  defaults,
   canRemove,
 }: {
   option: DealOption;
   onChange: (opt: DealOption) => void;
   onRemove: () => void;
   onDuplicate: () => void;
-  defaults: DealDefaults;
   canRemove: boolean;
 }) {
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [vehicleResults, setVehicleResults] = useState<VehicleOption[]>([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const result = useMemo(() => {
     return option.type === "finance"
@@ -135,132 +170,91 @@ function OptionCard({
     setVehicleResults([]);
   };
 
-  const numField = (label: string, key: keyof DealOption, opts?: { prefix?: string; step?: string }) => (
-    <div>
-      <Label className="text-[0.6875rem] text-muted-foreground">{label}</Label>
-      <div className="relative mt-1">
-        {opts?.prefix && (
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[0.8125rem] text-muted-foreground">
-            {opts.prefix}
-          </span>
-        )}
-        <Input
-          type="number"
-          step={opts?.step || "1"}
-          value={option[key] as number}
-          onChange={(e) => onChange({ ...option, [key]: Number(e.target.value) })}
-          className={opts?.prefix ? "pl-5" : ""}
-        />
-      </div>
-    </div>
-  );
-
+  const set = (key: keyof DealOption, val: number) => onChange({ ...option, [key]: val });
   const snap = option.vehicle_snapshot;
 
+  const hasTradeIn = option.trade_value > 0 || option.trade_payoff > 0;
+  const feeSummary = option.doc_fee + option.title_reg_fee + option.other_fees;
+
   return (
-    <Card className="min-w-[280px] flex-1">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <Input
-            value={option.label}
-            onChange={(e) => onChange({ ...option, label: e.target.value })}
-            className="h-7 w-28 text-[0.8125rem] font-semibold"
-          />
-        </div>
-        <div className="flex gap-1">
+    <Card className="min-w-[300px] flex-1">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
+        <Input
+          value={option.label}
+          onChange={(e) => onChange({ ...option, label: e.target.value })}
+          className="h-7 w-32 text-[0.8125rem] font-semibold border-transparent hover:border-border focus:border-border transition-colors"
+        />
+        <div className="flex gap-0.5">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onDuplicate} title="Duplicate">
-            <Copy size={13} />
+            <Copy size={12} />
           </Button>
           {canRemove && (
             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onRemove} title="Remove">
-              <Trash2 size={13} />
+              <Trash2 size={12} />
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Vehicle selector */}
-        <div>
-          {snap ? (
-            <div className="flex items-center gap-2 rounded-lg border border-border p-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-                <Car size={14} className="text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[0.8125rem] font-medium truncate">
-                  {snap.year} {snap.make} {snap.model}
-                </p>
-                <p className="text-[0.6875rem] text-muted-foreground truncate">
-                  {snap.trim} {snap.stock_number && `· #${snap.stock_number}`}
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-[0.6875rem]"
-                onClick={() => setShowSearch(true)}
-              >
-                Change
-              </Button>
+      <CardContent className="space-y-3 px-4 pb-4">
+        {/* 1. Vehicle selector */}
+        {snap ? (
+          <div className="flex items-center gap-2.5 rounded-lg border border-border p-2.5 bg-muted/20">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
+              <Car size={13} className="text-muted-foreground" />
             </div>
-          ) : (
-            <Button
-              variant="outline"
-              className="w-full justify-start text-muted-foreground"
-              onClick={() => setShowSearch(true)}
-            >
-              <Search size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-2" />
-              Select Vehicle
+            <div className="flex-1 min-w-0">
+              <p className="text-[0.8125rem] font-medium truncate">
+                {snap.year} {snap.make} {snap.model}
+              </p>
+              <p className="text-[0.6875rem] text-muted-foreground truncate">
+                {snap.trim}{snap.stock_number && ` · #${snap.stock_number}`}
+                {snap.msrp && ` · MSRP ${fmtMoneyShort(snap.msrp)}`}
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" className="h-6 text-[0.6875rem] shrink-0" onClick={() => setShowSearch(true)}>
+              Change
             </Button>
-          )}
+          </div>
+        ) : (
+          <Button variant="outline" className="w-full justify-start text-muted-foreground" onClick={() => setShowSearch(true)}>
+            <Search size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-2" />
+            Select Vehicle
+          </Button>
+        )}
 
+        <AnimatePresence>
           {showSearch && (
-            <div className="mt-2 rounded-lg border border-border p-2">
-              <Input
-                placeholder="Search inventory..."
-                value={vehicleSearch}
-                onChange={(e) => setVehicleSearch(e.target.value)}
-                autoFocus
-              />
-              {vehicleResults.length > 0 && (
-                <div className="mt-1.5 max-h-36 overflow-y-auto space-y-0.5">
-                  {vehicleResults.map((v) => (
-                    <button
-                      key={v.id}
-                      onClick={() => selectVehicle(v)}
-                      className="w-full text-left rounded-md px-2.5 py-1.5 text-[0.8125rem] hover:bg-muted transition-colors"
-                    >
-                      <span className="font-medium">
-                        {v.year} {v.make} {v.model}
-                      </span>
-                      {v.trim && <span className="text-muted-foreground"> {v.trim}</span>}
-                      {v.stock_number && <span className="text-muted-foreground"> · #{v.stock_number}</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-1 w-full text-[0.6875rem]"
-                onClick={() => { setShowSearch(false); setVehicleSearch(""); setVehicleResults([]); }}
-              >
-                Close
-              </Button>
-            </div>
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="rounded-lg border border-border p-2 bg-muted/10">
+                <Input placeholder="Search inventory..." value={vehicleSearch} onChange={(e) => setVehicleSearch(e.target.value)} autoFocus className="h-8 text-[0.8125rem]" />
+                {vehicleResults.length > 0 && (
+                  <div className="mt-1.5 max-h-36 overflow-y-auto space-y-0.5">
+                    {vehicleResults.map((v) => (
+                      <button key={v.id} onClick={() => selectVehicle(v)} className="w-full text-left rounded-md px-2.5 py-1.5 text-[0.8125rem] hover:bg-muted transition-colors">
+                        <span className="font-medium">{v.year} {v.make} {v.model}</span>
+                        {v.trim && <span className="text-muted-foreground"> {v.trim}</span>}
+                        {v.stock_number && <span className="text-muted-foreground"> · #{v.stock_number}</span>}
+                        {(v.online_price || v.sale_price) && <span className="text-muted-foreground"> · {fmtMoneyShort(v.online_price || v.sale_price || 0)}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <Button variant="ghost" size="sm" className="mt-1 w-full text-[0.6875rem]" onClick={() => { setShowSearch(false); setVehicleSearch(""); setVehicleResults([]); }}>
+                  Close
+                </Button>
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
-        {/* Type toggle */}
+        {/* 2. Finance / Lease toggle */}
         <div className="flex rounded-lg border border-border overflow-hidden">
           {(["finance", "lease"] as const).map((t) => (
             <button
               key={t}
               onClick={() => onChange({ ...option, type: t })}
               className={`flex-1 px-3 py-1.5 text-[0.8125rem] font-medium capitalize transition-colors ${
-                option.type === t
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground"
+                option.type === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t}
@@ -268,58 +262,124 @@ function OptionCard({
           ))}
         </div>
 
-        {/* Monthly payment result */}
+        {/* 3. Monthly payment — the hero */}
         <div className="rounded-lg bg-primary/5 border border-primary/10 p-3 text-center">
-          <p className="text-heading-1 text-primary">{fmtMoney(monthly)}</p>
-          <p className="text-[0.6875rem] text-muted-foreground">
-            per month · {option.type === "finance" ? `${option.term_months}mo` : `${option.lease_term}mo`}
+          <p className="text-[1.5rem] font-semibold tracking-tight text-primary leading-none">{fmtMoney(monthly)}</p>
+          <p className="text-[0.6875rem] text-muted-foreground mt-1">
+            per month · {option.type === "finance" ? `${option.term_months} months` : `${option.lease_term} months`}
+            {option.type === "finance" && " · " + option.apr + "% APR"}
+            {option.type === "lease" && " · " + option.money_factor + " MF"}
           </p>
           {option.type === "finance" && "amount_financed" in result && (
-            <p className="text-[0.6875rem] text-muted-foreground mt-1">
-              {fmtMoneyShort(result.amount_financed)} financed · {fmtMoneyShort(result.total_cost)} total
+            <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
+              {fmtMoneyShort(result.amount_financed)} financed · {fmtMoneyShort(result.total_interest)} interest
             </p>
           )}
           {option.type === "lease" && "due_at_signing" in result && (
-            <p className="text-[0.6875rem] text-muted-foreground mt-1">
+            <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
               {fmtMoneyShort(result.due_at_signing)} due at signing
             </p>
           )}
         </div>
 
-        {/* Price fields */}
-        <div className="grid grid-cols-2 gap-2">
-          {numField("Selling Price", "selling_price", { prefix: "$" })}
-          {numField("MSRP", "msrp", { prefix: "$" })}
-          {numField("Down Payment", "down_payment", { prefix: "$" })}
-          {numField("Trade Value", "trade_value", { prefix: "$" })}
-          {numField("Trade Payoff", "trade_payoff", { prefix: "$" })}
-          {numField("Rebates", "rebates", { prefix: "$" })}
-        </div>
-
-        {/* Fees */}
-        <div className="grid grid-cols-2 gap-2">
-          {numField("Doc Fee", "doc_fee", { prefix: "$" })}
-          {numField("Title/Reg Fee", "title_reg_fee", { prefix: "$" })}
-          {numField("Tax Rate %", "tax_rate", { step: "0.001" })}
-          {numField("Other Fees", "other_fees", { prefix: "$" })}
-        </div>
-
-        {/* Type-specific fields */}
-        {option.type === "finance" ? (
+        {/* 4. Essential fields only */}
+        <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2">
-            {numField("APR %", "apr", { step: "0.01" })}
-            {numField("Term (months)", "term_months")}
+            <NumField label="Selling Price" value={option.selling_price} onChange={(v) => set("selling_price", v)} prefix="$" />
+            <NumField label="Down Payment" value={option.down_payment} onChange={(v) => set("down_payment", v)} prefix="$" />
           </div>
+
+          {option.type === "finance" ? (
+            <div className="grid grid-cols-2 gap-2">
+              <NumField label="APR %" value={option.apr} onChange={(v) => set("apr", v)} step="0.01" />
+              <NumField label="Term (months)" value={option.term_months} onChange={(v) => set("term_months", v)} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <NumField label="Money Factor" value={option.money_factor} onChange={(v) => set("money_factor", v)} step="0.0001" />
+              <NumField label="Residual %" value={option.residual_pct} onChange={(v) => set("residual_pct", v)} />
+            </div>
+          )}
+        </div>
+
+        {/* 5. Trade-in row (collapsed if zero) */}
+        {!hasTradeIn ? (
+          <button
+            onClick={() => onChange({ ...option, trade_value: 0 })}
+            className="w-full text-center text-[0.75rem] text-muted-foreground hover:text-foreground py-1 transition-colors"
+            onDoubleClick={() => {}}
+          >
+            + Add trade-in
+          </button>
         ) : (
           <div className="grid grid-cols-2 gap-2">
-            {numField("Money Factor", "money_factor", { step: "0.0001" })}
-            {numField("Residual %", "residual_pct", { step: "1" })}
-            {numField("Lease Term", "lease_term")}
-            {numField("Annual Mileage", "annual_mileage")}
-            {numField("Acquisition Fee", "acquisition_fee", { prefix: "$" })}
-            {numField("Security Deposit", "security_deposit", { prefix: "$" })}
+            <NumField label="Trade Value" value={option.trade_value} onChange={(v) => set("trade_value", v)} prefix="$" />
+            <NumField label="Trade Payoff" value={option.trade_payoff} onChange={(v) => set("trade_payoff", v)} prefix="$" />
           </div>
         )}
+
+        {/* 6. Advanced settings — collapsed by default */}
+        <div className="border-t border-border pt-2">
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex w-full items-center justify-between py-1 text-[0.75rem] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              <Settings2 size={12} />
+              Fees & Details
+              <span className="text-[0.6875rem]">
+                ({fmtMoneyShort(feeSummary)} fees · {option.tax_rate}% tax)
+              </span>
+            </span>
+            <ChevronDown size={13} className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {showAdvanced && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-2 pt-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <NumField label="MSRP" value={option.msrp} onChange={(v) => set("msrp", v)} prefix="$" compact />
+                    <NumField label="Rebates" value={option.rebates} onChange={(v) => set("rebates", v)} prefix="$" compact />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <NumField label="Doc Fee" value={option.doc_fee} onChange={(v) => set("doc_fee", v)} prefix="$" compact />
+                    <NumField label="Title/Reg" value={option.title_reg_fee} onChange={(v) => set("title_reg_fee", v)} prefix="$" compact />
+                    <NumField label="Tax %" value={option.tax_rate} onChange={(v) => set("tax_rate", v)} step="0.001" compact />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <NumField label="Other Fees" value={option.other_fees} onChange={(v) => set("other_fees", v)} prefix="$" compact />
+                    <div>
+                      <Label className="text-[0.625rem] text-muted-foreground">Other Fees Label</Label>
+                      <Input
+                        value={option.other_fees_label}
+                        onChange={(e) => onChange({ ...option, other_fees_label: e.target.value })}
+                        className="mt-0.5 h-7 text-[0.75rem]"
+                        placeholder="e.g. Dealer prep"
+                      />
+                    </div>
+                  </div>
+
+                  {option.type === "lease" && (
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/50">
+                      <NumField label="Lease Term" value={option.lease_term} onChange={(v) => set("lease_term", v)} compact />
+                      <NumField label="Annual Miles" value={option.annual_mileage} onChange={(v) => set("annual_mileage", v)} compact />
+                      <NumField label="Acquisition Fee" value={option.acquisition_fee} onChange={(v) => set("acquisition_fee", v)} prefix="$" compact />
+                      <NumField label="Security Dep." value={option.security_deposit} onChange={(v) => set("security_deposit", v)} prefix="$" compact />
+                      <NumField label="Excess $/mi" value={option.excess_mileage_charge} onChange={(v) => set("excess_mileage_charge", v)} step="0.01" compact />
+                      <NumField label="Disposition Fee" value={option.disposition_fee} onChange={(v) => set("disposition_fee", v)} prefix="$" compact />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </CardContent>
     </Card>
   );
@@ -341,7 +401,6 @@ export function DealSheetBuilder() {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
 
-  // Load dealership defaults
   useEffect(() => {
     (async () => {
       const res = await fetch("/api/dealership");
@@ -354,7 +413,6 @@ export function DealSheetBuilder() {
     })();
   }, []);
 
-  // Initialize first option once defaults load
   useEffect(() => {
     if (options.length === 0) {
       const tier = defaults.credit_tiers?.[0] || null;
@@ -363,7 +421,6 @@ export function DealSheetBuilder() {
     }
   }, [defaults]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load prefilled customer
   useEffect(() => {
     if (prefilledCustomerId) {
       (async () => {
@@ -517,11 +574,9 @@ export function DealSheetBuilder() {
       </div>
 
       <motion.div variants={fadeUp} initial="hidden" animate="visible">
-        {/* Top config */}
         <Card>
           <CardContent className="pt-5">
             <div className="grid gap-4 sm:grid-cols-3">
-              {/* Customer */}
               <div>
                 <Label>Customer</Label>
                 <div className="mt-1.5">
@@ -534,10 +589,7 @@ export function DealSheetBuilder() {
                         variant="ghost"
                         size="sm"
                         className="h-5 px-1.5 text-[0.6875rem]"
-                        onClick={() => {
-                          setSelectedCustomer(null);
-                          setCustomerId(null);
-                        }}
+                        onClick={() => { setSelectedCustomer(null); setCustomerId(null); }}
                       >
                         Clear
                       </Button>
@@ -559,9 +611,7 @@ export function DealSheetBuilder() {
                                 setCustomerId(c.id);
                                 setCustomerSearch("");
                                 setCustomerResults([]);
-                                if (!title) {
-                                  setTitle(`Deal Sheet - ${c.first_name} ${c.last_name} - ${new Date().toLocaleDateString()}`);
-                                }
+                                if (!title) setTitle(`Deal Sheet - ${c.first_name} ${c.last_name} - ${new Date().toLocaleDateString()}`);
                               }}
                               className="w-full text-left px-3 py-2 text-[0.8125rem] hover:bg-muted transition-colors"
                             >
@@ -574,25 +624,13 @@ export function DealSheetBuilder() {
                   )}
                 </div>
               </div>
-
-              {/* Title */}
               <div>
                 <Label>Title</Label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Auto-generated if empty"
-                  className="mt-1.5"
-                />
+                <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Auto-generated if empty" className="mt-1.5" />
               </div>
-
-              {/* Credit tier */}
               <div>
                 <Label>Credit Tier</Label>
-                <Select
-                  value={selectedTier?.name || ""}
-                  onValueChange={handleTierChange}
-                >
+                <Select value={selectedTier?.name || ""} onValueChange={handleTierChange}>
                   <SelectTrigger className="mt-1.5">
                     <SelectValue placeholder="Select tier" />
                   </SelectTrigger>
@@ -610,7 +648,6 @@ export function DealSheetBuilder() {
         </Card>
       </motion.div>
 
-      {/* Options grid */}
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -618,13 +655,12 @@ export function DealSheetBuilder() {
         className="flex gap-4 overflow-x-auto pb-2"
       >
         {options.map((opt, idx) => (
-          <motion.div key={opt.id} variants={staggerItem} className="min-w-[280px] flex-1">
+          <motion.div key={opt.id} variants={staggerItem} className="min-w-[300px] flex-1">
             <OptionCard
               option={opt}
               onChange={(o) => handleOptionChange(idx, o)}
               onRemove={() => removeOption(idx)}
               onDuplicate={() => duplicateOption(idx)}
-              defaults={defaults}
               canRemove={options.length > 1}
             />
           </motion.div>
