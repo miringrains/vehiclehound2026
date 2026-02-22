@@ -30,13 +30,13 @@ export default async function BillingPage() {
     .single();
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader title="Billing" description="Manage your subscription" />
       <BillingContent
         currentPlan={(dealership?.plan ?? "starter") as PlanSlug}
         subscriptionStatus={dealership?.subscription_status ?? null}
         trialEndsAt={dealership?.trial_ends_at ?? null}
       />
-    </>
+    </div>
   );
 }

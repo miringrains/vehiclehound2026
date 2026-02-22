@@ -31,7 +31,7 @@ export default async function UsersPage() {
     .order("joined_at", { ascending: true });
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader title="User Management" description="Manage team members and invitations" />
       <UserManagement
         currentUserId={user.id}
@@ -39,6 +39,6 @@ export default async function UsersPage() {
         users={users ?? []}
         dealershipId={profile.dealership_id}
       />
-    </>
+    </div>
   );
 }

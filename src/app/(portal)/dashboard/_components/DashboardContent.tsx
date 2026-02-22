@@ -49,7 +49,7 @@ export function DashboardContent({ stats, recentVehicles, dealership, profile }:
   const greeting = profile.name ? `Welcome back, ${profile.name.split(" ")[0]}` : "Welcome back";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <PageHeader
         title={greeting}
         description={

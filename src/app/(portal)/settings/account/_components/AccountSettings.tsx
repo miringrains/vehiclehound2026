@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,12 +100,7 @@ export function AccountSettings({
   }
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        title="Account Settings"
-        description="Manage your personal account information."
-      />
-
+    <div className="space-y-6">
       <form
         onSubmit={handleSubmit}
         className="max-w-lg space-y-5 rounded-xl border border-border bg-card p-5"

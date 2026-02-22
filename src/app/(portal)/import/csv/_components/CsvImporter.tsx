@@ -269,7 +269,7 @@ export function CsvImporter() {
 
   if (result) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-lg mx-auto py-16 text-center">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-16 text-center">
         <div className="mb-4 rounded-full bg-green-500/10 p-4 inline-flex">
           <Check size={32} className="text-green-500" />
         </div>
@@ -291,7 +291,7 @@ export function CsvImporter() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div>
       <AnimatePresence mode="wait">
         {stage === "upload" && (
           <motion.div key="upload" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>

@@ -33,9 +33,9 @@ export default async function DealershipSettingsPage() {
   if (!dealership) redirect(routes.dashboard);
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader title="Dealership Settings" description="Manage your dealership information" />
       <DealershipSettings dealership={dealership} />
-    </>
+    </div>
   );
 }
