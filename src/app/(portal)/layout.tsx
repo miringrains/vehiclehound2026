@@ -1,6 +1,5 @@
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
-import { MobileNav } from "@/components/layout/MobileNav";
 import { AuroraBackdrop } from "@/components/shared/AuroraBackdrop";
 import { TrialBanner } from "@/components/shared/TrialBanner";
 import { SubscriptionGate } from "@/components/shared/SubscriptionGate";
@@ -26,18 +25,13 @@ export default function PortalLayout({
           <div className="h-full overflow-y-auto overflow-x-hidden light-scroll">
             <TrialBanner />
             <TopBar />
-            <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
+            <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
               <SubscriptionGate>
                 {children}
               </SubscriptionGate>
             </main>
           </div>
         </div>
-      </div>
-
-      {/* Mobile nav — dark layer */}
-      <div className="fixed top-0 left-0 z-[var(--z-sticky)] flex h-[calc(var(--topbar-height)+0.5rem)] items-center px-4 pt-2 lg:hidden">
-        <MobileNav />
       </div>
     </div>
   );
