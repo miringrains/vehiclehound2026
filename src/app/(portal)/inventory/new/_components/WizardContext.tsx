@@ -1,11 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import type { InventoryType, VehicleStatus } from "@/types/vehicle";
+import type { InventoryType, VehicleCondition, VehicleStatus } from "@/types/vehicle";
 import { VEHICLE_STATUSES } from "@/lib/constants";
 
 export type WizardData = {
   inventory_type: InventoryType | null;
+  condition: VehicleCondition | null;
   vin: string;
   year: number | null;
   make: string;
@@ -86,6 +87,7 @@ const WizardContext = createContext<WizardContextValue | null>(null);
 
 const INITIAL_DATA: WizardData = {
   inventory_type: null,
+  condition: null,
   vin: "",
   year: null,
   make: "",

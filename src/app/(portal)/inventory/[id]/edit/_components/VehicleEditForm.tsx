@@ -21,7 +21,7 @@ import {
   vehicleTypes,
 } from "@/config/vehicle-options";
 import { createClient } from "@/lib/supabase/client";
-import type { Vehicle, VehicleImage } from "@/types/vehicle";
+import type { Vehicle, VehicleCondition, VehicleImage } from "@/types/vehicle";
 import { ImageUploader } from "../../../new/_components/ImageUploader";
 import { ImageGallery } from "../../../new/_components/ImageGallery";
 import type { UploadedImage } from "../../../new/_components/WizardContext";
@@ -50,6 +50,7 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
   // Form state
   const [form, setForm] = useState({
     inventory_type: vehicle.inventory_type,
+    condition: (vehicle.condition ?? (vehicle.inventory_type === "sale" ? "used" : null)) as VehicleCondition | null,
     vin: vehicle.vin ?? "",
     year: vehicle.year,
     make: vehicle.make ?? "",
@@ -123,6 +124,7 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
     try {
       const payload = {
         inventory_type: form.inventory_type,
+        condition: form.condition || null,
         vin: form.vin || null,
         year: form.year,
         make: form.make || null,
@@ -288,12 +290,48 @@ export function VehicleEditForm({ vehicle, dealershipId, existingImages }: Props
         {tab === "pricing" && (
           <div className="space-y-6">
             {isSale ? (
-              <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
-                <PF label="Online Price" value={form.online_price} onChange={(v) => set({ online_price: v })} />
-                <PF label="Sale Price" value={form.sale_price} onChange={(v) => set({ sale_price: v })} />
-                <PF label="MSRP" value={form.msrp} onChange={(v) => set({ msrp: v })} />
-                <PF label="Purchase Price" value={form.purchase_price} onChange={(v) => set({ purchase_price: v })} />
-              </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-body-sm text-muted-foreground mr-1">Condition</span>
+                  <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => set({ condition: "used" })}
+                      className={`px-4 py-1.5 text-body-sm font-medium rounded-md transition-all ${
+                        form.condition !== "new"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Used
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set({ condition: "new" })}
+                      className={`px-4 py-1.5 text-body-sm font-medium rounded-md transition-all ${
+                        form.condition === "new"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      New
+                    </button>
+                  </div>
+                </div>
+                {form.condition === "new" ? (
+                  <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                    <PF label="MSRP" value={form.msrp} onChange={(v) => set({ msrp: v })} />
+                    <PF label="Sale Price" value={form.sale_price} onChange={(v) => set({ sale_price: v })} />
+                    <PF label="List / Online Price" value={form.online_price} onChange={(v) => set({ online_price: v })} />
+                    <PF label="Invoice / Purchase Price" value={form.purchase_price} onChange={(v) => set({ purchase_price: v })} />
+                  </div>
+                ) : (
+                  <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+                    <PF label="List / Asking Price" value={form.online_price} onChange={(v) => set({ online_price: v })} />
+                    <PF label="Purchase Price" value={form.purchase_price} onChange={(v) => set({ purchase_price: v })} />
+                  </div>
+                )}
+              </>
             ) : (
               <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
                 <PF label="Monthly Payment" value={form.lease_payment} onChange={(v) => set({ lease_payment: v })} />

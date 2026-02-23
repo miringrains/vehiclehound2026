@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +17,7 @@ import { ImageGallery } from "../ImageGallery";
 
 export function StepPhotos() {
   const router = useRouter();
-  const { data, setData, images, setImages, dealershipId } = useWizard();
+  const { data, setData, images, setImages, dealershipId, back } = useWizard();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +74,7 @@ export function StepPhotos() {
       const vehiclePayload = {
         dealership_id: dealershipId,
         inventory_type: data.inventory_type,
+        condition: data.condition || null,
         vin: data.vin || null,
         year: data.year,
         make: data.make || null,
@@ -207,7 +208,11 @@ export function StepPhotos() {
       </div>
 
       {/* Submit */}
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button variant="outline" size="lg" onClick={back} disabled={submitting} className="gap-2">
+          <ArrowLeft size={16} strokeWidth={ICON_STROKE_WIDTH} />
+          Back
+        </Button>
         <Button size="lg" onClick={handleSubmit} disabled={submitting} className="min-w-[180px] gap-2">
           {submitting ? (
             <LoadingSpinner size={18} className="text-primary-foreground" />

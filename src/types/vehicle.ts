@@ -1,4 +1,5 @@
 export type InventoryType = "sale" | "lease";
+export type VehicleCondition = "new" | "used";
 
 export type VehicleStatus = 0 | 1 | 2 | 3;
 
@@ -6,6 +7,7 @@ export type Vehicle = {
   id: string;
   dealership_id: string;
   inventory_type: InventoryType;
+  condition: VehicleCondition | null;
   stock_number: string | null;
   vin: string | null;
   year: number | null;

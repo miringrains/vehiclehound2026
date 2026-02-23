@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Check, ArrowRight, Zap } from "lucide-react";
+import { Search, Check, ArrowRight, ArrowLeft, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,7 @@ const reveal = {
 };
 
 export function StepIdentity() {
-  const { data, setData, next } = useWizard();
+  const { data, setData, next, back } = useWizard();
   const isSale = data.inventory_type === "sale";
 
   const [makes, setMakes] = useState<string[]>([]);
@@ -374,7 +374,11 @@ export function StepIdentity() {
 
       <AnimatePresence>
         {hasVehicle && (
-          <motion.div {...reveal} className="flex justify-end">
+          <motion.div {...reveal} className="flex justify-between">
+            <Button variant="outline" size="lg" onClick={back} className="gap-2">
+              <ArrowLeft size={16} strokeWidth={ICON_STROKE_WIDTH} />
+              Back
+            </Button>
             <Button size="lg" onClick={next} className="gap-2">
               Continue
               <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, ArrowRight, Plus } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import {
 import { useWizard } from "../WizardContext";
 
 export function StepSpecs() {
-  const { data, setData, next } = useWizard();
+  const { data, setData, next, back } = useWizard();
   const isSale = data.inventory_type === "sale";
   const [featureInput, setFeatureInput] = useState("");
 
@@ -131,7 +131,11 @@ export function StepSpecs() {
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button variant="outline" size="lg" onClick={back} className="gap-2">
+          <ArrowLeft size={16} strokeWidth={ICON_STROKE_WIDTH} />
+          Back
+        </Button>
         <Button size="lg" onClick={next} className="gap-2">
           Continue
           <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />

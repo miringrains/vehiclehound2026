@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +39,7 @@ const LOCATION_OPTIONS = [
 ];
 
 export function StepPricing() {
-  const { data, setData, next } = useWizard();
+  const { data, setData, next, back } = useWizard();
   const isSale = data.inventory_type === "sale";
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -52,6 +52,9 @@ export function StepPricing() {
   }
 
   function validateAndContinue() {
+    if (isSale && !data.condition) {
+      setData({ condition: "used" });
+    }
     if (!isSale) {
       const errs: Record<string, string> = {};
       if (!data.lease_payment) errs.lease_payment = "Required";
@@ -66,26 +69,58 @@ export function StepPricing() {
     next();
   }
 
+  const isNew = data.condition === "new";
+  const isUsed = data.condition === "used";
+
   return (
     <div className="space-y-6">
       {isSale ? (
         <>
-          {/* Customer Pricing */}
+          {/* New / Used toggle */}
           <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="text-heading-4 mb-5">Customer Pricing</h3>
-            <div className="grid grid-cols-2 gap-6">
-              <PriceField label="List / Online Price" value={data.online_price} onChange={numChange("online_price")} placeholder="29,999" />
-              <PriceField label="Sale Price" value={data.sale_price} onChange={numChange("sale_price")} placeholder="28,500" />
+            <h3 className="text-heading-4 mb-4">Vehicle Condition</h3>
+            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+              <button
+                type="button"
+                onClick={() => setData({ condition: "used" })}
+                className={`px-5 py-2 text-body-sm font-medium rounded-md transition-all ${
+                  isUsed || !data.condition
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Used
+              </button>
+              <button
+                type="button"
+                onClick={() => setData({ condition: "new" })}
+                className={`px-5 py-2 text-body-sm font-medium rounded-md transition-all ${
+                  isNew
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                New
+              </button>
             </div>
           </div>
 
-          {/* Dealer Cost */}
+          {/* Pricing — adapts to New vs Used */}
           <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="text-heading-4 mb-5">Dealer Cost</h3>
-            <div className="grid grid-cols-2 gap-6">
-              <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="32,000" />
-              <PriceField label="Purchase Price" value={data.purchase_price} onChange={numChange("purchase_price")} placeholder="24,000" />
-            </div>
+            <h3 className="text-heading-4 mb-5">Pricing</h3>
+            {isNew ? (
+              <div className="grid grid-cols-2 gap-6">
+                <PriceField label="MSRP" value={data.msrp} onChange={numChange("msrp")} placeholder="42,000" />
+                <PriceField label="Sale Price" value={data.sale_price} onChange={numChange("sale_price")} placeholder="39,500" />
+                <PriceField label="List / Online Price" value={data.online_price} onChange={numChange("online_price")} placeholder="40,500" />
+                <PriceField label="Invoice / Purchase Price" value={data.purchase_price} onChange={numChange("purchase_price")} placeholder="36,000" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-6">
+                <PriceField label="List / Asking Price" value={data.online_price} onChange={numChange("online_price")} placeholder="29,999" />
+                <PriceField label="Purchase Price" value={data.purchase_price} onChange={numChange("purchase_price")} placeholder="24,000" />
+              </div>
+            )}
           </div>
         </>
       ) : (
@@ -172,7 +207,11 @@ export function StepPricing() {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button variant="outline" size="lg" onClick={back} className="gap-2">
+          <ArrowLeft size={16} strokeWidth={ICON_STROKE_WIDTH} />
+          Back
+        </Button>
         <Button size="lg" onClick={validateAndContinue} className="gap-2">
           Continue
           <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />
