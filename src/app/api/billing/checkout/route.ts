@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const admin = createAdminClient();
     const { data: dealership } = await admin
       .from("dealerships")
-      .select("id, name, is_free_account, stripe_customer_id")
+      .select("id, name, is_free_account, stripe_customer_id, plan, subscription_status")
       .eq("id", profile.dealership_id)
       .single();
 
@@ -38,6 +38,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { planSlug, interval } = body as { planSlug: PlanSlug; interval: BillingInterval };
+
+    if (dealership.subscription_status === "active" && dealership.plan === planSlug) {
+      return NextResponse.json({ error: "You are already on this plan. Use the billing portal to manage your subscription." }, { status: 400 });
+    }
 
     if (!["starter", "professional", "enterprise"].includes(planSlug)) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });

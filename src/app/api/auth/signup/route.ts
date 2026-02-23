@@ -56,6 +56,7 @@ export async function POST(request: Request) {
         phone: phone || null,
         subscription_status: "trialing",
         plan: "starter",
+        max_users: 2,
         trial_ends_at: trialEndsAt.toISOString(),
         active_users_count: 1,
       })

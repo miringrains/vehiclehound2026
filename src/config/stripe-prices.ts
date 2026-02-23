@@ -38,5 +38,4 @@ export function getPriceId(plan: PlanSlug, interval: BillingInterval): string {
   return PLAN_PRICE_IDS[plan][interval];
 }
 
-export const TRIAL_DAYS = 14;
-export const GRACE_PERIOD_DAYS = 7;
+// TRIAL_DAYS and GRACE_PERIOD_DAYS are defined in @/lib/constants

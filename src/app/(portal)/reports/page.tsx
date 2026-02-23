@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FeatureGate } from "@/components/shared/FeatureGate";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { InsightsContent } from "./_components/InsightsContent";
 
@@ -8,7 +9,9 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Insights" description="Track how visitors interact with your inventory" />
-      <InsightsContent />
+      <FeatureGate feature="analytics">
+        <InsightsContent />
+      </FeatureGate>
     </div>
   );
 }

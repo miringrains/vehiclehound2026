@@ -3,6 +3,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { AuroraBackdrop } from "@/components/shared/AuroraBackdrop";
 import { TrialBanner } from "@/components/shared/TrialBanner";
+import { SubscriptionGate } from "@/components/shared/SubscriptionGate";
 
 export default function PortalLayout({
   children,
@@ -26,7 +27,9 @@ export default function PortalLayout({
             <TrialBanner />
             <TopBar />
             <main className="mx-auto max-w-[var(--content-max-width)] px-4 py-8 sm:px-6 lg:px-8">
-              {children}
+              <SubscriptionGate>
+                {children}
+              </SubscriptionGate>
             </main>
           </div>
         </div>

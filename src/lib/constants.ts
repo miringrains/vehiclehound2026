@@ -12,6 +12,7 @@ export const RATE_LIMITS = {
 } as const;
 
 export const TRIAL_DAYS = 14;
+export const GRACE_PERIOD_DAYS = 7;
 export const MAX_DEFAULT_USERS = 4;
 
 export const VIN_CACHE_TTL_MS = 3_600_000;
