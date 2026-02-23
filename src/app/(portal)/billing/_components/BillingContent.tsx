@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ExternalLink, Loader2, Shield } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Check, ExternalLink, Loader2, Shield, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { plans, formatPrice, type PlanSlug } from "@/config/plans";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { toast } from "sonner";
+import { Aurora } from "@/components/ui/aurora";
 import type { BillingInterval } from "@/config/stripe-prices";
 
 type Props = {
@@ -15,6 +16,12 @@ type Props = {
   isFreeAccount: boolean;
   hasStripeCustomer: boolean;
   isOwner: boolean;
+};
+
+const TIER_AURORA: Record<PlanSlug, [string, string, string]> = {
+  starter: ["#6D28D9", "#7C3AED", "#8B5CF6"],
+  professional: ["#3A29FF", "#5850EC", "#7C3AED"],
+  enterprise: ["#1E1B4B", "#3730A3", "#4F46E5"],
 };
 
 const PLAN_FEATURES_LABELS: Record<string, string> = {
@@ -203,68 +210,37 @@ export function BillingContent({
           </div>
 
           {/* Plan cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {plans.map((plan) => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {plans.map((plan, idx) => {
               const isCurrent = plan.slug === currentPlan && isActive;
               const price = interval === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
               const perMonth = interval === "yearly" ? Math.round(price / 12) : price;
               const isLoading = loadingPlan === plan.slug;
+              const isPopular = idx === 1;
 
               return (
-                <div
+                <PricingCard
                   key={plan.slug}
-                  className={`rounded-xl border bg-card p-5 space-y-4 relative ${
-                    isCurrent ? "border-primary ring-1 ring-primary/20" : "border-border"
-                  }`}
-                >
-                  {isCurrent && (
-                    <span className="absolute -top-2.5 left-4 text-[10px] font-medium bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                      Current Plan
-                    </span>
-                  )}
-                  <div>
-                    <h3 className="text-heading-3">{plan.name}</h3>
-                    <p className="text-caption text-muted-foreground mt-1">{plan.description}</p>
-                  </div>
-                  <div>
-                    <span className="text-heading-1">{formatPrice(perMonth)}</span>
-                    <span className="text-caption text-muted-foreground">/mo</span>
-                    {interval === "yearly" && (
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        {formatPrice(price)}/yr billed annually
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-caption text-muted-foreground">
-                    {plan.maxVehicles === -1 ? "Unlimited" : plan.maxVehicles} vehicles, {plan.maxUsers} users
-                  </div>
-                  <ul className="space-y-1.5">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-caption">
-                        <Check size={12} strokeWidth={ICON_STROKE_WIDTH} className="text-primary shrink-0" />
-                        {PLAN_FEATURES_LABELS[f] || f}
-                      </li>
-                    ))}
-                  </ul>
-                  {isCurrent ? (
-                    <Button className="w-full" variant="outline" disabled>
-                      Current Plan
-                    </Button>
-                  ) : (
-                    <Button
-                      className="w-full"
-                      onClick={() => handleCheckout(plan.slug)}
-                      disabled={!!loadingPlan || !isOwner}
-                    >
-                      {isLoading ? (
-                        <Loader2 size={14} className="animate-spin mr-1.5" />
-                      ) : null}
-                      {isTrialing || isCanceled || !subscriptionStatus
-                        ? "Start Subscription"
-                        : "Upgrade"}
-                    </Button>
-                  )}
-                </div>
+                  name={plan.name}
+                  slug={plan.slug}
+                  description={plan.description}
+                  perMonth={perMonth}
+                  totalPrice={interval === "yearly" ? price : undefined}
+                  interval={interval}
+                  maxVehicles={plan.maxVehicles}
+                  maxUsers={plan.maxUsers}
+                  features={plan.features}
+                  isCurrent={isCurrent}
+                  isPopular={isPopular}
+                  isLoading={isLoading}
+                  anyLoading={!!loadingPlan}
+                  isOwner={isOwner}
+                  isTrialing={isTrialing}
+                  isCanceled={isCanceled}
+                  subscriptionStatus={subscriptionStatus}
+                  onCheckout={handleCheckout}
+                  colorStops={TIER_AURORA[plan.slug]}
+                />
               );
             })}
           </div>
@@ -276,6 +252,153 @@ export function BillingContent({
           Only the dealership owner can manage billing.
         </p>
       )}
+    </div>
+  );
+}
+
+type PricingCardProps = {
+  name: string;
+  slug: PlanSlug;
+  description: string;
+  perMonth: number;
+  totalPrice?: number;
+  interval: BillingInterval;
+  maxVehicles: number;
+  maxUsers: number;
+  features: string[];
+  isCurrent: boolean;
+  isPopular: boolean;
+  isLoading: boolean;
+  anyLoading: boolean;
+  isOwner: boolean;
+  isTrialing: boolean;
+  isCanceled: boolean;
+  subscriptionStatus: string | null;
+  onCheckout: (slug: PlanSlug) => void;
+  colorStops: [string, string, string];
+};
+
+function PricingCard({
+  name,
+  slug,
+  description,
+  perMonth,
+  totalPrice,
+  interval,
+  maxVehicles,
+  maxUsers,
+  features,
+  isCurrent,
+  isPopular,
+  isLoading,
+  anyLoading,
+  isOwner,
+  isTrialing,
+  isCanceled,
+  subscriptionStatus,
+  onCheckout,
+  colorStops,
+}: PricingCardProps) {
+  const auroraRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  return (
+    <div
+      className={`group relative flex flex-col rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-lg ${
+        isCurrent
+          ? "border-primary ring-1 ring-primary/20"
+          : isPopular
+            ? "border-primary/40"
+            : "border-border"
+      }`}
+    >
+      {/* Header section */}
+      <div className="p-6 pb-0 space-y-4 flex-1">
+        {/* Name + badge row */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-heading-3">{name}</h3>
+          {isPopular && !isCurrent && (
+            <span className="text-[10px] font-semibold tracking-wide uppercase bg-primary text-primary-foreground px-2.5 py-1 rounded-full">
+              Popular
+            </span>
+          )}
+          {isCurrent && (
+            <span className="text-[10px] font-semibold tracking-wide uppercase bg-primary text-primary-foreground px-2.5 py-1 rounded-full">
+              Current
+            </span>
+          )}
+        </div>
+
+        <p className="text-caption text-muted-foreground leading-relaxed">{description}</p>
+
+        {/* Divider */}
+        <div className="border-t border-border" />
+
+        {/* Price */}
+        <div className="pt-1">
+          <div className="flex items-baseline gap-1">
+            <span className="text-[2.25rem] font-bold tracking-tight leading-none">{formatPrice(perMonth)}</span>
+            <span className="text-body-sm text-muted-foreground">/ month</span>
+          </div>
+          {interval === "yearly" && totalPrice && (
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {formatPrice(totalPrice)}/yr billed annually
+            </p>
+          )}
+        </div>
+
+        {/* Capacity */}
+        <p className="text-caption text-muted-foreground">
+          {maxVehicles === -1 ? "Unlimited" : maxVehicles} vehicles &middot; {maxUsers} users
+        </p>
+
+        {/* Features */}
+        <ul className="space-y-2 pb-6">
+          {features.map((f) => (
+            <li key={f} className="flex items-start gap-2.5 text-caption">
+              <Check size={14} strokeWidth={2.5} className="text-primary shrink-0 mt-0.5" />
+              <span>{PLAN_FEATURES_LABELS[f] || f}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Aurora footer + CTA */}
+      <div className="relative h-[72px] mt-auto overflow-hidden">
+        {/* Aurora background */}
+        <div ref={auroraRef} className="absolute inset-0 opacity-80">
+          {mounted && (
+            <Aurora
+              colorStops={colorStops}
+              speed={0.3}
+              amplitude={1.0}
+              blend={0.7}
+            />
+          )}
+        </div>
+
+        {/* CTA button */}
+        <div className="relative z-10 flex items-center justify-center h-full px-6">
+          {isCurrent ? (
+            <span className="text-body-sm font-medium text-white/80">Current Plan</span>
+          ) : (
+            <button
+              onClick={() => onCheckout(slug)}
+              disabled={anyLoading || !isOwner}
+              className="flex items-center gap-2 text-body-sm font-semibold text-white transition-all hover:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : null}
+              {isTrialing || isCanceled || !subscriptionStatus
+                ? "Subscribe this plan"
+                : "Upgrade"}
+              {!isLoading && <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

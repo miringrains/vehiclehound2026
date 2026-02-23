@@ -16,8 +16,8 @@ export const plans: PlanDefinition[] = [
     name: "Starter",
     slug: "starter",
     description: "Essential inventory management for small dealerships.",
-    monthlyPrice: 4900,
-    yearlyPrice: 47000,
+    monthlyPrice: 14900,
+    yearlyPrice: 142800,
     maxVehicles: 50,
     maxUsers: 2,
     features: [
@@ -32,8 +32,8 @@ export const plans: PlanDefinition[] = [
     slug: "professional",
     description:
       "Advanced tools and integrations for growing dealerships.",
-    monthlyPrice: 9900,
-    yearlyPrice: 95000,
+    monthlyPrice: 34900,
+    yearlyPrice: 335000,
     maxVehicles: 200,
     maxUsers: 5,
     features: [
@@ -55,8 +55,8 @@ export const plans: PlanDefinition[] = [
     slug: "enterprise",
     description:
       "Full platform access with unlimited capacity and priority support.",
-    monthlyPrice: 19900,
-    yearlyPrice: 190000,
+    monthlyPrice: 64900,
+    yearlyPrice: 623000,
     maxVehicles: -1,
     maxUsers: 20,
     features: [
