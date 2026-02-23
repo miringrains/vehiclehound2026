@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Check, ArrowRight } from "lucide-react";
+import { Search, Check, ArrowRight, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,18 +84,20 @@ export function StepIdentity() {
   }, [setData]);
 
   async function handleDecode() {
-    if (!data.vin || data.vin.length !== 17) {
+    const vin = data.vin.trim().toUpperCase();
+    if (!vin || vin.length !== 17) {
       setDecodeError("VIN must be 17 characters");
       return;
     }
     setDecoding(true);
     setDecodeError(null);
     try {
-      const res = await fetch(`/api/vin/${data.vin}`);
+      const res = await fetch(`/api/vin/${vin}`);
       const json = await res.json();
       if (!res.ok) { setDecodeError(json.error || "Decode failed"); return; }
       const d = json.decoded as Record<string, string | number | null>;
       setData({
+        vin,
         year: (d.year as number) ?? data.year,
         make: (d.make as string) ?? data.make,
         model: (d.model as string) ?? data.model,
@@ -119,12 +121,99 @@ export function StepIdentity() {
     }
   }
 
+  function handleVinKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && data.vin.length === 17 && !decoding) {
+      e.preventDefault();
+      handleDecode();
+    }
+  }
+
   const hasVehicle = !!(data.year && data.make && data.model);
 
   return (
     <div className="space-y-6">
-      {/* Vehicle Selection */}
+      {/* VIN-first flow for sale vehicles */}
+      {isSale && (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap size={16} strokeWidth={ICON_STROKE_WIDTH} className="text-primary" />
+            <h3 className="text-heading-4">VIN Lookup</h3>
+            {decoded && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500">
+                <Check size={11} /> Decoded
+              </span>
+            )}
+          </div>
+          <p className="text-[0.8125rem] text-muted-foreground mb-3">
+            Enter the VIN to auto-fill vehicle details, or skip and fill in manually below.
+          </p>
+          <div className="flex gap-3">
+            <Input
+              placeholder="Enter 17-character VIN"
+              value={data.vin}
+              onChange={(e) => {
+                const v = e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "");
+                setData({ vin: v });
+                setDecoded(false);
+                setDecodeError(null);
+              }}
+              onKeyDown={handleVinKeyDown}
+              maxLength={17}
+              className="font-mono tracking-wider"
+              autoFocus
+            />
+            <Button
+              type="button"
+              onClick={handleDecode}
+              disabled={decoding || data.vin.length !== 17}
+              className="shrink-0 gap-2"
+            >
+              {decoding ? <LoadingSpinner size={16} /> : <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />}
+              {decoding ? "Decoding..." : "Decode"}
+            </Button>
+          </div>
+          {decodeError && <p className="text-caption text-destructive mt-2">{decodeError}</p>}
+          {data.vin.length > 0 && data.vin.length < 17 && (
+            <p className="text-[0.6875rem] text-muted-foreground mt-1.5">
+              {17 - data.vin.length} character{17 - data.vin.length !== 1 ? "s" : ""} remaining
+            </p>
+          )}
+
+          {/* Decoded summary */}
+          <AnimatePresence>
+            {decoded && hasVehicle && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="mt-4 rounded-lg bg-muted/40 border border-border/50 p-3"
+              >
+                <p className="text-[0.8125rem] font-medium">
+                  {data.year} {data.make} {data.model}
+                  {data.trim && <span className="font-normal text-muted-foreground"> {data.trim}</span>}
+                </p>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1 text-[0.6875rem] text-muted-foreground">
+                  {data.vehicle_type && <span>{data.vehicle_type}</span>}
+                  {data.engine_hp && <span>{data.engine_hp} HP</span>}
+                  {data.engine_cylinders && <span>{data.engine_cylinders} cyl</span>}
+                  {data.fuel_type && <span>{data.fuel_type}</span>}
+                  {data.transmission_style && <span>{data.transmission_style}</span>}
+                  {data.drive_type && <span>{data.drive_type}</span>}
+                  {data.doors && <span>{data.doors} doors</span>}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Vehicle Selection — manual entry or to override decoded values */}
       <div className="rounded-xl border border-border bg-card p-6">
+        {isSale && (
+          <p className="text-[0.75rem] text-muted-foreground mb-4">
+            {decoded ? "Review and adjust the decoded details if needed." : "Or enter vehicle details manually."}
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
           <div className="space-y-1.5">
             <Label>Year</Label>
@@ -177,37 +266,7 @@ export function StepIdentity() {
         </div>
       </div>
 
-      {/* VIN Decode (sale only) */}
-      <AnimatePresence>
-        {isSale && hasVehicle && (
-          <motion.div {...reveal}>
-            <div className="rounded-xl border border-border bg-card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-heading-4">VIN Decode</h3>
-                {decoded && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-semibold text-success">
-                    <Check size={12} strokeWidth={ICON_STROKE_WIDTH} /> Decoded
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-3">
-                <Input
-                  placeholder="Enter 17-character VIN"
-                  value={data.vin}
-                  onChange={(e) => setData({ vin: e.target.value.toUpperCase() })}
-                  maxLength={17}
-                  className="font-mono tracking-wider"
-                />
-                <Button type="button" variant="outline" onClick={handleDecode} disabled={decoding || data.vin.length !== 17} className="shrink-0 gap-2">
-                  {decoding ? <LoadingSpinner size={16} /> : <Search size={16} strokeWidth={ICON_STROKE_WIDTH} />}
-                  Decode
-                </Button>
-              </div>
-              {decodeError && <p className="text-caption text-destructive mt-2">{decodeError}</p>}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* VIN field for lease vehicles (non-prominent, in the details section) */}
 
       {/* Additional Details */}
       <AnimatePresence>
@@ -240,6 +299,19 @@ export function StepIdentity() {
                       <Input type="number" placeholder="25,000" value={data.mileage ?? ""} onChange={(e) => setData({ mileage: e.target.value ? Number(e.target.value) : null })} />
                     </div>
                   </div>
+                  {/* VIN field if not already entered above */}
+                  {!data.vin && (
+                    <div className="space-y-1.5">
+                      <Label>VIN</Label>
+                      <Input
+                        placeholder="17-character VIN (optional)"
+                        value={data.vin}
+                        onChange={(e) => setData({ vin: e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "") })}
+                        maxLength={17}
+                        className="font-mono tracking-wider max-w-md"
+                      />
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
                     <div className="space-y-1.5">
                       <Label>Status</Label>
@@ -255,31 +327,43 @@ export function StepIdentity() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-x-6 gap-y-5">
-                  <div className="space-y-1.5">
-                    <Label>Vehicle Type</Label>
-                    <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{vehicleTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                    </Select>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-3">
+                    <div className="space-y-1.5">
+                      <Label>Vehicle Type</Label>
+                      <Select value={data.vehicle_type || undefined} onValueChange={(v) => setData({ vehicle_type: v })}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{vehicleTypes.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Doors</Label>
+                      <Select value={data.doors ? String(data.doors) : undefined} onValueChange={(v) => setData({ doors: Number(v) })}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{[2, 3, 4, 5].map((d) => <SelectItem key={d} value={String(d)}>{d}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Status</Label>
+                      <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={String(VEHICLE_STATUSES.AVAILABLE)}>Available</SelectItem>
+                          <SelectItem value={String(VEHICLE_STATUSES.PENDING)}>Pending</SelectItem>
+                          <SelectItem value={String(VEHICLE_STATUSES.IN_TRANSIT)}>In Transit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Doors</Label>
-                    <Select value={data.doors ? String(data.doors) : undefined} onValueChange={(v) => setData({ doors: Number(v) })}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{[2, 3, 4, 5].map((d) => <SelectItem key={d} value={String(d)}>{d}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Status</Label>
-                    <Select value={String(data.status)} onValueChange={(v) => setData({ status: Number(v) as typeof data.status })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={String(VEHICLE_STATUSES.AVAILABLE)}>Available</SelectItem>
-                        <SelectItem value={String(VEHICLE_STATUSES.PENDING)}>Pending</SelectItem>
-                        <SelectItem value={String(VEHICLE_STATUSES.IN_TRANSIT)}>In Transit</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>VIN</Label>
+                    <Input
+                      placeholder="17-character VIN (optional)"
+                      value={data.vin}
+                      onChange={(e) => setData({ vin: e.target.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "") })}
+                      maxLength={17}
+                      className="font-mono tracking-wider max-w-md"
+                    />
                   </div>
                 </div>
               )}
