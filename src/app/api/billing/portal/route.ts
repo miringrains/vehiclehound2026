@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -30,11 +30,11 @@ export async function POST() {
       return NextResponse.json({ error: "No billing account found. Subscribe to a plan first." }, { status: 400 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const origin = request.headers.get("origin") || request.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "https://vehiclehound.com";
 
     const session = await stripe.billingPortal.sessions.create({
       customer: dealership.stripe_customer_id,
-      return_url: `${appUrl}/billing`,
+      return_url: `${origin}/billing`,
     });
 
     return NextResponse.json({ url: session.url });
