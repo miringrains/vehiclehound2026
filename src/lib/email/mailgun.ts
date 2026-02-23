@@ -48,7 +48,7 @@ export async function sendEmail(params: SendEmailParams): Promise<MailgunRespons
 
   if (params.attachments) {
     for (const att of params.attachments) {
-      form.append("attachment", new Blob([att.data], { type: att.contentType }), att.filename);
+      form.append("attachment", new Blob([new Uint8Array(att.data)], { type: att.contentType }), att.filename);
     }
   }
 
