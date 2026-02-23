@@ -313,8 +313,8 @@ function PricingCard({
       }`}
       style={{ background: "#0a0a0b" }}
     >
-      {/* Full-card aurora background */}
-      <div className="absolute inset-0 opacity-70">
+      {/* Full-card aurora background — flipped so color faces the bottom */}
+      <div className="absolute inset-0 opacity-70 rotate-180">
         {mounted && (
           <Aurora
             colorStops={colorStops}
@@ -327,8 +327,8 @@ function PricingCard({
       {/* Dark wash so aurora doesn't overpower */}
       <div className="absolute inset-0 bg-black/30" />
 
-      {/* White content panel — inset with 2px gap at bottom */}
-      <div className="relative z-10 m-[2px] mb-0 flex-1 flex flex-col rounded-t-[calc(1rem-2px)] bg-card">
+      {/* Content panel — inset from all sides, matching border radius top & bottom */}
+      <div className="relative z-10 m-[2px] flex-1 flex flex-col rounded-[calc(1rem-2px)] bg-card">
         <div className="p-6 pb-0 space-y-4 flex-1">
           {/* Name + badge row */}
           <div className="flex items-center justify-between">
