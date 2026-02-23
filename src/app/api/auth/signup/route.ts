@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { signupSchema } from "@/lib/validators/auth";
 import { slugify } from "@/lib/utils/slugify";
 import { TRIAL_DAYS } from "@/lib/constants";
+import { sendEmail } from "@/lib/email/mailgun";
+import { welcomeEmail } from "@/lib/email/templates";
 
 export async function POST(request: Request) {
   try {
@@ -89,6 +91,21 @@ export async function POST(request: Request) {
         joined_at: new Date().toISOString(),
       })
       .eq("id", authData.user.id);
+
+    try {
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://vehiclehound.com"}/login`;
+      await sendEmail({
+        to: email,
+        subject: `Welcome to Vehicle Hound — ${dealershipName} is all set`,
+        html: welcomeEmail({
+          ownerName: name,
+          dealershipName,
+          loginUrl,
+        }),
+      });
+    } catch {
+      // Non-critical
+    }
 
     return NextResponse.json({ success: true });
   } catch {

@@ -9,6 +9,7 @@ import {
   Pencil,
   Trash2,
   Car,
+  Send,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -134,6 +135,7 @@ export function DealSheetDetail({ dealSheetId }: { dealSheetId: string }) {
   const [sheet, setSheet] = useState<DealSheet | null>(null);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [emailing, setEmailing] = useState(false);
 
   const fetchSheet = useCallback(async () => {
     const res = await fetch(`/api/deal-sheets/${dealSheetId}`);
@@ -180,6 +182,28 @@ export function DealSheetDetail({ dealSheetId }: { dealSheetId: string }) {
     setDownloading(false);
   };
 
+  const handleEmailToCustomer = async () => {
+    if (!sheet?.customers?.email) {
+      alert("No customer email on file. Assign a customer with an email first.");
+      return;
+    }
+    setEmailing(true);
+    try {
+      const res = await fetch(`/api/deal-sheets/${dealSheetId}/email`, { method: "POST" });
+      if (res.ok) {
+        alert(`Deal sheet emailed to ${sheet.customers.email}`);
+        fetchSheet();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to send email");
+      }
+    } catch {
+      alert("Failed to send email");
+    } finally {
+      setEmailing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -218,6 +242,12 @@ export function DealSheetDetail({ dealSheetId }: { dealSheetId: string }) {
                 <Download size={14} strokeWidth={ICON_STROKE_WIDTH} />
                 {downloading ? "..." : "PDF"}
               </Button>
+              {sheet.customers?.email && (
+                <Button variant="outline" onClick={handleEmailToCustomer} disabled={emailing}>
+                  <Send size={14} strokeWidth={ICON_STROKE_WIDTH} />
+                  {emailing ? "Sending..." : "Email"}
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import crypto from "crypto";
+import { sendEmail } from "@/lib/email/mailgun";
+import { userInvitation } from "@/lib/email/templates";
 
 export async function DELETE(
   _request: NextRequest,
@@ -78,8 +80,24 @@ export async function POST(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const inviteUrl = `${new URL(request.url).origin}/invitation/${token}`;
-    console.log(`[INVITATION RESEND] Send email to ${existing.email}: ${inviteUrl}`);
+    try {
+      const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin}/invitation/${token}`;
+      const { data: inviterProfile } = await admin.from("profiles").select("name").eq("id", user.id).single();
+      const { data: dlr } = await admin.from("dealerships").select("name").eq("id", profile.dealership_id).single();
+
+      await sendEmail({
+        to: existing.email,
+        subject: `Reminder: You're invited to join ${dlr?.name || "a dealership"} on Vehicle Hound`,
+        html: userInvitation({
+          dealershipName: dlr?.name || "a dealership",
+          inviterName: inviterProfile?.name || "A team member",
+          inviteUrl,
+          expiresInDays: 7,
+        }),
+      });
+    } catch {
+      // Non-critical
+    }
 
     return NextResponse.json({ success: true });
   } catch {

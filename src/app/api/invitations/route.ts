@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import crypto from "crypto";
+import { sendEmail } from "@/lib/email/mailgun";
+import { userInvitation } from "@/lib/email/templates";
 
 export async function GET() {
   try {
@@ -123,9 +125,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    // TODO: Send invitation email (stub for now)
-    const inviteUrl = `${new URL(request.url).origin}/invitation/${token}`;
-    console.log(`[INVITATION] Send email to ${email}: ${inviteUrl}`);
+    try {
+      const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin}/invitation/${token}`;
+      const { data: inviterProfile } = await admin.from("profiles").select("name").eq("id", user.id).single();
+      const { data: dlr } = await admin.from("dealerships").select("name").eq("id", profile.dealership_id).single();
+
+      await sendEmail({
+        to: email,
+        subject: `You're invited to join ${dlr?.name || "a dealership"} on Vehicle Hound`,
+        html: userInvitation({
+          dealershipName: dlr?.name || "a dealership",
+          inviterName: inviterProfile?.name || "A team member",
+          inviteUrl,
+          expiresInDays: 7,
+        }),
+      });
+    } catch {
+      // Email send failure shouldn't block the invitation creation
+    }
 
     return NextResponse.json({ invitation });
   } catch {

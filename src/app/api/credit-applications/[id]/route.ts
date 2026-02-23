@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notifyCreditAppStatusChange } from "@/lib/email/credit-application-email";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -59,11 +60,34 @@ export async function PATCH(request: NextRequest, ctx: RouteContext) {
       .from("credit_applications")
       .update(updates)
       .eq("id", id)
-      .select("id, status, updated_at")
+      .select("id, status, updated_at, first_name, last_name, email")
       .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    if (data.email && ["approved", "denied", "reviewed"].includes(data.status)) {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("dealership_id")
+          .eq("id", user.id)
+          .single();
+        let dealershipName = "the dealership";
+        if (profile?.dealership_id) {
+          const { data: dlr } = await supabase.from("dealerships").select("name").eq("id", profile.dealership_id).single();
+          if (dlr?.name) dealershipName = dlr.name;
+        }
+        await notifyCreditAppStatusChange({
+          applicantEmail: data.email,
+          applicantName: `${data.first_name} ${data.last_name}`.trim(),
+          status: data.status as "approved" | "denied" | "reviewed",
+          dealershipName,
+        });
+      } catch {
+        // Email is non-critical
+      }
     }
 
     return NextResponse.json(data);
