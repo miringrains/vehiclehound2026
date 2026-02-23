@@ -1,5 +1,7 @@
 export type PlanSlug = "starter" | "professional" | "enterprise";
 
+export const PLAN_ORDER: PlanSlug[] = ["starter", "professional", "enterprise"];
+
 export type PlanDefinition = {
   name: string;
   slug: PlanSlug;
@@ -9,13 +11,14 @@ export type PlanDefinition = {
   maxVehicles: number;
   maxUsers: number;
   features: string[];
+  highlights: string[];
 };
 
 export const plans: PlanDefinition[] = [
   {
     name: "Starter",
     slug: "starter",
-    description: "Essential inventory management for small dealerships.",
+    description: "Everything you need to list and manage your inventory online.",
     monthlyPrice: 14900,
     yearlyPrice: 142800,
     maxVehicles: 50,
@@ -26,12 +29,19 @@ export const plans: PlanDefinition[] = [
       "credit_applications",
       "csv_import",
     ],
+    highlights: [
+      "Up to 50 vehicles",
+      "2 team members",
+      "Inventory management",
+      "Embeddable website widget",
+      "Online credit applications",
+      "CSV bulk import",
+    ],
   },
   {
     name: "Professional",
     slug: "professional",
-    description:
-      "Advanced tools and integrations for growing dealerships.",
+    description: "CRM, deal sheets, and analytics for dealerships ready to scale.",
     monthlyPrice: 34900,
     yearlyPrice: 335000,
     maxVehicles: 200,
@@ -41,20 +51,26 @@ export const plans: PlanDefinition[] = [
       "storefront",
       "credit_applications",
       "csv_import",
-      "ai_descriptions",
-      "ai_pricing",
-      "reports_standard",
-      "reports_ai",
-      "webflow_integration",
-      "widgets",
-      "api_access",
+      "crm",
+      "deal_sheets",
+      "analytics",
+      "email_notifications",
+    ],
+    highlights: [
+      "Up to 200 vehicles",
+      "5 team members",
+      "Everything in Starter, plus:",
+      "Customer CRM & notes",
+      "Deal sheet builder & PDF export",
+      "Email deal sheets to customers",
+      "Analytics dashboard",
+      "Email notifications",
     ],
   },
   {
     name: "Enterprise",
     slug: "enterprise",
-    description:
-      "Full platform access with unlimited capacity and priority support.",
+    description: "Unlimited capacity with priority support for high-volume operations.",
     monthlyPrice: 64900,
     yearlyPrice: 623000,
     maxVehicles: -1,
@@ -64,24 +80,31 @@ export const plans: PlanDefinition[] = [
       "storefront",
       "credit_applications",
       "csv_import",
-      "ai_descriptions",
-      "ai_pricing",
-      "reports_standard",
-      "reports_ai",
-      "webflow_integration",
-      "widgets",
+      "crm",
+      "deal_sheets",
+      "analytics",
+      "email_notifications",
       "api_access",
-      "vauto_import",
-      "gwg_import",
-      "homenet_feed",
       "priority_support",
-      "ai_chat",
+    ],
+    highlights: [
+      "Unlimited vehicles",
+      "Up to 20 team members",
+      "Everything in Professional, plus:",
+      "API access",
+      "Priority support",
+      "Dedicated onboarding",
+      "Custom integrations",
     ],
   },
 ];
 
 export function getPlan(slug: PlanSlug): PlanDefinition | undefined {
   return plans.find((p) => p.slug === slug);
+}
+
+export function planIndex(slug: PlanSlug): number {
+  return PLAN_ORDER.indexOf(slug);
 }
 
 export function formatPrice(cents: number): string {

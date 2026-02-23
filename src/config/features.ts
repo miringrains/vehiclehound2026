@@ -5,36 +5,24 @@ export type FeatureName =
   | "storefront"
   | "credit_applications"
   | "csv_import"
-  | "ai_descriptions"
-  | "ai_pricing"
-  | "reports_standard"
-  | "reports_ai"
-  | "webflow_integration"
-  | "widgets"
+  | "crm"
+  | "deal_sheets"
+  | "analytics"
+  | "email_notifications"
   | "api_access"
-  | "vauto_import"
-  | "gwg_import"
-  | "homenet_feed"
-  | "priority_support"
-  | "ai_chat";
+  | "priority_support";
 
 export const featureRequiredPlans: Record<FeatureName, PlanSlug[]> = {
   inventory_management: ["starter", "professional", "enterprise"],
   storefront: ["starter", "professional", "enterprise"],
   credit_applications: ["starter", "professional", "enterprise"],
   csv_import: ["starter", "professional", "enterprise"],
-  ai_descriptions: ["professional", "enterprise"],
-  ai_pricing: ["professional", "enterprise"],
-  reports_standard: ["professional", "enterprise"],
-  reports_ai: ["professional", "enterprise"],
-  webflow_integration: ["professional", "enterprise"],
-  widgets: ["professional", "enterprise"],
-  api_access: ["professional", "enterprise"],
-  vauto_import: ["enterprise"],
-  gwg_import: ["enterprise"],
-  homenet_feed: ["enterprise"],
+  crm: ["professional", "enterprise"],
+  deal_sheets: ["professional", "enterprise"],
+  analytics: ["professional", "enterprise"],
+  email_notifications: ["professional", "enterprise"],
+  api_access: ["enterprise"],
   priority_support: ["enterprise"],
-  ai_chat: ["enterprise"],
 };
 
 export function isFeatureAvailable(

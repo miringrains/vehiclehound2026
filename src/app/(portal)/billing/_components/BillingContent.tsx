@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, ExternalLink, Loader2, Shield, ArrowRight } from "lucide-react";
+import { Check, ExternalLink, Loader2, Shield, ArrowRight, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { plans, formatPrice, type PlanSlug } from "@/config/plans";
+import { plans, formatPrice, planIndex, type PlanSlug } from "@/config/plans";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { toast } from "sonner";
 import { Aurora } from "@/components/ui/aurora";
@@ -22,25 +22,6 @@ const TIER_AURORA: Record<PlanSlug, [string, string, string]> = {
   starter: ["#6D28D9", "#7C3AED", "#8B5CF6"],
   professional: ["#3A29FF", "#5850EC", "#7C3AED"],
   enterprise: ["#1E1B4B", "#3730A3", "#4F46E5"],
-};
-
-const PLAN_FEATURES_LABELS: Record<string, string> = {
-  inventory_management: "Inventory Management",
-  storefront: "Storefront & Widgets",
-  credit_applications: "Credit Applications",
-  csv_import: "CSV Import",
-  ai_descriptions: "AI Descriptions",
-  ai_pricing: "AI Pricing",
-  reports_standard: "Analytics & Reports",
-  reports_ai: "AI Reports",
-  webflow_integration: "Webflow Integration",
-  widgets: "Embeddable Widgets",
-  api_access: "API Access",
-  vauto_import: "vAuto Import",
-  gwg_import: "GWG Import",
-  homenet_feed: "HomeNet Feed",
-  priority_support: "Priority Support",
-  ai_chat: "AI Chat",
 };
 
 export function BillingContent({
@@ -62,6 +43,8 @@ export function BillingContent({
   const trialEnd = trialEndsAt ? new Date(trialEndsAt) : null;
   const trialDaysLeft = trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86_400_000)) : 0;
   const trialExpired = trialEnd ? trialEnd < new Date() : false;
+
+  const currentIdx = isActive ? planIndex(currentPlan) : -1;
 
   async function handleCheckout(planSlug: PlanSlug) {
     if (!isOwner) {
@@ -179,73 +162,83 @@ export function BillingContent({
       )}
 
       {/* Interval toggle */}
-      {(!isActive || isCanceled) && (
-        <>
-          <div className="flex justify-center">
-            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
-              <button
-                type="button"
-                onClick={() => setInterval("monthly")}
-                className={`px-5 py-2 text-body-sm font-medium rounded-md transition-all ${
-                  interval === "monthly"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                type="button"
-                onClick={() => setInterval("yearly")}
-                className={`px-5 py-2 text-body-sm font-medium rounded-md transition-all ${
-                  interval === "yearly"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Yearly
-                <span className="ml-1.5 text-[10px] font-semibold text-primary">Save ~20%</span>
-              </button>
-            </div>
-          </div>
+      <div className="flex justify-center">
+        <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+          <button
+            type="button"
+            onClick={() => setInterval("monthly")}
+            className={`px-5 py-2 text-body-sm font-medium rounded-md transition-all ${
+              interval === "monthly"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            type="button"
+            onClick={() => setInterval("yearly")}
+            className={`px-5 py-2 text-body-sm font-medium rounded-md transition-all ${
+              interval === "yearly"
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Yearly
+            <span className="ml-1.5 text-[10px] font-semibold text-primary">Save ~20%</span>
+          </button>
+        </div>
+      </div>
 
-          {/* Plan cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {plans.map((plan, idx) => {
-              const isCurrent = plan.slug === currentPlan && isActive;
-              const price = interval === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-              const perMonth = interval === "yearly" ? Math.round(price / 12) : price;
-              const isLoading = loadingPlan === plan.slug;
-              const isPopular = idx === 1;
+      {/* Plan cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {plans.map((plan, idx) => {
+          const isCurrent = plan.slug === currentPlan && isActive;
+          const price = interval === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+          const perMonth = interval === "yearly" ? Math.round(price / 12) : price;
+          const isLoading = loadingPlan === plan.slug;
+          const isPopular = idx === 1;
+          const thisIdx = planIndex(plan.slug);
 
-              return (
-                <PricingCard
-                  key={plan.slug}
-                  name={plan.name}
-                  slug={plan.slug}
-                  description={plan.description}
-                  perMonth={perMonth}
-                  totalPrice={interval === "yearly" ? price : undefined}
-                  interval={interval}
-                  maxVehicles={plan.maxVehicles}
-                  maxUsers={plan.maxUsers}
-                  features={plan.features}
-                  isCurrent={isCurrent}
-                  isPopular={isPopular}
-                  isLoading={isLoading}
-                  anyLoading={!!loadingPlan}
-                  isOwner={isOwner}
-                  isTrialing={isTrialing}
-                  isCanceled={isCanceled}
-                  subscriptionStatus={subscriptionStatus}
-                  onCheckout={handleCheckout}
-                  colorStops={TIER_AURORA[plan.slug]}
-                />
-              );
-            })}
-          </div>
-        </>
-      )}
+          let ctaLabel: string;
+          let ctaAction: "upgrade" | "downgrade" | "subscribe" | "current";
+          if (isCurrent) {
+            ctaLabel = "Current Plan";
+            ctaAction = "current";
+          } else if (currentIdx === -1) {
+            ctaLabel = "Get Started";
+            ctaAction = "subscribe";
+          } else if (thisIdx > currentIdx) {
+            ctaLabel = "Upgrade";
+            ctaAction = "upgrade";
+          } else {
+            ctaLabel = "Downgrade";
+            ctaAction = "downgrade";
+          }
+
+          return (
+            <PricingCard
+              key={plan.slug}
+              name={plan.name}
+              slug={plan.slug}
+              description={plan.description}
+              perMonth={perMonth}
+              totalPrice={interval === "yearly" ? price : undefined}
+              interval={interval}
+              highlights={plan.highlights}
+              isCurrent={isCurrent}
+              isPopular={isPopular}
+              isLoading={isLoading}
+              anyLoading={!!loadingPlan}
+              isOwner={isOwner}
+              ctaLabel={ctaLabel}
+              ctaAction={ctaAction}
+              onCheckout={handleCheckout}
+              colorStops={TIER_AURORA[plan.slug]}
+            />
+          );
+        })}
+      </div>
 
       {!isOwner && (
         <p className="text-caption text-muted-foreground text-center">
@@ -263,17 +256,14 @@ type PricingCardProps = {
   perMonth: number;
   totalPrice?: number;
   interval: BillingInterval;
-  maxVehicles: number;
-  maxUsers: number;
-  features: string[];
+  highlights: string[];
   isCurrent: boolean;
   isPopular: boolean;
   isLoading: boolean;
   anyLoading: boolean;
   isOwner: boolean;
-  isTrialing: boolean;
-  isCanceled: boolean;
-  subscriptionStatus: string | null;
+  ctaLabel: string;
+  ctaAction: "upgrade" | "downgrade" | "subscribe" | "current";
   onCheckout: (slug: PlanSlug) => void;
   colorStops: [string, string, string];
 };
@@ -285,17 +275,14 @@ function PricingCard({
   perMonth,
   totalPrice,
   interval,
-  maxVehicles,
-  maxUsers,
-  features,
+  highlights,
   isCurrent,
   isPopular,
   isLoading,
   anyLoading,
   isOwner,
-  isTrialing,
-  isCanceled,
-  subscriptionStatus,
+  ctaLabel,
+  ctaAction,
   onCheckout,
   colorStops,
 }: PricingCardProps) {
@@ -324,10 +311,9 @@ function PricingCard({
           />
         )}
       </div>
-      {/* Dark wash so aurora doesn't overpower */}
       <div className="absolute inset-0 bg-black/30" />
 
-      {/* Content panel — inset from all sides, matching border radius top & bottom */}
+      {/* Content panel — inset from all sides, matching border radius */}
       <div className="relative z-10 m-[2px] flex-1 flex flex-col rounded-[calc(1rem-2px)] bg-card">
         <div className="p-6 pb-0 space-y-4 flex-1">
           {/* Name + badge row */}
@@ -347,7 +333,6 @@ function PricingCard({
 
           <p className="text-caption text-muted-foreground leading-relaxed">{description}</p>
 
-          {/* Divider */}
           <div className="border-t border-border" />
 
           {/* Price */}
@@ -363,26 +348,24 @@ function PricingCard({
             )}
           </div>
 
-          {/* Capacity */}
-          <p className="text-caption text-muted-foreground">
-            {maxVehicles === -1 ? "Unlimited" : maxVehicles} vehicles &middot; {maxUsers} users
-          </p>
-
           {/* Features */}
-          <ul className="space-y-2 pb-6">
-            {features.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-caption">
-                <Check size={14} strokeWidth={2.5} className="text-primary shrink-0 mt-0.5" />
-                <span>{PLAN_FEATURES_LABELS[f] || f}</span>
-              </li>
-            ))}
+          <ul className="space-y-2.5 pb-6">
+            {highlights.map((h, i) => {
+              const isHeader = h.endsWith(":");
+              return (
+                <li key={i} className={`flex items-start gap-2.5 text-caption ${isHeader ? "text-muted-foreground font-medium mt-1" : ""}`}>
+                  {!isHeader && <Check size={14} strokeWidth={2.5} className="text-primary shrink-0 mt-0.5" />}
+                  <span>{h}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>
 
       {/* CTA on the aurora strip at the bottom */}
       <div className="relative z-10 h-[60px] flex items-center justify-center px-6">
-        {isCurrent ? (
+        {ctaAction === "current" ? (
           <span className="text-body-sm font-medium text-white/80">Current Plan</span>
         ) : (
           <button
@@ -390,13 +373,13 @@ function PricingCard({
             disabled={anyLoading || !isOwner}
             className="flex items-center gap-2 text-body-sm font-semibold text-white transition-all hover:gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : null}
-            {isTrialing || isCanceled || !subscriptionStatus
-              ? "Subscribe this plan"
-              : "Upgrade"}
-            {!isLoading && <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />}
+            {isLoading && <Loader2 size={14} className="animate-spin" />}
+            {ctaLabel}
+            {!isLoading && (
+              ctaAction === "downgrade"
+                ? <ArrowDown size={16} strokeWidth={ICON_STROKE_WIDTH} />
+                : <ArrowRight size={16} strokeWidth={ICON_STROKE_WIDTH} />
+            )}
           </button>
         )}
       </div>
