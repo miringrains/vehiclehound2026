@@ -30,12 +30,16 @@ export async function DELETE(
 
     const { data: target } = await admin
       .from("profiles")
-      .select("id, dealership_id")
+      .select("id, dealership_id, dealership_role")
       .eq("id", targetUserId)
       .eq("dealership_id", profile.dealership_id)
       .single();
 
     if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    if (target.dealership_role === "owner") {
+      return NextResponse.json({ error: "Cannot remove the dealership owner" }, { status: 400 });
+    }
 
     await admin
       .from("profiles")

@@ -24,11 +24,19 @@ export default async function UsersPage() {
   }
 
   const admin = createAdminClient();
-  const { data: users } = await admin
-    .from("profiles")
-    .select("id, name, email, dealership_role, joined_at, last_activity_at")
-    .eq("dealership_id", profile.dealership_id)
-    .order("joined_at", { ascending: true });
+
+  const [{ data: users }, { data: dealership }] = await Promise.all([
+    admin
+      .from("profiles")
+      .select("id, name, email, dealership_role, joined_at, last_activity_at")
+      .eq("dealership_id", profile.dealership_id)
+      .order("joined_at", { ascending: true }),
+    admin
+      .from("dealerships")
+      .select("max_users, active_users_count")
+      .eq("id", profile.dealership_id)
+      .single(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -38,6 +46,8 @@ export default async function UsersPage() {
         currentRole={profile.dealership_role}
         users={users ?? []}
         dealershipId={profile.dealership_id}
+        maxUsers={dealership?.max_users ?? 4}
+        activeUsersCount={dealership?.active_users_count ?? (users?.length ?? 1)}
       />
     </div>
   );
