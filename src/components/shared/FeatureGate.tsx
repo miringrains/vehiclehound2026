@@ -19,7 +19,7 @@ export function FeatureGate({ feature, children, fallback }: Props) {
 
   if (!dealership) return <>{children}</>;
 
-  // During trial, all features are unlocked
+  if (dealership.is_free_account) return <>{children}</>;
   if (dealership.subscription_status === "trialing") return <>{children}</>;
 
   const plan = (dealership.plan || "starter") as PlanSlug;

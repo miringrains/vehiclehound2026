@@ -49,6 +49,7 @@ type AppData = {
   business_ein?: string | null;
   vehicle?: { year?: number | null; make?: string | null; model?: string | null; stock_number?: string | null } | null;
   created_at: string;
+  logo_data?: { base64: string; format: "PNG" | "JPEG" | "WEBP" } | null;
 };
 
 function fmt(v: unknown): string {
@@ -100,17 +101,28 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
   // ── Header bar ──
   doc.setFillColor(...DARK);
   doc.rect(0, 0, pageW, 80, "F");
+
+  let hdrTextX = mx;
+  if (data.logo_data) {
+    try {
+      const logoMaxH = 40;
+      const logoMaxW = 80;
+      doc.addImage(data.logo_data.base64, data.logo_data.format, mx, 20, logoMaxW, logoMaxH, undefined, "FAST");
+      hdrTextX = mx + logoMaxW + 12;
+    } catch { /* skip logo if invalid */ }
+  }
+
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255, 255, 255);
-  doc.text("Credit Application", mx, 46);
+  doc.text("Credit Application", hdrTextX, 46);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(200, 200, 205);
   const dateStr = new Date(data.created_at).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
   });
-  doc.text(dateStr, mx, 64);
+  doc.text(dateStr, hdrTextX, 64);
 
   if (data.vehicle) {
     const vLabel = [data.vehicle.year, data.vehicle.make, data.vehicle.model].filter(Boolean).join(" ");

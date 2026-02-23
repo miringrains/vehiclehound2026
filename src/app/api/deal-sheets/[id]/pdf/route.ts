@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateDealSheetPDF } from "@/lib/pdf/deal-sheet-pdf";
+import { fetchLogoData } from "@/lib/pdf/fetch-logo";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -36,7 +37,7 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
 
     const { data: dealership } = await admin
       .from("dealerships")
-      .select("name")
+      .select("name, logo_url")
       .eq("id", profile.dealership_id)
       .single();
 
@@ -44,12 +45,15 @@ export async function POST(_req: NextRequest, ctx: Ctx) {
       ? `${sheet.customers.first_name} ${sheet.customers.last_name}`
       : null;
 
+    const logo_data = await fetchLogoData(dealership?.logo_url);
+
     const pdfBytes = generateDealSheetPDF({
       dealership_name: dealership?.name || "Dealership",
       customer_name: customerName,
       title: sheet.title,
       options: sheet.options || [],
       created_at: sheet.created_at,
+      logo_data,
     });
 
     return new NextResponse(Buffer.from(pdfBytes), {

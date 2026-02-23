@@ -16,7 +16,7 @@ export default async function BillingPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("dealership_id")
+    .select("dealership_id, dealership_role")
     .eq("id", user.id)
     .single();
 
@@ -25,7 +25,7 @@ export default async function BillingPage() {
   const admin = createAdminClient();
   const { data: dealership } = await admin
     .from("dealerships")
-    .select("plan, subscription_status, trial_ends_at")
+    .select("plan, subscription_status, trial_ends_at, is_free_account, stripe_customer_id")
     .eq("id", profile.dealership_id)
     .single();
 
@@ -36,6 +36,9 @@ export default async function BillingPage() {
         currentPlan={(dealership?.plan ?? "starter") as PlanSlug}
         subscriptionStatus={dealership?.subscription_status ?? null}
         trialEndsAt={dealership?.trial_ends_at ?? null}
+        isFreeAccount={dealership?.is_free_account ?? false}
+        hasStripeCustomer={!!dealership?.stripe_customer_id}
+        isOwner={profile.dealership_role === "owner"}
       />
     </div>
   );

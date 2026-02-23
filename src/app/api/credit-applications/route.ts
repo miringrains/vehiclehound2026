@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { encrypt } from "@/lib/crypto";
 import { generateCreditApplicationPDF } from "@/lib/pdf/credit-application-pdf";
+import { fetchLogoData } from "@/lib/pdf/fetch-logo";
 import { notifyCreditAppSubmission } from "@/lib/email/credit-application-email";
 
 /* ────────────────────────────────────────────────
@@ -77,6 +78,9 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      const { data: dealershipForLogo } = await admin.from("dealerships").select("logo_url").eq("id", dealership_id).single();
+      const logo_data = await fetchLogoData(dealershipForLogo?.logo_url);
+
       const pdfBytes = generateCreditApplicationPDF({
         ...rest,
         ssn,
@@ -86,6 +90,7 @@ export async function POST(request: NextRequest) {
         is_business_app: rest.is_business_app ?? false,
         vehicle: vehicleData,
         created_at: inserted.created_at,
+        logo_data,
       });
 
       const pdfPath = `${storagePath}/application-${inserted.id}.pdf`;

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, Check, X, Plus, Trash2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Loader2, Check, X, Plus, Trash2, Upload, ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_DEAL_DEFAULTS, type DealDefaults, type CreditTier } from "@/lib/deal-calc";
 
 const US_STATES = [
@@ -43,6 +45,9 @@ export function DealershipSettings({ dealership }: Props) {
     zip: dealership.zip ?? "",
     website: dealership.website ?? "",
   });
+  const [logoUrl, setLogoUrl] = useState<string | null>(dealership.logo_url);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [emails, setEmails] = useState<string[]>(dealership.credit_app_emails ?? []);
   const [emailInput, setEmailInput] = useState("");
   const [dealDefaults, setDealDefaults] = useState<DealDefaults>(
@@ -52,6 +57,68 @@ export function DealershipSettings({ dealership }: Props) {
   const [saved, setSaved] = useState(false);
 
   const set = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo must be under 2MB");
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const supabase = createClient();
+      const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+      const filePath = `logos/${dealership.id}/logo-${Date.now()}.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from("vehicle-images")
+        .upload(filePath, file, { contentType: file.type, upsert: true });
+
+      if (uploadErr) {
+        toast.error("Upload failed: " + uploadErr.message);
+        return;
+      }
+
+      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vehicle-images/${filePath}`;
+
+      const res = await fetch("/api/dealership", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logo_url: publicUrl }),
+      });
+      if (!res.ok) {
+        toast.error("Failed to save logo");
+        return;
+      }
+
+      setLogoUrl(publicUrl);
+      toast.success("Logo uploaded");
+    } catch {
+      toast.error("Upload failed");
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  }
+
+  async function handleLogoRemove() {
+    const res = await fetch("/api/dealership", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logo_url: null }),
+    });
+    if (res.ok) {
+      setLogoUrl(null);
+      toast.success("Logo removed");
+    }
+  }
 
   const addEmail = () => {
     const e = emailInput.trim().toLowerCase();
@@ -97,6 +164,35 @@ export function DealershipSettings({ dealership }: Props) {
 
   return (
     <div className="max-w-2xl space-y-6">
+      {/* Logo */}
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+        <h3 className="text-heading-4">Logo</h3>
+        <div className="flex items-center gap-5">
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-xl border border-border bg-muted/40 overflow-hidden shrink-0">
+            {logoUrl ? (
+              <Image src={logoUrl} alt="Dealership logo" fill className="object-contain p-1.5" sizes="80px" />
+            ) : (
+              <ImageIcon size={24} className="text-muted-foreground" strokeWidth={ICON_STROKE_WIDTH} />
+            )}
+          </div>
+          <div className="space-y-2">
+            <p className="text-caption text-muted-foreground">Appears on deal sheets, credit app PDFs, and more. Max 2MB.</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+                {uploadingLogo ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <Upload size={14} className="mr-1.5" strokeWidth={ICON_STROKE_WIDTH} />}
+                {logoUrl ? "Change" : "Upload"}
+              </Button>
+              {logoUrl && (
+                <Button variant="ghost" size="sm" className="text-destructive" onClick={handleLogoRemove}>
+                  Remove
+                </Button>
+              )}
+            </div>
+            <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-xl border border-border bg-card p-5 space-y-4">
         <h3 className="text-heading-4">General</h3>
         <div>

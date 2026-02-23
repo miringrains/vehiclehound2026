@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateDealSheetPDF } from "@/lib/pdf/deal-sheet-pdf";
+import { fetchLogoData } from "@/lib/pdf/fetch-logo";
 import { sendEmail } from "@/lib/email/mailgun";
 import { dealSheetEmail } from "@/lib/email/templates";
 
@@ -43,13 +44,15 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
     const { data: dealership } = await admin
       .from("dealerships")
-      .select("name, phone")
+      .select("name, phone, logo_url")
       .eq("id", profile.dealership_id)
       .single();
 
     const customerName = sheet.customers
       ? `${sheet.customers.first_name} ${sheet.customers.last_name}`
       : recipientEmail;
+
+    const logo_data = await fetchLogoData(dealership?.logo_url);
 
     const pdfBytes = generateDealSheetPDF({
       dealership_name: dealership?.name || "Dealership",
@@ -59,6 +62,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       title: sheet.title,
       options: sheet.options || [],
       created_at: sheet.created_at,
+      logo_data,
     });
 
     const html = dealSheetEmail({

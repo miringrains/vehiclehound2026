@@ -13,6 +13,7 @@ type DealSheetData = {
   title?: string | null;
   options: DealOption[];
   created_at: string;
+  logo_data?: { base64: string; format: "PNG" | "JPEG" | "WEBP" } | null;
 };
 
 type ComputedOption = {
@@ -95,10 +96,20 @@ export function generateDealSheetPDF(data: DealSheetData): Uint8Array {
   doc.setFillColor(...DARK);
   doc.rect(0, 0, pageW, 72, "F");
 
+  let headerTextX = mx;
+  if (data.logo_data) {
+    try {
+      const logoMaxH = 36;
+      const logoMaxW = 80;
+      doc.addImage(data.logo_data.base64, data.logo_data.format, mx, 18, logoMaxW, logoMaxH, undefined, "FAST");
+      headerTextX = mx + logoMaxW + 12;
+    } catch { /* skip logo if invalid */ }
+  }
+
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(255, 255, 255);
-  doc.text(data.dealership_name, mx, 38);
+  doc.text(data.dealership_name, headerTextX, 38);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -111,7 +122,7 @@ export function generateDealSheetPDF(data: DealSheetData): Uint8Array {
   doc.text(dateStr, pageW - mx, 30, { align: "right" });
 
   if (data.customer_name) {
-    doc.text(`Prepared for: ${data.customer_name}`, mx, 56);
+    doc.text(`Prepared for: ${data.customer_name}`, headerTextX, 56);
   }
   if (data.title) {
     doc.setTextColor(150, 150, 155);

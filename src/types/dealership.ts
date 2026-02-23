@@ -16,6 +16,8 @@ export type Dealership = {
   plan: string;
   subscription_status: string | null;
   is_free_account: boolean;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
   trial_ends_at: string | null;
   created_at: string;
   updated_at: string;

@@ -12,6 +12,8 @@ type DealershipData = {
   trial_ends_at: string | null;
   max_users: number;
   active_users_count: number;
+  is_free_account: boolean;
+  stripe_customer_id: string | null;
 };
 
 async function fetchDealership(): Promise<DealershipData | null> {
@@ -29,7 +31,7 @@ async function fetchDealership(): Promise<DealershipData | null> {
 
   const { data } = await supabase
     .from("dealerships")
-    .select("id, name, plan, subscription_status, trial_ends_at, max_users, active_users_count")
+    .select("id, name, plan, subscription_status, trial_ends_at, max_users, active_users_count, is_free_account, stripe_customer_id")
     .eq("id", profile.dealership_id)
     .single();
 
@@ -48,6 +50,7 @@ export function useDealership() {
 export function useTrialStatus() {
   const { data: dealership } = useDealership();
   if (!dealership) return null;
+  if (dealership.is_free_account) return null;
 
   const isTrialing = dealership.subscription_status === "trialing";
   if (!isTrialing) return null;
