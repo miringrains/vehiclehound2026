@@ -83,7 +83,9 @@
     if (_evtBuf.length === 0) return;
     const batch = _evtBuf.splice(0);
     const body = JSON.stringify({ events: batch });
-    fetch(API_BASE + "/api/widget/events", { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API_KEY }, body, keepalive: true }).catch(() => {});
+    fetch(API_BASE + "/api/widget/events", { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API_KEY }, body, keepalive: true })
+      .then(r => { if (!r.ok) console.warn("[VH] Event tracking failed:", r.status); })
+      .catch(e => console.warn("[VH] Event tracking error:", e.message));
   }
   setInterval(_flushEvents, 5000);
   window.addEventListener("beforeunload", _flushEvents);

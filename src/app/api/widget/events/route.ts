@@ -81,11 +81,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (rows.length > 0) {
-      await admin.from("widget_events").insert(rows);
+      const { error } = await admin.from("widget_events").insert(rows);
+      if (error) {
+        console.error("[widget-events] Insert failed:", error.message);
+        return new NextResponse(null, { status: 500, headers });
+      }
     }
 
     return new NextResponse(null, { status: 204, headers });
-  } catch {
-    return new NextResponse(null, { status: 204, headers });
+  } catch (err) {
+    console.error("[widget-events] Unexpected error:", err);
+    return new NextResponse(null, { status: 500, headers });
   }
 }

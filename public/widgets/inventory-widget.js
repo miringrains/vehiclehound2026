@@ -92,7 +92,9 @@
     const batch = _evtBuf.splice(0);
     const body = JSON.stringify({ events: batch });
     const url = API_BASE + "/api/widget/events";
-    fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API_KEY }, body, keepalive: true }).catch(() => {});
+    fetch(url, { method: "POST", headers: { "Content-Type": "application/json", "X-API-Key": API_KEY }, body, keepalive: true })
+      .then(r => { if (!r.ok) console.warn("[VH] Event tracking failed:", r.status); })
+      .catch(e => console.warn("[VH] Event tracking error:", e.message));
   }
   setInterval(_flushEvents, 5000);
   window.addEventListener("beforeunload", _flushEvents);

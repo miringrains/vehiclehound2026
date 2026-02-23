@@ -17,6 +17,9 @@ import { ICON_STROKE_WIDTH, VEHICLE_STATUS_LABELS } from "@/lib/constants";
 import { formatRelative } from "@/lib/utils/format-date";
 import type { LucideIcon } from "lucide-react";
 
+const ACCENT = "oklch(0.65 0.25 280)";
+const MUTED_ICON = "oklch(0.55 0.02 280)";
+
 type DashboardData = {
   profile: { name: string | null; role: string };
   dealership: { name: string } | null;
@@ -46,7 +49,6 @@ type DashboardData = {
   }[];
 };
 
-/* ─── Animated number counter ─── */
 function AnimatedNumber({ value }: { value: number }) {
   const mv = useMotionValue(0);
   const display = useTransform(mv, (v) => Math.round(v).toLocaleString());
@@ -59,10 +61,10 @@ function AnimatedNumber({ value }: { value: number }) {
   return <motion.span>{display}</motion.span>;
 }
 
-/* ─── Mini inline sparkline (pure SVG) ─── */
-function Sparkline({ data, color = "oklch(0.65 0.25 280)" }: { data: number[]; color?: string }) {
+function Sparkline({ data, accent }: { data: number[]; accent?: boolean }) {
   if (data.length < 2) return null;
 
+  const color = accent ? ACCENT : MUTED_ICON;
   const max = Math.max(...data, 1);
   const w = 64;
   const h = 24;
@@ -73,30 +75,30 @@ function Sparkline({ data, color = "oklch(0.65 0.25 280)" }: { data: number[]; c
 
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
   const areaPath = `${linePath} L${w},${h} L0,${h} Z`;
+  const gradId = accent ? "sg-accent" : "sg-muted";
 
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="shrink-0">
       <defs>
-        <linearGradient id={`sg-${color.replace(/[^a-z0-9]/g, "")}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={accent ? 0.25 : 0.15} />
           <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill={`url(#sg-${color.replace(/[^a-z0-9]/g, "")})`} />
-      <path d={linePath} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={areaPath} fill={`url(#${gradId})`} />
+      <path d={linePath} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" opacity={accent ? 1 : 0.6} />
     </svg>
   );
 }
 
-/* ─── Stat card ─── */
 function StatCard({
-  label, value, icon: Icon, sparkData, color, href, delay,
+  label, value, icon: Icon, sparkData, accent, href, delay,
 }: {
   label: string;
   value: number;
   icon: LucideIcon;
   sparkData?: number[];
-  color: string;
+  accent?: boolean;
   href?: string;
   delay: number;
 }) {
@@ -104,18 +106,25 @@ function StatCard({
     ? sparkData[sparkData.length - 1] - sparkData[0]
     : null;
 
+  const iconColor = accent ? ACCENT : MUTED_ICON;
+
   const card = (
     <motion.div
       variants={staggerItem}
       custom={delay}
-      className="group relative rounded-xl border border-border bg-card p-5 transition-colors hover:border-border/80"
+      className={`group relative rounded-xl border bg-card p-5 transition-colors ${
+        accent ? "border-primary/20" : "border-border"
+      } hover:border-border/80`}
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: `color-mix(in oklch, ${color} 15%, transparent)` }}>
-          <Icon size={16} strokeWidth={ICON_STROKE_WIDTH} style={{ color }} />
+        <div
+          className="flex h-8 w-8 items-center justify-center rounded-lg"
+          style={{ background: accent ? `color-mix(in oklch, ${ACCENT} 12%, transparent)` : "oklch(0.2 0.01 280)" }}
+        >
+          <Icon size={16} strokeWidth={ICON_STROKE_WIDTH} style={{ color: iconColor }} />
         </div>
         {sparkData && sparkData.length >= 2 && (
-          <Sparkline data={sparkData} color={color} />
+          <Sparkline data={sparkData} accent={accent} />
         )}
       </div>
       <p className="text-heading-2 mb-0.5">
@@ -124,44 +133,29 @@ function StatCard({
       <div className="flex items-center justify-between">
         <p className="text-caption text-muted-foreground">{label}</p>
         {trend !== null && trend !== 0 && (
-          <div className={`flex items-center gap-0.5 text-[10px] font-medium ${trend > 0 ? "text-emerald-400" : "text-rose-400"}`}>
+          <div className="flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground">
             {trend > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
             {trend > 0 ? "+" : ""}{trend}
           </div>
         )}
         {trend === 0 && (
-          <div className="flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground/50">
             <Minus size={10} />
-            flat
           </div>
         )}
       </div>
-      {href && (
-        <div className="absolute inset-0 rounded-xl" />
-      )}
     </motion.div>
   );
 
   return href ? <Link href={href} className="block">{card}</Link> : card;
 }
 
-/* ─── Activity icon ─── */
-function ActivityIcon({ type }: { type: string }) {
-  const config: Record<string, { icon: LucideIcon; bg: string; fg: string }> = {
-    vehicle: { icon: Car, bg: "bg-violet-500/10", fg: "text-violet-400" },
-    application: { icon: FileText, bg: "bg-amber-500/10", fg: "text-amber-400" },
-    customer: { icon: Users, bg: "bg-emerald-500/10", fg: "text-emerald-400" },
-  };
-  const c = config[type] ?? config.vehicle;
-  const Icon = c.icon;
-  return (
-    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${c.bg}`}>
-      <Icon size={13} strokeWidth={ICON_STROKE_WIDTH} className={c.fg} />
-    </div>
-  );
-}
+const ACTIVITY_ICONS: Record<string, LucideIcon> = {
+  vehicle: Car,
+  application: FileText,
+  customer: Users,
+};
 
-/* ─── Activity link resolver ─── */
 function activityHref(item: { type: string; id: string }) {
   if (item.type === "vehicle") return routes.vehicleDetail(item.id);
   if (item.type === "application") return routes.creditApplication(item.id);
@@ -169,7 +163,6 @@ function activityHref(item: { type: string; id: string }) {
   return "#";
 }
 
-/* ─── Main dashboard ─── */
 export function DashboardContent() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,7 +195,6 @@ export function DashboardContent() {
 
   const { stats, viewsSparkline, activity, recentVehicles, profile, dealership } = data;
   const greeting = profile.name ? `Welcome back, ${profile.name.split(" ")[0]}` : "Welcome back";
-
   const sparkCounts = viewsSparkline.map((d) => d.count);
 
   return (
@@ -218,9 +210,7 @@ export function DashboardContent() {
           </div>
           <div className="mt-3 flex items-center gap-2 sm:mt-0">
             <Button variant="outline" size="sm" asChild>
-              <Link href={routes.inventory}>
-                View Inventory
-              </Link>
+              <Link href={routes.inventory}>View Inventory</Link>
             </Button>
             <Button size="sm" asChild>
               <Link href={routes.vehicleNew}>
@@ -239,44 +229,14 @@ export function DashboardContent() {
         animate="visible"
         className="grid gap-3 grid-cols-2 lg:grid-cols-4"
       >
-        <StatCard
-          label="Active Inventory"
-          value={stats.activeInventory}
-          icon={Car}
-          color="oklch(0.65 0.25 280)"
-          href={routes.inventory}
-          delay={0}
-        />
-        <StatCard
-          label="Widget Views"
-          value={stats.widgetViews7d}
-          icon={Eye}
-          sparkData={sparkCounts}
-          color="oklch(0.7 0.18 220)"
-          href={routes.reports}
-          delay={1}
-        />
-        <StatCard
-          label="New Applications"
-          value={stats.newApplications}
-          icon={FileText}
-          color="oklch(0.72 0.16 60)"
-          href={routes.creditApplications}
-          delay={2}
-        />
-        <StatCard
-          label="Customers"
-          value={stats.totalCustomers}
-          icon={Users}
-          color="oklch(0.7 0.17 160)"
-          href={routes.customers}
-          delay={3}
-        />
+        <StatCard label="Active Inventory" value={stats.activeInventory} icon={Car} href={routes.inventory} delay={0} />
+        <StatCard label="Widget Views" value={stats.widgetViews7d} icon={Eye} sparkData={sparkCounts} href={routes.reports} delay={1} />
+        <StatCard label="New Applications" value={stats.newApplications} icon={FileText} href={routes.creditApplications} accent delay={2} />
+        <StatCard label="Customers" value={stats.totalCustomers} icon={Users} href={routes.customers} delay={3} />
       </motion.div>
 
       {/* Two-column: Engagement chart + Activity feed */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Engagement chart — takes 3 cols on desktop */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -307,8 +267,8 @@ export function DashboardContent() {
                 <AreaChart data={viewsSparkline} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                   <defs>
                     <linearGradient id="dashGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="oklch(0.65 0.25 280)" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="oklch(0.65 0.25 280)" stopOpacity={0} />
+                      <stop offset="0%" stopColor={ACCENT} stopOpacity={0.15} />
+                      <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis
@@ -317,14 +277,14 @@ export function DashboardContent() {
                       const dt = new Date(d + "T00:00:00");
                       return `${dt.getMonth() + 1}/${dt.getDate()}`;
                     }}
-                    tick={{ fontSize: 10, fill: "oklch(0.5 0.02 280)" }}
+                    tick={{ fontSize: 10, fill: "oklch(0.45 0.02 280)" }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <RTooltip
                     contentStyle={{
-                      background: "oklch(0.18 0.02 280)",
-                      border: "1px solid oklch(0.25 0.02 280)",
+                      background: "oklch(0.16 0.015 280)",
+                      border: "1px solid oklch(0.22 0.015 280)",
                       borderRadius: 8,
                       fontSize: 12,
                       padding: "6px 10px",
@@ -337,11 +297,11 @@ export function DashboardContent() {
                   <Area
                     type="monotone"
                     dataKey="count"
-                    stroke="oklch(0.65 0.25 280)"
+                    stroke={ACCENT}
                     fill="url(#dashGrad)"
                     strokeWidth={2}
                     dot={false}
-                    activeDot={{ r: 3, strokeWidth: 0, fill: "oklch(0.65 0.25 280)" }}
+                    activeDot={{ r: 3, strokeWidth: 0, fill: ACCENT }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -349,7 +309,6 @@ export function DashboardContent() {
           )}
         </motion.div>
 
-        {/* Activity feed — takes 2 cols on desktop */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -366,25 +325,30 @@ export function DashboardContent() {
               <p className="text-caption text-muted-foreground/60 mt-0.5">Add inventory or customers to get started</p>
             </div>
           ) : (
-            <div className="px-5 pb-4 space-y-0">
-              {activity.map((item, i) => (
-                <Link
-                  key={`${item.type}-${item.id}`}
-                  href={activityHref(item)}
-                  className={`flex items-start gap-3 py-2.5 transition-colors hover:bg-muted/30 -mx-2 px-2 rounded-lg ${
-                    i < activity.length - 1 ? "border-b border-border/50" : ""
-                  }`}
-                >
-                  <ActivityIcon type={item.type} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-body-sm font-medium truncate">{item.label}</p>
-                    <p className="text-caption text-muted-foreground truncate">{item.sub}</p>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap pt-0.5">
-                    {formatRelative(item.time)}
-                  </span>
-                </Link>
-              ))}
+            <div className="px-5 pb-4">
+              {activity.map((item, i) => {
+                const Icon = ACTIVITY_ICONS[item.type] ?? Car;
+                return (
+                  <Link
+                    key={`${item.type}-${item.id}`}
+                    href={activityHref(item)}
+                    className={`flex items-start gap-3 py-2.5 transition-colors hover:bg-muted/30 -mx-2 px-2 rounded-lg ${
+                      i < activity.length - 1 ? "border-b border-border/40" : ""
+                    }`}
+                  >
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
+                      <Icon size={13} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-body-sm font-medium truncate">{item.label}</p>
+                      <p className="text-caption text-muted-foreground truncate">{item.sub}</p>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/50 whitespace-nowrap pt-0.5">
+                      {formatRelative(item.time)}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </motion.div>
@@ -434,9 +398,7 @@ export function DashboardContent() {
                       </Link>
                     </td>
                     <td className="px-5 py-2.5 hidden sm:table-cell">
-                      <span className="text-caption text-muted-foreground capitalize">
-                        {v.inventory_type || "—"}
-                      </span>
+                      <span className="text-caption text-muted-foreground capitalize">{v.inventory_type || "—"}</span>
                     </td>
                     <td className="px-5 py-2.5 hidden md:table-cell">
                       <span className="text-caption text-muted-foreground">
@@ -446,10 +408,8 @@ export function DashboardContent() {
                     <td className="px-5 py-2.5">
                       <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
                         v.status === 1
-                          ? "bg-emerald-500/10 text-emerald-400"
-                          : v.status === 0
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-amber-500/10 text-amber-400"
+                          ? "bg-foreground/5 text-foreground/70"
+                          : "bg-muted text-muted-foreground"
                       }`}>
                         {VEHICLE_STATUS_LABELS[v.status] ?? "Unknown"}
                       </span>
