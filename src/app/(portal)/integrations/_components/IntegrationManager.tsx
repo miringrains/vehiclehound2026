@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, type KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Code2,
@@ -24,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { fadeUp } from "@/lib/motion";
+import { toast } from "sonner";
 import type { WidgetConfig } from "@/types/credit-application";
 import { WidgetPreview } from "./WidgetPreview";
 
@@ -43,6 +45,7 @@ const RADIUS_OPTIONS: { value: RadiusPreset; label: string; px: number }[] = [
 ];
 
 export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug, storefrontEnabled: initialStorefrontEnabled }: Props) {
+  const router = useRouter();
   const [config, setConfig] = useState<WidgetConfig | null>(initialConfig);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -174,7 +177,16 @@ export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storefront_enabled: enabled }),
       });
-      if (res.ok) setSfEnabled(enabled);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "Failed to update storefront");
+        return;
+      }
+      setSfEnabled(enabled);
+      router.refresh();
+      toast.success(enabled ? "Storefront enabled" : "Storefront disabled");
+    } catch {
+      toast.error("Failed to update storefront");
     } finally {
       setSfToggling(false);
     }

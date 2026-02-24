@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { CreditAppForm } from "@/components/credit-app/CreditAppForm";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ vehicle?: string }>;

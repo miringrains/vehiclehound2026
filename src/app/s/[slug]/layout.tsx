@@ -4,6 +4,8 @@ import { deriveColors } from "@/lib/storefront/colors";
 import { StorefrontHeader } from "./_components/StorefrontHeader";
 import { StorefrontTracker } from "./_components/StorefrontTracker";
 
+export const dynamic = "force-dynamic";
+
 export type StorefrontConfig = {
   dealershipId: string;
   dealershipName: string;

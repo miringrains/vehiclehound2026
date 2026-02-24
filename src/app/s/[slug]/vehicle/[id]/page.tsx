@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { StorefrontVehicle } from "../../_components/StorefrontVehicle";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ slug: string; id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
