@@ -20,7 +20,7 @@ export function StorefrontHeader({ config }: { config: StorefrontConfig }) {
         style={{
           maxWidth: 1200,
           margin: "0 auto",
-          padding: "0.875rem 1rem",
+          padding: "0.75rem 1rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -32,31 +32,35 @@ export function StorefrontHeader({ config }: { config: StorefrontConfig }) {
             <Image
               src={config.logoUrl}
               alt={config.dealershipName}
-              width={36}
-              height={36}
-              style={{ objectFit: "contain", borderRadius: 6 }}
+              width={160}
+              height={48}
+              style={{ objectFit: "contain", maxHeight: 48 }}
+              priority
             />
           ) : (
-            <span
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: "var(--sf-primary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 15,
-              }}
-            >
-              {config.dealershipName.charAt(0).toUpperCase()}
-            </span>
+            <>
+              <span
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: "var(--sf-primary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: 15,
+                  flexShrink: 0,
+                }}
+              >
+                {config.dealershipName.charAt(0).toUpperCase()}
+              </span>
+              <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>
+                {config.dealershipName}
+              </span>
+            </>
           )}
-          <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: "-0.01em" }}>
-            {config.dealershipName}
-          </span>
         </Link>
 
         {config.phone && (
