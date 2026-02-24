@@ -40,6 +40,8 @@ export default async function IntegrationsPage() {
     }
   }
 
+  console.log("[integrations] Rendering with:", { did: did.slice(0, 8), storefrontSlug, storefrontEnabled, hasConfig: !!config });
+
   return (
     <IntegrationManager
       initialConfig={config}
