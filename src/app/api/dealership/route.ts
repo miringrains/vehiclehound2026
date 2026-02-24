@@ -102,12 +102,20 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    const { error } = await admin
+    const { data: updated, error } = await admin
       .from("dealerships")
       .update(update)
-      .eq("id", profile.dealership_id);
+      .eq("id", profile.dealership_id)
+      .select("id, storefront_enabled")
+      .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error) {
+      console.error("[dealership-patch] Update error:", error.message, "update:", JSON.stringify(update));
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if ("storefront_enabled" in update) {
+      console.log("[dealership-patch] storefront_enabled sent:", update.storefront_enabled, "→ DB now:", updated?.storefront_enabled);
+    }
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });

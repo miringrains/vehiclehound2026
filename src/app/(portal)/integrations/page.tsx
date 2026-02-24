@@ -21,17 +21,31 @@ export default async function IntegrationsPage() {
     .select("*")
     .maybeSingle();
 
-  const admin = createAdminClient();
-  const { data: dealership } = did
-    ? await admin.from("dealerships").select("slug, storefront_enabled").eq("id", did).single()
-    : { data: null };
+  let storefrontSlug: string | null = null;
+  let storefrontEnabled = false;
+
+  if (did) {
+    const admin = createAdminClient();
+    const { data: dealership, error } = await admin
+      .from("dealerships")
+      .select("slug, storefront_enabled")
+      .eq("id", did)
+      .single();
+
+    if (error) {
+      console.error("[integrations] Failed to fetch dealership:", error.message);
+    } else if (dealership) {
+      storefrontSlug = dealership.slug;
+      storefrontEnabled = dealership.storefront_enabled === true;
+    }
+  }
 
   return (
     <IntegrationManager
       initialConfig={config}
       dealershipId={did}
-      storefrontSlug={dealership?.slug ?? null}
-      storefrontEnabled={dealership?.storefront_enabled ?? false}
+      storefrontSlug={storefrontSlug}
+      storefrontEnabled={storefrontEnabled}
     />
   );
 }

@@ -172,19 +172,19 @@ export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug
   const handleStorefrontToggle = async (enabled: boolean) => {
     setSfToggling(true);
     try {
-      const res = await fetch("/api/dealership", {
+      const res = await fetch("/api/dealership/storefront", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ storefront_enabled: enabled }),
+        body: JSON.stringify({ enabled }),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         toast.error(data.error || "Failed to update storefront");
         return;
       }
-      setSfEnabled(enabled);
+      setSfEnabled(data.storefront_enabled);
       router.refresh();
-      toast.success(enabled ? "Storefront enabled" : "Storefront disabled");
+      toast.success(data.storefront_enabled ? "Storefront enabled" : "Storefront disabled");
     } catch {
       toast.error("Failed to update storefront");
     } finally {
