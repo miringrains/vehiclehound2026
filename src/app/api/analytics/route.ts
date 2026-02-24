@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const { data: events } = await admin
       .from("widget_events")
-      .select("event, vehicle_id, payload, created_at")
+      .select("event, vehicle_id, session_id, payload, created_at")
       .eq("dealership_id", dealershipId)
       .gte("created_at", since)
       .order("created_at", { ascending: true });
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const allEvents = events ?? [];
 
     const counts: Record<string, number> = {};
-    const dailyCounts: Record<string, { views: number; clicks: number }> = {};
+    const dailyCounts: Record<string, { views: Set<string>; clicks: Set<string> }> = {};
     const vehicleCounts: Record<string, { views: number; clicks: number }> = {};
     const searchQueries: Record<string, number> = {};
 
@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
       counts[e.event] = (counts[e.event] || 0) + 1;
 
       const day = e.created_at.slice(0, 10);
-      if (!dailyCounts[day]) dailyCounts[day] = { views: 0, clicks: 0 };
-      if (e.event === "page_view" || e.event === "detail_view") dailyCounts[day].views++;
-      if (e.event === "vehicle_click") dailyCounts[day].clicks++;
+      if (!dailyCounts[day]) dailyCounts[day] = { views: new Set(), clicks: new Set() };
+      if (e.event === "page_view" || e.event === "detail_view") dailyCounts[day].views.add(e.session_id);
+      if (e.event === "vehicle_click") dailyCounts[day].clicks.add(e.session_id);
 
       if (e.vehicle_id) {
         if (!vehicleCounts[e.vehicle_id]) vehicleCounts[e.vehicle_id] = { views: 0, clicks: 0 };
@@ -96,10 +96,15 @@ export async function GET(request: NextRequest) {
 
     const viewsByDay = Object.entries(dailyCounts)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, d]) => ({ date, views: d.views, clicks: d.clicks }));
+      .map(([date, d]) => ({ date, views: d.views.size, clicks: d.clicks.size }));
+
+    const uniqueViewSessions = new Set<string>();
+    for (const d of Object.values(dailyCounts)) {
+      for (const s of d.views) uniqueViewSessions.add(s);
+    }
 
     return NextResponse.json({
-      totalViews: (counts.page_view || 0) + (counts.detail_view || 0),
+      totalViews: uniqueViewSessions.size,
       totalSearches: counts.search || 0,
       totalVehicleClicks: counts.vehicle_click || 0,
       totalDetailViews: counts.detail_view || 0,

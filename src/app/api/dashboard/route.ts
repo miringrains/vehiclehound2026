@@ -49,35 +49,38 @@ export async function GET() {
       admin.from("customers").select("id", { count: "exact", head: true }).eq("dealership_id", did),
       admin.from("credit_applications").select("id", { count: "exact", head: true }).eq("dealership_id", did).eq("status", "new"),
       admin.from("credit_applications").select("id", { count: "exact", head: true }).eq("dealership_id", did),
-      admin.from("widget_events").select("event, created_at").eq("dealership_id", did).gte("created_at", thirtyDaysAgo).order("created_at", { ascending: true }),
+      admin.from("widget_events").select("event, session_id, created_at").eq("dealership_id", did).gte("created_at", thirtyDaysAgo).order("created_at", { ascending: true }),
       admin.from("vehicles").select("id, year, make, model, trim, status, online_price, preview_image, created_at, inventory_type").eq("dealership_id", did).order("created_at", { ascending: false }).limit(5),
       admin.from("credit_applications").select("id, applicant_name, status, vehicle_year, vehicle_make, vehicle_model, created_at").eq("dealership_id", did).order("created_at", { ascending: false }).limit(5),
       admin.from("customers").select("id, first_name, last_name, status, created_at").eq("dealership_id", did).order("created_at", { ascending: false }).limit(5),
     ]);
 
-    // Build 7-day sparkline data for widget views
+    // Build 7-day sparkline — count unique sessions per day, not raw events
     const events = eventsRes.data ?? [];
-    const dailyViews: Record<string, number> = {};
+    const dailyViews: Record<string, Set<string>> = {};
     for (let i = 6; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86_400_000);
-      dailyViews[d.toISOString().slice(0, 10)] = 0;
+      dailyViews[d.toISOString().slice(0, 10)] = new Set();
     }
 
-    let totalViews7d = 0;
-    let totalViews30d = 0;
+    const sessions30d = new Set<string>();
 
     for (const e of events) {
       if (e.event === "page_view" || e.event === "detail_view") {
-        totalViews30d++;
+        sessions30d.add(e.session_id);
         const day = e.created_at.slice(0, 10);
         if (day in dailyViews) {
-          dailyViews[day]++;
-          totalViews7d++;
+          dailyViews[day].add(e.session_id);
         }
       }
     }
 
-    const viewsSparkline = Object.entries(dailyViews).map(([date, count]) => ({ date, count }));
+    const sessions7d = new Set<string>();
+    for (const sessions of Object.values(dailyViews)) {
+      for (const s of sessions) sessions7d.add(s);
+    }
+
+    const viewsSparkline = Object.entries(dailyViews).map(([date, sessions]) => ({ date, count: sessions.size }));
 
     // Build activity feed — merge recent items, sort by date, take 8
     const activity: { type: string; id: string; label: string; sub: string; time: string }[] = [];
@@ -109,8 +112,8 @@ export async function GET() {
         totalCustomers: customersRes.count ?? 0,
         newApplications: newAppsRes.count ?? 0,
         totalApplications: totalAppsRes.count ?? 0,
-        widgetViews7d: totalViews7d,
-        widgetViews30d: totalViews30d,
+        widgetViews7d: sessions7d.size,
+        widgetViews30d: sessions30d.size,
       },
       viewsSparkline,
       activity: activity.slice(0, 8),

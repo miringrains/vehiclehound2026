@@ -91,8 +91,15 @@ function Sparkline({ data, accent }: { data: number[]; accent?: boolean }) {
   );
 }
 
+const CARD_GLOWS: { color1: string; color2: string; pos: string }[] = [
+  { color1: "rgba(200,120,40,0.35)", color2: "rgba(180,80,30,0.15)", pos: "30% -20%" },
+  { color1: "rgba(180,100,50,0.3)",  color2: "rgba(160,70,40,0.12)", pos: "70% -10%" },
+  { color1: "rgba(140,80,200,0.3)",  color2: "rgba(100,60,180,0.12)", pos: "50% -15%" },
+  { color1: "rgba(190,110,45,0.28)", color2: "rgba(170,85,35,0.1)",  pos: "60% -25%" },
+];
+
 function StatCard({
-  label, value, icon: Icon, sparkData, accent, href, delay,
+  label, value, icon: Icon, sparkData, accent, href, delay, index = 0,
 }: {
   label: string;
   value: number;
@@ -101,50 +108,58 @@ function StatCard({
   accent?: boolean;
   href?: string;
   delay: number;
+  index?: number;
 }) {
   const trend = sparkData && sparkData.length >= 2
     ? sparkData[sparkData.length - 1] - sparkData[0]
     : null;
 
-  const iconBg = accent ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.08)";
-  const iconFg = accent ? ACCENT : "rgba(255,255,255,0.5)";
+  const glow = CARD_GLOWS[index % CARD_GLOWS.length];
 
   const card = (
     <motion.div
       variants={staggerItem}
       custom={delay}
-      className={`group relative rounded-xl p-5 transition-colors ${
-        accent ? "border border-primary/20" : "border border-white/[0.06]"
-      }`}
-      style={{ background: accent ? "oklch(0.13 0.02 280)" : "oklch(0.11 0.01 280)" }}
+      className="group relative rounded-xl overflow-hidden border border-white/[0.06]"
+      style={{ background: "#0a0a0c" }}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div
-          className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ background: iconBg }}
-        >
-          <Icon size={16} strokeWidth={ICON_STROKE_WIDTH} style={{ color: iconFg }} />
+      {/* Warm aurora glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 120% 80% at ${glow.pos}, ${glow.color1} 0%, ${glow.color2} 40%, transparent 70%)`,
+          filter: "blur(8px)",
+        }}
+      />
+      <div className="relative z-[1] p-5">
+        <div className="flex items-start justify-between mb-3">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ background: "rgba(255,255,255,0.06)" }}
+          >
+            <Icon size={16} strokeWidth={ICON_STROKE_WIDTH} className="text-white/50" />
+          </div>
+          {sparkData && sparkData.length >= 2 && (
+            <Sparkline data={sparkData} accent={accent} />
+          )}
         </div>
-        {sparkData && sparkData.length >= 2 && (
-          <Sparkline data={sparkData} accent={accent} />
-        )}
-      </div>
-      <p className="text-[1.125rem] font-semibold tracking-[-0.02em] leading-tight text-white mb-0.5">
-        <AnimatedNumber value={value} />
-      </p>
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-white/50">{label}</p>
-        {trend !== null && trend !== 0 && (
-          <div className="flex items-center gap-0.5 text-[10px] font-medium text-white/40">
-            {trend > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-            {trend > 0 ? "+" : ""}{trend}
-          </div>
-        )}
-        {trend === 0 && (
-          <div className="flex items-center gap-0.5 text-[10px] font-medium text-white/25">
-            <Minus size={10} />
-          </div>
-        )}
+        <p className="text-[1.125rem] font-semibold tracking-[-0.02em] leading-tight text-white mb-0.5">
+          <AnimatedNumber value={value} />
+        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-white/45">{label}</p>
+          {trend !== null && trend !== 0 && (
+            <div className="flex items-center gap-0.5 text-[10px] font-medium text-white/35">
+              {trend > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              {trend > 0 ? "+" : ""}{trend}
+            </div>
+          )}
+          {trend === 0 && (
+            <div className="flex items-center gap-0.5 text-[10px] font-medium text-white/20">
+              <Minus size={10} />
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -231,10 +246,10 @@ export function DashboardContent() {
         animate="visible"
         className="grid gap-3 grid-cols-2 lg:grid-cols-4"
       >
-        <StatCard label="Active Inventory" value={stats.activeInventory} icon={Car} href={routes.inventory} delay={0} />
-        <StatCard label="Widget Views" value={stats.widgetViews7d} icon={Eye} sparkData={sparkCounts} href={routes.reports} delay={1} />
-        <StatCard label="New Applications" value={stats.newApplications} icon={FileText} href={routes.creditApplications} accent delay={2} />
-        <StatCard label="Customers" value={stats.totalCustomers} icon={Users} href={routes.customers} delay={3} />
+        <StatCard label="Active Inventory" value={stats.activeInventory} icon={Car} href={routes.inventory} delay={0} index={0} />
+        <StatCard label="Widget Views" value={stats.widgetViews7d} icon={Eye} sparkData={sparkCounts} href={routes.reports} delay={1} index={1} />
+        <StatCard label="New Applications" value={stats.newApplications} icon={FileText} href={routes.creditApplications} accent delay={2} index={2} />
+        <StatCard label="Customers" value={stats.totalCustomers} icon={Users} href={routes.customers} delay={3} index={3} />
       </motion.div>
 
       {/* Two-column: Engagement chart + Activity feed */}
