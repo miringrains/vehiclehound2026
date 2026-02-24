@@ -243,17 +243,19 @@ export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug
                 />
                 <span className="text-caption">{sfEnabled ? "Active" : "Inactive"}</span>
               </div>
-              {sfEnabled && storefrontUrl && (
-                <a
-                  href={`https://${storefrontUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                >
-                  Visit <ExternalLink size={12} strokeWidth={ICON_STROKE_WIDTH} />
-                </a>
-              )}
             </div>
+            {sfEnabled && storefrontUrl && (
+              <a
+                href={`https://${storefrontUrl}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/20 px-3 py-2 text-xs font-medium text-green-500 hover:bg-green-500/15 transition-colors"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                {storefrontUrl}
+                <ExternalLink size={11} strokeWidth={ICON_STROKE_WIDTH} className="ml-auto" />
+              </a>
+            )}
             {!storefrontSlug && (
               <p className="text-[11px] text-amber-500">
                 Set your storefront slug in{" "}

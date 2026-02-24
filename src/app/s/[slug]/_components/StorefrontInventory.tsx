@@ -172,7 +172,7 @@ export function StorefrontInventory({ vehicles: rawVehicles, slug, showPricing, 
             >
               <div style={{ position: "relative", aspectRatio: "16/10", background: "var(--sf-img-bg)" }}>
                 {v.preview_image ? (
-                  <Image src={v.preview_image} alt={`${v.year} ${v.make} ${v.model}`} fill style={{ objectFit: "cover" }} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                  <Image src={v.preview_image} alt={`${v.year} ${v.make} ${v.model}`} fill style={{ objectFit: "contain", padding: 4 }} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 ) : (
                   <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--sf-text-muted)" strokeWidth="1.5" opacity="0.4">

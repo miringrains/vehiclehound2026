@@ -21,8 +21,12 @@ export async function middleware(request: NextRequest) {
       url.pathname = "/s-landing";
       return NextResponse.rewrite(url);
     }
+    const { pathname } = request.nextUrl;
+    if (pathname.startsWith(`/s/${sub}`)) {
+      return NextResponse.rewrite(request.nextUrl);
+    }
     const url = request.nextUrl.clone();
-    url.pathname = `/s/${sub}${request.nextUrl.pathname === "/" ? "" : request.nextUrl.pathname}`;
+    url.pathname = `/s/${sub}${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);
   }
 

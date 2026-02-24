@@ -95,7 +95,7 @@ export function StorefrontVehicle({ vehicle, images, slug, showPricing, showCred
         <div>
           <div style={{ position: "relative", aspectRatio: "16/10", background: "var(--sf-img-bg)", borderRadius: "var(--sf-radius)", overflow: "hidden" }}>
             {images.length > 0 ? (
-              <Image src={images[currentImage]} alt={title} fill style={{ objectFit: "cover" }} sizes="(max-width: 768px) 100vw, 60vw" priority />
+              <Image src={images[currentImage]} alt={title} fill style={{ objectFit: "contain" }} sizes="(max-width: 768px) 100vw, 60vw" priority />
             ) : (
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--sf-text-muted)" strokeWidth="1.5" opacity="0.3">
