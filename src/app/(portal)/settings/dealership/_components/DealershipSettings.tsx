@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ICON_STROKE_WIDTH } from "@/lib/constants";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_DEAL_DEFAULTS, type DealDefaults, type CreditTier } from "@/lib/deal-calc";
 
 const US_STATES = [
@@ -65,8 +64,9 @@ export function DealershipSettings({ dealership }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+    const allowed = ["image/png", "image/jpeg", "image/webp", "image/svg+xml", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      toast.error("Please upload a PNG, JPG, SVG, WebP, or GIF file");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -76,32 +76,18 @@ export function DealershipSettings({ dealership }: Props) {
 
     setUploadingLogo(true);
     try {
-      const supabase = createClient();
-      const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-      const filePath = `logos/${dealership.id}/logo-${Date.now()}.${ext}`;
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const { error: uploadErr } = await supabase.storage
-        .from("vehicle-images")
-        .upload(filePath, file, { contentType: file.type, upsert: true });
+      const res = await fetch("/api/dealership/logo", { method: "POST", body: formData });
+      const data = await res.json();
 
-      if (uploadErr) {
-        toast.error("Upload failed: " + uploadErr.message);
-        return;
-      }
-
-      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vehicle-images/${filePath}`;
-
-      const res = await fetch("/api/dealership", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logo_url: publicUrl }),
-      });
       if (!res.ok) {
-        toast.error("Failed to save logo");
+        toast.error(data.error || "Upload failed");
         return;
       }
 
-      setLogoUrl(publicUrl);
+      setLogoUrl(data.url);
       toast.success("Logo uploaded");
     } catch {
       toast.error("Upload failed");
@@ -200,7 +186,7 @@ export function DealershipSettings({ dealership }: Props) {
                 </Button>
               )}
             </div>
-            <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+            <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" onChange={handleLogoUpload} className="hidden" />
           </div>
         </div>
       </div>

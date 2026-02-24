@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { IntegrationManager } from "./_components/IntegrationManager";
 
 export const metadata: Metadata = { title: "Integrations" };
+export const dynamic = "force-dynamic";
 
 export default async function IntegrationsPage() {
   const supabase = await createClient();
