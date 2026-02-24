@@ -64,7 +64,7 @@ function AnimatedNumber({ value }: { value: number }) {
 function Sparkline({ data, accent }: { data: number[]; accent?: boolean }) {
   if (data.length < 2) return null;
 
-  const color = accent ? ACCENT : MUTED_ICON;
+  const color = accent ? ACCENT : "rgba(255,255,255,0.35)";
   const max = Math.max(...data, 1);
   const w = 64;
   const h = 24;
@@ -106,40 +106,42 @@ function StatCard({
     ? sparkData[sparkData.length - 1] - sparkData[0]
     : null;
 
-  const iconColor = accent ? ACCENT : MUTED_ICON;
+  const iconBg = accent ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.08)";
+  const iconFg = accent ? ACCENT : "rgba(255,255,255,0.5)";
 
   const card = (
     <motion.div
       variants={staggerItem}
       custom={delay}
-      className={`group relative rounded-xl border bg-card p-5 transition-colors ${
-        accent ? "border-primary/20" : "border-border"
-      } hover:border-border/80`}
+      className={`group relative rounded-xl p-5 transition-colors ${
+        accent ? "border border-primary/20" : "border border-white/[0.06]"
+      }`}
+      style={{ background: accent ? "oklch(0.13 0.02 280)" : "oklch(0.11 0.01 280)" }}
     >
       <div className="flex items-start justify-between mb-3">
         <div
           className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ background: accent ? `color-mix(in oklch, ${ACCENT} 12%, transparent)` : "oklch(0.2 0.01 280)" }}
+          style={{ background: iconBg }}
         >
-          <Icon size={16} strokeWidth={ICON_STROKE_WIDTH} style={{ color: iconColor }} />
+          <Icon size={16} strokeWidth={ICON_STROKE_WIDTH} style={{ color: iconFg }} />
         </div>
         {sparkData && sparkData.length >= 2 && (
           <Sparkline data={sparkData} accent={accent} />
         )}
       </div>
-      <p className="text-heading-2 mb-0.5">
+      <p className="text-[1.125rem] font-semibold tracking-[-0.02em] leading-tight text-white mb-0.5">
         <AnimatedNumber value={value} />
       </p>
       <div className="flex items-center justify-between">
-        <p className="text-caption text-muted-foreground">{label}</p>
+        <p className="text-xs font-medium text-white/50">{label}</p>
         {trend !== null && trend !== 0 && (
-          <div className="flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center gap-0.5 text-[10px] font-medium text-white/40">
             {trend > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
             {trend > 0 ? "+" : ""}{trend}
           </div>
         )}
         {trend === 0 && (
-          <div className="flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground/50">
+          <div className="flex items-center gap-0.5 text-[10px] font-medium text-white/25">
             <Minus size={10} />
           </div>
         )}
