@@ -8,10 +8,12 @@ export const dynamic = "force-dynamic";
 
 export default async function IntegrationsPage() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("dealership_id")
+    .eq("id", user?.id ?? "")
     .single();
 
   const did = profile?.dealership_id ?? "";
@@ -39,8 +41,6 @@ export default async function IntegrationsPage() {
       storefrontEnabled = dealership.storefront_enabled === true;
     }
   }
-
-  console.log("[integrations] Rendering with:", { did: did.slice(0, 8), storefrontSlug, storefrontEnabled, hasConfig: !!config });
 
   return (
     <IntegrationManager
