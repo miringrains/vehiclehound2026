@@ -22,6 +22,7 @@ const US_STATES = [
 type Dealership = {
   id: string;
   name: string;
+  slug: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -38,6 +39,7 @@ type Props = { dealership: Dealership };
 export function DealershipSettings({ dealership }: Props) {
   const [form, setForm] = useState({
     name: dealership.name,
+    slug: dealership.slug ?? "",
     phone: dealership.phone ?? "",
     address: dealership.address ?? "",
     city: dealership.city ?? "",
@@ -45,6 +47,7 @@ export function DealershipSettings({ dealership }: Props) {
     zip: dealership.zip ?? "",
     website: dealership.website ?? "",
   });
+  const [slugError, setSlugError] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(dealership.logo_url);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -143,6 +146,15 @@ export function DealershipSettings({ dealership }: Props) {
       toast.error("Dealership name is required");
       return;
     }
+    if (form.slug && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(form.slug)) {
+      setSlugError("Lowercase letters, numbers and hyphens only");
+      return;
+    }
+    if (form.slug && (form.slug.length < 3 || form.slug.length > 48)) {
+      setSlugError("Must be 3-48 characters");
+      return;
+    }
+    setSlugError(null);
     setSaving(true);
     try {
       const res = await fetch("/api/dealership", {
@@ -198,6 +210,21 @@ export function DealershipSettings({ dealership }: Props) {
         <div>
           <Label htmlFor="name">Dealership Name *</Label>
           <Input id="name" value={form.name} onChange={(e) => set("name", e.target.value)} className="mt-1.5" />
+        </div>
+        <div>
+          <Label htmlFor="slug">Storefront Slug</Label>
+          <div className="flex items-center gap-2 mt-1.5">
+            <Input
+              id="slug"
+              value={form.slug}
+              onChange={(e) => { set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")); setSlugError(null); }}
+              placeholder="your-dealership"
+              className="flex-1"
+            />
+            <span className="text-caption text-muted-foreground whitespace-nowrap">.vhlist.com</span>
+          </div>
+          {slugError && <p className="text-[11px] text-destructive mt-1">{slugError}</p>}
+          <p className="text-[11px] text-muted-foreground mt-1">Used for your VHList storefront URL. 3-48 chars, lowercase letters, numbers and hyphens.</p>
         </div>
         <div>
           <Label htmlFor="phone">Phone</Label>

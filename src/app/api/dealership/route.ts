@@ -52,13 +52,40 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const allowed = ["name", "phone", "address", "city", "state", "zip", "website", "logo_url", "credit_app_emails", "deal_defaults"];
+    const admin = createAdminClient();
+    const allowed = ["name", "phone", "address", "city", "state", "zip", "website", "logo_url", "credit_app_emails", "deal_defaults", "storefront_enabled", "slug"];
     const update: Record<string, unknown> = {};
+
+    const RESERVED_SLUGS = new Set(["www", "api", "admin", "app", "mail", "smtp", "ftp", "ns1", "ns2"]);
 
     for (const key of allowed) {
       if (key in body) {
         if (key === "name" && (!body.name || !String(body.name).trim())) {
           return NextResponse.json({ error: "Dealership name is required" }, { status: 400 });
+        }
+        if (key === "slug") {
+          const slug = String(body.slug).trim().toLowerCase();
+          if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(slug) || slug.length < 3 || slug.length > 48) {
+            return NextResponse.json({ error: "Slug must be 3-48 characters, lowercase letters, numbers and hyphens only" }, { status: 400 });
+          }
+          if (RESERVED_SLUGS.has(slug)) {
+            return NextResponse.json({ error: "This slug is reserved" }, { status: 400 });
+          }
+          const { data: existing } = await admin
+            .from("dealerships")
+            .select("id")
+            .eq("slug", slug)
+            .neq("id", profile.dealership_id)
+            .maybeSingle();
+          if (existing) {
+            return NextResponse.json({ error: "This slug is already taken" }, { status: 400 });
+          }
+          update[key] = slug;
+          continue;
+        }
+        if (key === "storefront_enabled") {
+          update[key] = body[key] === true;
+          continue;
         }
         if (key === "website" && body.website) {
           let url = String(body.website).trim();
@@ -75,7 +102,6 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    const admin = createAdminClient();
     const { error } = await admin
       .from("dealerships")
       .update(update)

@@ -12,8 +12,11 @@ import {
   Loader2,
   X,
   ChevronDown,
+  Store,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { FeatureGate } from "@/components/shared/FeatureGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +32,8 @@ type RadiusPreset = "sharp" | "rounded" | "soft";
 type Props = {
   initialConfig: WidgetConfig | null;
   dealershipId: string;
+  storefrontSlug: string | null;
+  storefrontEnabled: boolean;
 };
 
 const RADIUS_OPTIONS: { value: RadiusPreset; label: string; px: number }[] = [
@@ -37,11 +42,13 @@ const RADIUS_OPTIONS: { value: RadiusPreset; label: string; px: number }[] = [
   { value: "soft", label: "Soft", px: 20 },
 ];
 
-export function IntegrationManager({ initialConfig, dealershipId }: Props) {
+export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug, storefrontEnabled: initialStorefrontEnabled }: Props) {
   const [config, setConfig] = useState<WidgetConfig | null>(initialConfig);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [sfEnabled, setSfEnabled] = useState(initialStorefrontEnabled);
+  const [sfToggling, setSfToggling] = useState(false);
 
   const [primaryColor, setPrimaryColor] = useState(config?.config?.primaryColor ?? "#1a1d1e");
   const [backgroundColor, setBackgroundColor] = useState(config?.config?.backgroundColor ?? "#ffffff");
@@ -159,6 +166,22 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
   const appUrl = typeof window !== "undefined" ? window.location.origin : "";
   const creditAppDefault = `${appUrl}/apply/${dealershipId}`;
 
+  const handleStorefrontToggle = async (enabled: boolean) => {
+    setSfToggling(true);
+    try {
+      const res = await fetch("/api/dealership", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storefront_enabled: enabled }),
+      });
+      if (res.ok) setSfEnabled(enabled);
+    } finally {
+      setSfToggling(false);
+    }
+  };
+
+  const storefrontUrl = storefrontSlug ? `${storefrontSlug}.vhlist.com` : null;
+
   /* ─── Empty state ─── */
   if (!config) {
     return (
@@ -192,6 +215,67 @@ export function IntegrationManager({ initialConfig, dealershipId }: Props) {
           {saved ? "Saved" : "Save Changes"}
         </Button>
       </PageHeader>
+
+      {/* ─── Storefront + Embed cards ─── */}
+      <FeatureGate feature="storefront">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Storefront card */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <Store size={16} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
+              <h3 className="text-heading-4">VHList Storefront</h3>
+            </div>
+            <p className="text-caption text-muted-foreground">
+              A standalone inventory page at{" "}
+              {storefrontUrl ? (
+                <span className="font-medium text-foreground">{storefrontUrl}</span>
+              ) : (
+                <span className="text-muted-foreground">yourname.vhlist.com</span>
+              )}
+              . Share the link directly with customers — no website needed.
+            </p>
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={sfEnabled}
+                  onCheckedChange={handleStorefrontToggle}
+                  disabled={sfToggling}
+                />
+                <span className="text-caption">{sfEnabled ? "Active" : "Inactive"}</span>
+              </div>
+              {sfEnabled && storefrontUrl && (
+                <a
+                  href={`https://${storefrontUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                >
+                  Visit <ExternalLink size={12} strokeWidth={ICON_STROKE_WIDTH} />
+                </a>
+              )}
+            </div>
+            {!storefrontSlug && (
+              <p className="text-[11px] text-amber-500">
+                Set your storefront slug in{" "}
+                <a href="/settings/dealership" className="underline">Dealership Settings</a>
+                {" "}to enable this feature.
+              </p>
+            )}
+          </div>
+
+          {/* Embed card */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <Code2 size={16} strokeWidth={ICON_STROKE_WIDTH} className="text-muted-foreground" />
+              <h3 className="text-heading-4">Embed Widget</h3>
+            </div>
+            <p className="text-caption text-muted-foreground">
+              Add your inventory to your existing website. Copy the embed code and paste it into your site&apos;s HTML.
+            </p>
+            <p className="text-caption text-muted-foreground pt-1">Configure embed styles and codes below.</p>
+          </div>
+        </div>
+      </FeatureGate>
 
       {/* ─── Split layout ─── */}
       <div className="flex flex-col lg:flex-row gap-6">
