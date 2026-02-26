@@ -27,15 +27,14 @@ export function FinalCTA() {
       <div className="relative z-10 mx-auto max-w-3xl text-center">
         <ScrollReveal>
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-            Ready to modernize your dealership?
+            Your lot deserves better tools.
           </h2>
         </ScrollReveal>
 
         <ScrollReveal delay={0.1}>
           <p className="mt-4 text-lg text-muted-foreground">
-            Join dealerships already using VehicleHound to manage inventory,
-            collect credit applications, and sell more vehicles online.
-            Start your 14-day free trial today.
+            Set up in minutes. See results this week. Start your free trial
+            and find out why dealerships are switching to VehicleHound.
           </p>
         </ScrollReveal>
 

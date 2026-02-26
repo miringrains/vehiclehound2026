@@ -2,17 +2,17 @@
 
 import {
   LayoutDashboard,
-  Upload,
+  TrendingUp,
   BarChart3,
-  Users,
   Code2,
   Globe,
-  Zap,
-  FileText,
-  Mail,
-  Shield,
   Palette,
+  FileText,
+  Shield,
+  Clock,
   Smartphone,
+  Layers,
+  Sparkles,
 } from "lucide-react";
 import { Hero } from "./_components/Hero";
 import { StatsBar } from "./_components/StatsBar";
@@ -34,36 +34,36 @@ export default function LandingPage() {
       <StatsBar />
 
       <div id="features">
-        {/* Feature 1: Inventory Management */}
+        {/* Feature 1: Inventory Management — dark */}
         <FeatureShowcase
           badge="Inventory Management"
           title={
             <>
-              Your entire inventory.{" "}
+              Your entire lot.{" "}
               <span className="bg-gradient-to-r from-violet-400 to-violet-600 bg-clip-text text-transparent">
-                One dashboard.
+                One command center.
               </span>
             </>
           }
-          description="Add vehicles with a guided wizard, bulk import from CSV, track status, manage photos, and organize everything from a single command center."
+          description="Add vehicles individually or import thousands at once. Track every unit from intake to sold — with real-time analytics on what's getting attention."
           highlights={[
             {
               icon: LayoutDashboard,
-              title: "Real-time Dashboard",
+              title: "Live Overview",
               description:
-                "Live stats on inventory, widget views, and credit applications with sparkline trends.",
+                "See active inventory, engagement trends, and new leads the moment you log in.",
             },
             {
-              icon: Upload,
-              title: "CSV Bulk Import",
+              icon: TrendingUp,
+              title: "Know What Sells",
               description:
-                "Upload hundreds of vehicles at once with automatic field mapping and validation.",
+                "Track views and applications per vehicle so you stock what your market actually wants.",
             },
             {
               icon: BarChart3,
-              title: "Analytics & Insights",
+              title: "Bulk Operations",
               description:
-                "Track which vehicles get the most views and convert to credit applications.",
+                "CSV imports, batch status updates, and photo management — built for volume.",
             },
           ]}
           demo={
@@ -73,112 +73,114 @@ export default function LandingPage() {
           }
         />
 
-        {/* Feature 2: Embeddable Widgets */}
+        {/* Feature 2: Embeddable Widgets — light */}
         <FeatureShowcase
           id="widgets"
           badge="Embeddable Widgets"
           title={
             <>
-              Drop two lines of code.{" "}
-              <span className="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-                Inventory everywhere.
+              Your inventory.{" "}
+              <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
+                Their website.
               </span>
             </>
           }
-          description="Embed a fully interactive inventory browser, vehicle detail pages, or standalone credit application on any website. No iframes, no headaches."
+          description="Paste two lines of code and your full inventory appears on any website — searchable, responsive, and always up to date. No rebuilds, no maintenance."
           highlights={[
             {
               icon: Code2,
-              title: "Simple Integration",
+              title: "Two-Line Setup",
               description:
-                "A single script tag turns any div into a live, searchable inventory grid.",
+                "One script tag, one div. Works on WordPress, Squarespace, Wix, or any custom site.",
             },
             {
               icon: Globe,
-              title: "Works Anywhere",
+              title: "Always in Sync",
               description:
-                "WordPress, Squarespace, Wix, custom sites — if it supports HTML, it works.",
+                "Update a vehicle in the portal and it's instantly reflected on every widget.",
             },
             {
-              icon: Zap,
-              title: "Full CSS Isolation",
+              icon: Layers,
+              title: "Inventory, Details & Credit Apps",
               description:
-                "Widget styles never conflict with your site. Zero bleed-through, guaranteed.",
+                "Three widgets for different needs — browse, drill down, or apply for financing.",
             },
           ]}
           demo={<WidgetDemo />}
           reversed
+          light
         />
 
-        {/* Feature 3: Credit Applications */}
+        {/* Feature 3: Credit Applications — dark */}
         <FeatureShowcase
           badge="Credit Applications"
           title={
             <>
-              From application to{" "}
+              Leads that come to{" "}
               <span className="bg-gradient-to-r from-emerald-400 to-violet-400 bg-clip-text text-transparent">
-                inbox in seconds.
+                you.
               </span>
             </>
           }
-          description="Customers fill out a branded credit application. You get a professional PDF and their license delivered straight to your email — no portal login needed."
+          description="Customers apply for financing directly on your site or storefront. You get the full application, their documents, and a professional PDF — instantly."
           highlights={[
             {
               icon: FileText,
-              title: "Professional PDF Generation",
+              title: "Professional Applications",
               description:
-                "Clean grid-style forms with your dealership logo, just like traditional applications.",
+                "Clean, branded forms your customers trust — with the grid-style PDFs your finance team expects.",
             },
             {
-              icon: Mail,
-              title: "Email Attachments",
+              icon: Clock,
+              title: "Instant Delivery",
               description:
-                "The PDF and uploaded ID are attached directly to the notification email.",
+                "Application and uploaded documents hit your inbox and portal the second they submit.",
             },
             {
               icon: Shield,
-              title: "Encrypted & Secure",
+              title: "Secure by Default",
               description:
-                "SSN data encrypted at rest. All submissions logged with IP and timestamp.",
+                "Sensitive data encrypted at rest. Every submission logged with timestamps and IP.",
             },
           ]}
           demo={<CreditAppDemo />}
         />
 
-        {/* Feature 4: Storefront */}
+        {/* Feature 4: Storefront — light */}
         <FeatureShowcase
           badge="Branded Storefront"
           title={
             <>
-              A dealership website{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                that builds itself.
+              A dealership site{" "}
+              <span className="bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent">
+                in minutes.
               </span>
             </>
           }
-          description="Every dealership gets a custom-branded storefront with their own subdomain. Customers browse inventory, view details, and apply for financing — all on your brand."
+          description="Don't have a website? Every dealership gets a fully branded, mobile-optimized storefront. Your logo, your colors, your inventory — live on its own URL."
           highlights={[
             {
               icon: Palette,
-              title: "Custom Branding",
+              title: "Fully Branded",
               description:
-                "Your logo, colors, and domain. Storefronts automatically match your brand identity.",
+                "Upload your logo, pick your colors, and your storefront matches your identity automatically.",
             },
             {
               icon: Smartphone,
-              title: "Mobile Optimized",
+              title: "Built for Every Screen",
               description:
-                "Fully responsive design that looks great on every device, from phones to desktops.",
+                "Responsive from phone to desktop — because your customers are shopping everywhere.",
             },
             {
-              icon: Users,
-              title: "Built-in Lead Capture",
+              icon: Sparkles,
+              title: "Financing Built In",
               description:
-                "Credit application forms integrated directly into the storefront experience.",
+                "Credit application forms integrated right into the storefront. Browse to apply in one flow.",
             },
           ]}
           demo={<StorefrontDemo />}
           reversed
+          light
         />
       </div>
 
@@ -192,12 +194,12 @@ export default function LandingPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              Simple, transparent pricing
+              Straightforward pricing
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
             <p className="mt-4 text-lg text-muted-foreground">
-              Start free for 14 days. No credit card required. Upgrade or cancel anytime.
+              14-day free trial. No credit card. Cancel anytime.
             </p>
           </ScrollReveal>
         </div>

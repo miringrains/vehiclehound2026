@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 
@@ -31,13 +32,8 @@ export function Nav() {
       }`}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600">
-            <span className="text-sm font-bold text-white">VH</span>
-          </div>
-          <span className="text-lg font-semibold tracking-tight text-foreground">
-            VehicleHound
-          </span>
+        <Link href="/" className="flex items-center">
+          <Image src="/logo.svg" alt="VehicleHound" width={160} height={32} className="h-7 w-auto" priority />
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">

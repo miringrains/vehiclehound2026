@@ -3,9 +3,9 @@
 import { CountUp } from "./CountUp";
 
 const stats = [
-  { label: "Vehicles Managed", target: 12400, prefix: "", suffix: "+" },
-  { label: "Credit Applications", target: 3200, prefix: "", suffix: "+" },
-  { label: "Widget Impressions", target: 840000, prefix: "", suffix: "+" },
+  { label: "Setup Time", target: 5, prefix: "", suffix: " min" },
+  { label: "Avg. Leads per Dealer / Month", target: 34, prefix: "", suffix: "+" },
+  { label: "Websites Compatible", target: 100, prefix: "", suffix: "%" },
   { label: "Uptime", target: 99, prefix: "", suffix: ".9%" },
 ];
 

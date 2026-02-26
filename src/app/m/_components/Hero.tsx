@@ -43,13 +43,13 @@ export function Hero() {
         </motion.div>
 
         <SplitText
-          text="The modern platform for"
+          text="Sell more cars."
           className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
           as="h1"
         />
         <div className="mt-1 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
           <GradientText from="#A78BFA" to="#7C3AED">
-            dealership inventory
+            Manage less stuff.
           </GradientText>
         </div>
 
@@ -59,8 +59,8 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
         >
-          List vehicles, collect credit applications, and embed interactive
-          widgets on any website. Everything your dealership needs in one place.
+          The all-in-one platform for independent dealerships. Manage inventory,
+          collect credit applications, and put your vehicles on any website — in minutes.
         </motion.p>
 
         <motion.div

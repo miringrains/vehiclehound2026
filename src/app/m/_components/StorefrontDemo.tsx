@@ -1,117 +1,102 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { BrowserFrame } from "./BrowserFrame";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 const themes = [
-  { primary: "#7C3AED", name: "Platinum Motors", accent: "violet" },
-  { primary: "#059669", name: "Green Valley Auto", accent: "emerald" },
-  { primary: "#2563EB", name: "Pacific Motors", accent: "blue" },
+  { name: "Midnight Violet", primary: "#7c3aed", bg: "#0a0a0c", card: "#111113", text: "#ffffff" },
+  { name: "Deep Navy", primary: "#2563eb", bg: "#0b1120", card: "#111827", text: "#ffffff" },
+  { name: "Emerald Dark", primary: "#059669", bg: "#0a0c0a", card: "#111311", text: "#ffffff" },
 ];
 
-const cards = [
-  { name: "2025 BMW 330i", price: "$429/mo" },
-  { name: "2026 Audi Q5", price: "$609/mo" },
-  { name: "2025 Toyota Tacoma", price: "$249/mo" },
-  { name: "2025 Mercedes C300", price: "$348/mo" },
+const cars = [
+  { title: "2025 BMW 330i", sub: "Alpine White · 7,500 mi", price: "$429/mo" },
+  { title: "2025 Mercedes C300", sub: "Obsidian Black · 7,500 mi", price: "$348/mo" },
+  { title: "2026 BMW X5 sDrive40i", sub: "Phytonic Blue · 7,500 mi", price: "$829/mo" },
 ];
 
 export function StorefrontDemo() {
-  const [themeIdx, setThemeIdx] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
-
+  const [idx, setIdx] = useState(0);
   useEffect(() => {
-    if (!inView) return;
-    const timer = setInterval(() => {
-      setThemeIdx((i) => (i + 1) % themes.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [inView]);
-
-  const theme = themes[themeIdx];
+    const t = setInterval(() => setIdx((i) => (i + 1) % themes.length), 3500);
+    return () => clearInterval(t);
+  }, []);
+  const theme = themes[idx];
 
   return (
-    <div ref={ref}>
-      <BrowserFrame url={`${theme.name.toLowerCase().replace(/\s+/g, "")}.vhlist.com`}>
-        <div className="bg-background p-4 transition-colors duration-700">
-          {/* Header */}
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <motion.div
-                className="h-6 w-6 rounded-md transition-colors duration-700"
-                style={{ backgroundColor: theme.primary }}
-              />
-              <span className="text-xs font-semibold text-foreground">{theme.name}</span>
+    <div className="rounded-b-lg overflow-hidden" style={{ background: theme.bg, transition: "background 0.6s" }}>
+      <div className="p-4 md:p-5" style={{ minHeight: 300 }}>
+        {/* Storefront header */}
+        <motion.div className="mb-4 flex items-center justify-between" layout>
+          <div>
+            <p className="text-[11px] font-semibold text-white">Platinum Auto Group</p>
+            <p className="text-[8px]" style={{ color: theme.primary, transition: "color 0.6s" }}>
+              Branded Storefront
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <div className="rounded-md px-2.5 py-1 text-[8px] text-white/60 border" style={{ borderColor: `${theme.primary}33`, transition: "border-color 0.6s" }}>
+              Inventory
             </div>
-            <div className="flex gap-2">
-              <div className="h-2 w-10 rounded bg-muted/30" />
-              <div className="h-2 w-10 rounded bg-muted/30" />
+            <div className="rounded-md px-2.5 py-1 text-[8px] text-white" style={{ background: theme.primary, transition: "background 0.6s" }}>
+              Apply for Credit
             </div>
           </div>
+        </motion.div>
 
-          {/* Hero Banner */}
-          <motion.div
-            className="mb-4 rounded-lg p-3 transition-colors duration-700"
-            style={{ backgroundColor: `${theme.primary}15` }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-[10px] font-semibold text-foreground">Browse Our Inventory</div>
-                <div className="text-[8px] text-muted-foreground">Find your next vehicle today</div>
-              </div>
-              <motion.div
-                className="rounded-md px-2 py-1 text-[8px] font-medium text-white transition-colors duration-700"
-                style={{ backgroundColor: theme.primary }}
-              >
-                Apply Now
-              </motion.div>
-            </div>
-          </motion.div>
+        {/* Search */}
+        <div className="mb-3 flex gap-2">
+          <div className="flex-1 rounded-md border border-white/[0.08] bg-white/[0.04] px-2.5 py-1.5 text-[8px] text-white/30">
+            Search inventory...
+          </div>
+          <div className="rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-1.5 text-[8px] text-white/30">
+            All Types
+          </div>
+        </div>
 
-          {/* Vehicle Grid */}
-          <div className="grid grid-cols-2 gap-2">
-            {cards.map((c, i) => (
+        {/* Vehicle cards */}
+        <div className="grid grid-cols-3 gap-2">
+          <AnimatePresence mode="wait">
+            {cars.map((car, i) => (
               <motion.div
-                key={c.name}
-                initial={{ opacity: 0, y: 12 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-                className="overflow-hidden rounded-lg border border-border/30"
+                key={`${theme.name}-${i}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ delay: i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="rounded-lg overflow-hidden border border-white/[0.06]"
+                style={{ background: theme.card, transition: "background 0.6s" }}
               >
-                <div
-                  className="h-12 transition-colors duration-700"
-                  style={{ backgroundColor: `${theme.primary}10` }}
-                />
+                <div className="h-16 w-full" style={{ background: `linear-gradient(135deg, ${theme.primary}22, ${theme.bg})` }} />
                 <div className="p-2">
-                  <p className="text-[9px] font-medium text-foreground">{c.name}</p>
-                  <p
-                    className="text-[9px] font-semibold transition-colors duration-700"
-                    style={{ color: theme.primary }}
-                  >
-                    {c.price}
-                  </p>
+                  <p className="text-[8px] font-semibold text-white">{car.title}</p>
+                  <p className="text-[7px] text-white/40">{car.sub}</p>
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <p className="text-[9px] font-semibold text-white">{car.price}</p>
+                    <span className="rounded px-1.5 py-0.5 text-[7px]" style={{ background: `${theme.primary}22`, color: theme.primary, transition: "all 0.6s" }}>
+                      Lease
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             ))}
-          </div>
+          </AnimatePresence>
         </div>
-      </BrowserFrame>
 
-      {/* Theme switcher dots */}
-      <div className="mt-4 flex items-center justify-center gap-2">
-        {themes.map((t, i) => (
-          <button
-            key={t.name}
-            onClick={() => setThemeIdx(i)}
-            className={`h-2.5 w-2.5 rounded-full transition-all ${
-              i === themeIdx ? "scale-125" : "opacity-40"
-            }`}
-            style={{ backgroundColor: t.primary }}
-            aria-label={`Theme: ${t.name}`}
-          />
-        ))}
+        {/* Theme switcher indicator */}
+        <div className="mt-4 flex items-center justify-center gap-1.5">
+          {themes.map((t, i) => (
+            <button
+              key={t.name}
+              onClick={() => setIdx(i)}
+              className="h-2 rounded-full transition-all duration-300"
+              style={{
+                width: i === idx ? 16 : 8,
+                background: i === idx ? theme.primary : "rgba(255,255,255,0.15)",
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

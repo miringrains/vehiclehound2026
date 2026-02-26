@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const PORTAL = "https://portal.vehiclehound.com";
 
@@ -35,13 +36,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600">
-                <span className="text-sm font-bold text-white">VH</span>
-              </div>
-              <span className="text-lg font-semibold tracking-tight text-foreground">
-                VehicleHound
-              </span>
+            <Link href="/" className="flex items-center">
+              <Image src="/logo.svg" alt="VehicleHound" width={160} height={32} className="h-7 w-auto" priority />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
               The modern platform for dealership inventory management,

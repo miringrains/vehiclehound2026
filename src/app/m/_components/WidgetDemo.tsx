@@ -1,103 +1,111 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { BrowserFrame } from "./BrowserFrame";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
-const CODE_LINES = [
-  '<div id="vh-inventory"></div>',
-  "<script",
-  '  src="https://vehiclehound.com/widgets/inventory-widget.js"',
-  '  data-api-key="vhk_live_abc123..."',
-  "></script>",
+const vehicles = [
+  { year: 2025, make: "BMW", model: "330i", price: "$429/mo", img: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", color: "Alpine White" },
+  { year: 2025, make: "Mercedes", model: "C300", price: "$348/mo", img: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)", color: "Obsidian Black" },
+  { year: 2026, make: "BMW", model: "X5 sDrive40i", price: "$829/mo", img: "linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)", color: "Phytonic Blue" },
 ];
 
-const fakeCards = [
-  { name: "2025 BMW 330i", price: "$429/mo", color: "bg-blue-900/30" },
-  { name: "2026 Audi Q5", price: "$609/mo", color: "bg-emerald-900/30" },
-  { name: "2025 Mercedes C300", price: "$348/mo", color: "bg-violet-900/30" },
-];
+const codeSnippet = `<script src="https://portal.vehiclehound.com
+  /widgets/inventory-widget.js">
+</script>
+<div id="vh-inventory"
+  data-dealer-id="your-id">
+</div>`;
 
-function TypingCode({ onDone }: { onDone: () => void }) {
-  const [lines, setLines] = useState<string[]>([]);
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+function TypingCode() {
+  const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
-    if (!inView) return;
-    let i = 0;
     const timer = setInterval(() => {
-      if (i < CODE_LINES.length) {
-        setLines((prev) => [...prev, CODE_LINES[i]]);
-        i++;
-      } else {
-        clearInterval(timer);
-        onDone();
-      }
-    }, 300);
+      setCharCount((c) => {
+        if (c >= codeSnippet.length) {
+          clearInterval(timer);
+          return c;
+        }
+        return c + 1;
+      });
+    }, 25);
     return () => clearInterval(timer);
-  }, [inView, onDone]);
+  }, []);
 
   return (
-    <div
-      ref={ref}
-      className="rounded-lg border border-border/40 bg-[#0d0d12] p-4 font-mono text-[11px] leading-relaxed"
-    >
-      <div className="mb-2 flex gap-1.5">
-        <span className="h-2 w-2 rounded-full bg-red-500/50" />
-        <span className="h-2 w-2 rounded-full bg-yellow-500/50" />
-        <span className="h-2 w-2 rounded-full bg-green-500/50" />
-      </div>
-      {lines.map((line, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: -8 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-violet-300"
-        >
-          <span className="mr-3 select-none text-muted-foreground/40">
-            {String(i + 1).padStart(2, " ")}
-          </span>
-          {line}
-        </motion.div>
-      ))}
-      {lines.length > 0 && lines.length < CODE_LINES.length && (
-        <span className="inline-block h-3.5 w-1.5 animate-pulse bg-violet-400" />
-      )}
-    </div>
+    <pre className="text-[9px] leading-relaxed text-emerald-400 font-mono whitespace-pre-wrap">
+      {codeSnippet.slice(0, charCount)}
+      <span className="animate-pulse text-white">|</span>
+    </pre>
   );
 }
 
 export function WidgetDemo() {
-  const [showCards, setShowCards] = useState(false);
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setActive((a) => (a + 1) % vehicles.length), 3000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <div className="space-y-6">
-      <TypingCode onDone={() => setShowCards(true)} />
-
-      <BrowserFrame url="www.yourdealer.com/inventory">
-        <div className="bg-background/80 p-4">
-          <div className="mb-3 h-3 w-32 rounded bg-muted/40" />
-          <div className="grid grid-cols-3 gap-3">
-            {fakeCards.map((c, i) => (
-              <motion.div
-                key={c.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={showCards ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: i * 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden rounded-lg border border-border/30"
-              >
-                <div className={`h-14 ${c.color}`} />
-                <div className="space-y-1 p-2">
-                  <div className="text-[10px] font-medium text-foreground">{c.name}</div>
-                  <div className="text-[10px] text-violet-400">{c.price}</div>
-                </div>
-              </motion.div>
-            ))}
+    <div className="rounded-b-lg overflow-hidden bg-white">
+      <div className="grid md:grid-cols-2 gap-0">
+        {/* Code side */}
+        <div className="bg-[#0a0a0c] p-4 md:p-5 flex flex-col justify-center border-r border-white/[0.06]">
+          <p className="mb-1 text-[9px] font-medium text-violet-400 uppercase tracking-widest">Embed Code</p>
+          <p className="mb-3 text-[10px] text-white/50">Two lines. Paste into any site.</p>
+          <div className="rounded-lg border border-white/[0.08] bg-[#111113] p-3">
+            <TypingCode />
           </div>
         </div>
-      </BrowserFrame>
+
+        {/* Result — fake dealer website with widget */}
+        <div className="bg-[#f8f8f8] p-4 md:p-5 flex flex-col">
+          <p className="mb-1 text-[9px] font-medium text-violet-600 uppercase tracking-widest">Result on dealer site</p>
+          <p className="mb-3 text-[10px] text-[oklch(0.44_0.02_280)]">Widget adapts to any website.</p>
+          <div className="flex-1 rounded-lg border border-[oklch(0.91_0.005_280)] bg-white p-3 overflow-hidden">
+            {/* Fake site header */}
+            <div className="mb-2 flex items-center justify-between border-b border-gray-100 pb-2">
+              <div className="h-3 w-16 rounded bg-gray-200" />
+              <div className="flex gap-2">
+                <div className="h-2 w-8 rounded bg-gray-100" />
+                <div className="h-2 w-8 rounded bg-gray-100" />
+                <div className="h-2 w-8 rounded bg-gray-100" />
+              </div>
+            </div>
+            {/* Inventory cards */}
+            <div className="space-y-1.5">
+              <AnimatePresence mode="popLayout">
+                {vehicles.map((v, i) => (
+                  <motion.div
+                    key={`${v.model}-${i}`}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: i === active ? 1 : 0.6, y: 0, scale: i === active ? 1 : 0.98 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center gap-2 rounded-md border border-gray-100 p-1.5"
+                  >
+                    <div
+                      className="h-8 w-12 shrink-0 rounded"
+                      style={{ background: v.img }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[8px] font-semibold text-gray-900 truncate">
+                        {v.year} {v.make} {v.model}
+                      </p>
+                      <p className="text-[7px] text-gray-400">{v.color}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[9px] font-semibold text-gray-900">{v.price}</p>
+                      <p className="text-[7px] text-violet-500">Lease</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

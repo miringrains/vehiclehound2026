@@ -1,129 +1,117 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import { FileText, Mail, ArrowRight, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { FileText, CheckCircle2, Bell, ArrowRight } from "lucide-react";
+
+const steps = [
+  { icon: FileText, title: "Customer Fills Out Form", desc: "Branded credit app on your storefront or embedded on your site." },
+  { icon: CheckCircle2, title: "Application Generated", desc: "Professional PDF with their license — auto-generated, no manual work." },
+  { icon: Bell, title: "You Get Notified Instantly", desc: "Full application + docs delivered to your email and portal." },
+];
 
 const fields = [
-  { label: "First Name", value: "John" },
-  { label: "Last Name", value: "Smith" },
-  { label: "Email", value: "john@email.com" },
-  { label: "Phone", value: "(555) 123-4567" },
+  ["First Name", "Last Name"],
+  ["Date of Birth", "SSN"],
+  ["Phone", "Email"],
+  ["Address", "City, State, Zip"],
+  ["Employer", "Monthly Income"],
 ];
 
 export function CreditAppDemo() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setStep((s) => (s + 1) % 3), 3000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-6 md:flex-row md:gap-4">
-      {/* Step 1: Form */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={inView ? { opacity: 1, x: 0 } : {}}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="w-full flex-1 rounded-xl border border-border/40 bg-card/60 p-4"
-      >
-        <div className="mb-3 flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-[10px] font-bold text-violet-400">
-            1
-          </div>
-          <span className="text-xs font-semibold text-foreground">Customer Fills Form</span>
-        </div>
-        <div className="space-y-2">
-          {fields.map((f, i) => (
-            <motion.div
-              key={f.label}
-              initial={{ opacity: 0 }}
-              animate={inView ? { opacity: 1 } : {}}
-              transition={{ delay: 0.5 + i * 0.2 }}
-              className="flex items-center gap-2"
-            >
-              <span className="w-16 text-[9px] text-muted-foreground">{f.label}</span>
-              <div className="flex-1 rounded border border-border/30 bg-background/60 px-2 py-1">
-                <motion.span
+    <div className="rounded-b-lg overflow-hidden bg-[#0a0a0c]">
+      <div className="grid md:grid-cols-2 gap-0">
+        {/* Form preview */}
+        <div className="p-4 md:p-5 border-r border-white/[0.06]">
+          <div className="rounded-lg border border-white/[0.06] bg-[#111113] p-3 overflow-hidden">
+            <div className="mb-2 flex items-center gap-1.5">
+              <FileText className="h-3 w-3 text-violet-400" />
+              <span className="text-[9px] font-semibold text-white">Credit Application</span>
+            </div>
+            <div className="space-y-1.5">
+              {fields.map((row, ri) => (
+                <motion.div
+                  key={ri}
                   initial={{ opacity: 0 }}
-                  animate={inView ? { opacity: 1 } : {}}
-                  transition={{ delay: 0.7 + i * 0.2 }}
-                  className="text-[10px] text-foreground"
+                  animate={{ opacity: step === 0 ? 1 : 0.4 }}
+                  transition={{ delay: ri * 0.08, duration: 0.3 }}
+                  className="grid grid-cols-2 gap-1.5"
                 >
-                  {f.value}
-                </motion.span>
-              </div>
+                  {row.map((f) => (
+                    <div key={f} className="rounded border border-white/[0.06] bg-white/[0.03] px-2 py-1">
+                      <p className="text-[6px] uppercase tracking-wider text-white/30">{f}</p>
+                      <div className="mt-0.5 h-2 w-3/4 rounded bg-white/[0.06]" />
+                    </div>
+                  ))}
+                </motion.div>
+              ))}
+            </div>
+            <motion.div
+              animate={{ opacity: step === 0 ? 1 : 0.4 }}
+              className="mt-2 rounded-md bg-violet-600 py-1.5 text-center text-[8px] font-medium text-white"
+            >
+              Submit Application
             </motion.div>
-          ))}
+          </div>
         </div>
-      </motion.div>
 
-      {/* Arrow */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={inView ? { opacity: 1, scale: 1 } : {}}
-        transition={{ delay: 1.5, duration: 0.3 }}
-        className="shrink-0"
-      >
-        <ArrowRight className="h-5 w-5 rotate-90 text-violet-500 md:rotate-0" />
-      </motion.div>
-
-      {/* Step 2: PDF */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 1.7, duration: 0.5 }}
-        className="w-full flex-1 rounded-xl border border-border/40 bg-card/60 p-4"
-      >
-        <div className="mb-3 flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-[10px] font-bold text-violet-400">
-            2
+        {/* Steps flow */}
+        <div className="p-4 md:p-5 flex flex-col justify-center">
+          <p className="mb-1 text-[9px] font-medium text-violet-400 uppercase tracking-widest">How it works</p>
+          <p className="mb-4 text-[10px] text-white/50">From submission to your inbox in seconds.</p>
+          <div className="space-y-3">
+            {steps.map((s, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  opacity: i === step ? 1 : 0.3,
+                  x: i === step ? 0 : 4,
+                }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="flex items-start gap-2.5"
+              >
+                <div
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors duration-300"
+                  style={{
+                    background: i === step ? "rgba(124,58,237,0.15)" : "rgba(255,255,255,0.04)",
+                  }}
+                >
+                  <s.icon
+                    className="h-3 w-3 transition-colors duration-300"
+                    style={{ color: i === step ? "#7c3aed" : "rgba(255,255,255,0.3)" }}
+                    strokeWidth={1.75}
+                  />
+                </div>
+                <div>
+                  <p className="text-[9px] font-medium text-white">{s.title}</p>
+                  <p className="text-[7px] text-white/40 leading-relaxed">{s.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-          <span className="text-xs font-semibold text-foreground">PDF Generated</span>
-        </div>
-        <div className="flex items-center gap-3 rounded-lg border border-border/30 bg-background/40 p-3">
-          <FileText className="h-8 w-8 text-red-400" />
-          <div>
-            <p className="text-[10px] font-medium text-foreground">Credit-Application-John-Smith.pdf</p>
-            <p className="text-[9px] text-muted-foreground">Grid-style form with all applicant data</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Arrow */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={inView ? { opacity: 1, scale: 1 } : {}}
-        transition={{ delay: 2.2, duration: 0.3 }}
-        className="shrink-0"
-      >
-        <ArrowRight className="h-5 w-5 rotate-90 text-violet-500 md:rotate-0" />
-      </motion.div>
-
-      {/* Step 3: Email */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={inView ? { opacity: 1, x: 0 } : {}}
-        transition={{ delay: 2.4, duration: 0.5 }}
-        className="w-full flex-1 rounded-xl border border-border/40 bg-card/60 p-4"
-      >
-        <div className="mb-3 flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] font-bold text-emerald-400">
-            3
-          </div>
-          <span className="text-xs font-semibold text-foreground">Dealer Gets Notified</span>
-        </div>
-        <div className="space-y-2 rounded-lg border border-border/30 bg-background/40 p-3">
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-violet-400" />
-            <span className="text-[10px] font-medium text-foreground">New Credit Application</span>
-          </div>
-          <p className="text-[9px] text-muted-foreground">
-            PDF + license attached directly to the email
-          </p>
-          <div className="flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-            <span className="text-[9px] text-emerald-400">Delivered</span>
+          {/* Step indicators */}
+          <div className="mt-4 flex gap-1">
+            {steps.map((_, i) => (
+              <div
+                key={i}
+                className="h-1 rounded-full transition-all duration-500"
+                style={{
+                  width: i === step ? 20 : 8,
+                  background: i === step ? "#7c3aed" : "rgba(255,255,255,0.1)",
+                }}
+              />
+            ))}
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
