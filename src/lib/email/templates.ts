@@ -55,14 +55,24 @@ export function creditAppNotification(params: {
   applicantName: string;
   vehicleLabel: string | null;
   portalUrl: string;
+  hasAttachments?: boolean;
 }): string {
+  const parts = [
+    heading("New Credit Application"),
+    text(`<strong>${params.applicantName}</strong> submitted a credit application${params.vehicleLabel ? ` for a <strong>${params.vehicleLabel}</strong>` : ""}.`),
+  ];
+
+  if (params.hasAttachments) {
+    parts.push(
+      spacer(8),
+      text('<span style="font-size:13px;color:#71717a">The full application PDF and any uploaded documents are attached to this email.</span>'),
+    );
+  }
+
+  parts.push(spacer(20), button("View in Portal", params.portalUrl));
+
   return layout(
-    [
-      heading("New Credit Application"),
-      text(`<strong>${params.applicantName}</strong> submitted a credit application${params.vehicleLabel ? ` for a <strong>${params.vehicleLabel}</strong>` : ""}.`),
-      spacer(20),
-      button("View Application", params.portalUrl),
-    ].join(""),
+    parts.join(""),
     "You're receiving this because your email is listed for credit application alerts."
   );
 }

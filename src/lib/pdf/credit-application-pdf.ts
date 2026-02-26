@@ -50,227 +50,294 @@ type AppData = {
   vehicle?: { year?: number | null; make?: string | null; model?: string | null; stock_number?: string | null } | null;
   created_at: string;
   logo_data?: { base64: string; format: "PNG" | "JPEG" | "WEBP" } | null;
+  dealership_name?: string | null;
+  dealership_phone?: string | null;
 };
 
-function fmt(v: unknown): string {
-  if (v === null || v === undefined || v === "") return "\u2014";
+/* ── Formatters ── */
+
+function val(v: unknown): string {
+  if (v === null || v === undefined || v === "") return "";
   if (typeof v === "number") return v.toLocaleString("en-US");
   return String(v);
 }
 
-function fmtMoney(v: unknown): string {
-  if (v === null || v === undefined) return "\u2014";
+function money(v: unknown): string {
+  if (v === null || v === undefined) return "";
   return `$${Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function fmtSSN(v: unknown): string {
-  if (!v) return "\u2014";
+  if (!v) return "";
   const d = String(v).replace(/\D/g, "");
   if (d.length === 9) return `${d.slice(0, 3)}-${d.slice(3, 5)}-${d.slice(5)}`;
   return String(v);
 }
 
 function fmtPhone(v: unknown): string {
-  if (!v) return "\u2014";
+  if (!v) return "";
   const d = String(v).replace(/\D/g, "");
   if (d.length === 10) return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
   return String(v);
 }
 
+/* ── PDF Generation ── */
+
 export function generateCreditApplicationPDF(data: AppData): Uint8Array {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
-  const mx = 48;
-  const contentW = pageW - mx * 2;
-  let y = 0;
+  const PW = doc.internal.pageSize.getWidth();
+  const PH = doc.internal.pageSize.getHeight();
+  const M = 36;
+  const W = PW - M * 2;
+  const RH = 24;
+  const SH = 14;
+  const LN = 0.5;
+  const PAD = 3;
+  let y = M;
+  let pg = 1;
+  const FY = PH - 28;
 
-  const DARK = [24, 24, 27] as const;
-  const MID = [115, 115, 120] as const;
-  const LIGHT_LINE = [230, 230, 232] as const;
-  const ACCENT = [88, 80, 236] as const;
-  const ZEBRA = [248, 248, 250] as const;
+  type Col = [number, string, string];
 
-  const ensureSpace = (need: number) => {
-    if (y + need > pageH - 40) {
+  function drawFooter(p: number) {
+    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(130, 130, 135);
+    doc.text("Confidential", M, FY);
+    doc.text(`Page ${p}`, PW - M, FY, { align: "right" });
+  }
+
+  function ensure(need: number) {
+    if (y + need > FY - 10) {
+      drawFooter(pg);
       doc.addPage();
-      y = 48;
+      pg++;
+      y = M;
     }
-  };
+  }
 
-  // ── Header bar ──
-  doc.setFillColor(...DARK);
-  doc.rect(0, 0, pageW, 80, "F");
+  function clip(text: string, maxW: number): string {
+    if (!text || doc.getTextWidth(text) <= maxW) return text;
+    let t = text;
+    while (t.length > 1 && doc.getTextWidth(t + "\u2026") > maxW) t = t.slice(0, -1);
+    return t + "\u2026";
+  }
 
-  let hdrTextX = mx;
+  function drawCell(x: number, cw: number, h: number, label: string, value: string) {
+    doc.setDrawColor(0);
+    doc.setLineWidth(LN);
+    doc.rect(x, y, cw, h);
+
+    if (label) {
+      doc.setFontSize(5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0);
+      doc.text(label.toUpperCase(), x + PAD, y + 7);
+    }
+
+    if (value) {
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0);
+      doc.text(clip(value, cw - PAD * 2), x + PAD, y + h - 5);
+    }
+  }
+
+  function section(text: string) {
+    ensure(SH + RH);
+    doc.setFillColor(30, 30, 33);
+    doc.setDrawColor(0);
+    doc.setLineWidth(LN);
+    doc.rect(M, y, W, SH, "FD");
+    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(text.toUpperCase(), M + 4, y + 10);
+    y += SH;
+  }
+
+  function row(cols: Col[], h = RH) {
+    ensure(h);
+    let x = M;
+    for (const [frac, label, value] of cols) {
+      const cw = W * frac;
+      drawCell(x, cw, h, label, value);
+      x += cw;
+    }
+    y += h;
+  }
+
+  /* ═══════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════ */
+
+  const hdrH = 42;
+  doc.setDrawColor(0);
+  doc.setLineWidth(LN);
+  doc.rect(M, y, W, hdrH);
+
+  let logoRight = M + 8;
   if (data.logo_data) {
     try {
-      const logoMaxH = 40;
-      const logoMaxW = 80;
-      doc.addImage(data.logo_data.base64, data.logo_data.format, mx, 20, logoMaxW, logoMaxH, undefined, "FAST");
-      hdrTextX = mx + logoMaxW + 12;
-    } catch { /* skip logo if invalid */ }
+      doc.addImage(data.logo_data.base64, data.logo_data.format, M + 8, y + 5, 72, 32, undefined, "FAST");
+      logoRight = M + 86;
+    } catch { /* skip logo */ }
   }
 
-  doc.setFontSize(20);
+  if (data.dealership_name) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0);
+    doc.text(data.dealership_name, logoRight, y + 16);
+    if (data.dealership_phone) {
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.text(fmtPhone(data.dealership_phone), logoRight, y + 27);
+    }
+  }
+
+  doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(255, 255, 255);
-  doc.text("Credit Application", hdrTextX, 46);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(200, 200, 205);
-  const dateStr = new Date(data.created_at).toLocaleDateString("en-US", {
-    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+  doc.setTextColor(0);
+  doc.text("CREDIT APPLICATION", M + W / 2, y + 26, { align: "center" });
+
+  y += hdrH;
+
+  /* ═══════════════════════════════════════════════
+     PERSONAL INFORMATION
+     ═══════════════════════════════════════════════ */
+
+  const appDate = new Date(data.created_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
-  doc.text(dateStr, hdrTextX, 64);
+
+  section("Personal Information");
+  row([
+    [0.30, "First Name", val(data.first_name)],
+    [0.30, "Last Name", val(data.last_name)],
+    [0.20, "Date of Birth", val(data.date_of_birth)],
+    [0.20, "Date of Application", appDate],
+  ]);
+  row([
+    [0.25, "Social Security No.", fmtSSN(data.ssn)],
+    [0.25, "Phone", fmtPhone(data.phone)],
+    [0.50, "Email Address", val(data.email)],
+  ]);
+  row([
+    [0.40, "Address", val(data.address)],
+    [0.25, "City", val(data.city)],
+    [0.10, "State", val(data.state)],
+    [0.25, "Zip", val(data.zip)],
+  ]);
+  row([
+    [0.50, "Residential Status", val(data.residential_status)],
+    [0.50, "Monthly Housing Payment", money(data.monthly_payment)],
+  ]);
+
+  /* ═══════════════════════════════════════════════
+     EMPLOYMENT & INCOME
+     ═══════════════════════════════════════════════ */
+
+  section("Employment & Income");
+  row([
+    [0.40, "Employer", val(data.employer)],
+    [0.30, "Occupation", val(data.occupation)],
+    [0.30, "Employment Status", val(data.employment_status)],
+  ]);
+
+  if (data.employer_address || data.employer_city || data.employer_state || data.employer_zip) {
+    row([
+      [0.40, "Employer Address", val(data.employer_address)],
+      [0.25, "City", val(data.employer_city)],
+      [0.10, "State", val(data.employer_state)],
+      [0.25, "Zip", val(data.employer_zip)],
+    ]);
+  }
+
+  const timeParts: string[] = [];
+  if (data.years_employed != null) timeParts.push(`${data.years_employed} yr`);
+  if (data.months_employed != null) timeParts.push(`${data.months_employed} mo`);
+
+  row([
+    [0.34, "Employer Phone", fmtPhone(data.employer_phone)],
+    [0.33, "Monthly Income", money(data.monthly_income)],
+    [0.33, "Time at Employer", timeParts.join(" ")],
+  ]);
+
+  if (data.other_income_sources || data.additional_monthly_income) {
+    row([
+      [0.50, "Other Income Sources", val(data.other_income_sources)],
+      [0.50, "Additional Monthly Income", money(data.additional_monthly_income)],
+    ]);
+  }
+
+  /* ═══════════════════════════════════════════════
+     CO-APPLICANT
+     ═══════════════════════════════════════════════ */
+
+  if (data.has_co_applicant) {
+    section("Co-Applicant Information");
+    row([
+      [0.30, "First Name", val(data.co_first_name)],
+      [0.30, "Last Name", val(data.co_last_name)],
+      [0.20, "Date of Birth", val(data.co_date_of_birth)],
+      [0.20, "Phone", fmtPhone(data.co_phone)],
+    ]);
+    row([
+      [0.25, "Social Security No.", fmtSSN(data.co_ssn)],
+      [0.45, "Email Address", val(data.co_email)],
+      [0.30, "Residential Status", val(data.co_residential_status)],
+    ]);
+    row([
+      [0.40, "Address", val(data.co_address)],
+      [0.25, "City", val(data.co_city)],
+      [0.10, "State", val(data.co_state)],
+      [0.25, "Zip", val(data.co_zip)],
+    ]);
+    row([
+      [0.50, "Monthly Housing Payment", money(data.co_monthly_payment)],
+      [0.50, "Employment Status", val(data.co_employment_status)],
+    ]);
+    row([
+      [0.40, "Employer", val(data.co_employer)],
+      [0.30, "Occupation", val(data.co_occupation)],
+      [0.30, "Monthly Income", money(data.co_monthly_income)],
+    ]);
+  }
+
+  /* ═══════════════════════════════════════════════
+     BUSINESS INFORMATION
+     ═══════════════════════════════════════════════ */
+
+  if (data.is_business_app) {
+    section("Business Information");
+    row([
+      [0.40, "Business Name", val(data.business_name)],
+      [0.30, "Business Type", val(data.business_type)],
+      [0.30, "EIN", val(data.business_ein)],
+    ]);
+  }
+
+  /* ═══════════════════════════════════════════════
+     VEHICLE OF INTEREST
+     ═══════════════════════════════════════════════ */
 
   if (data.vehicle) {
-    const vLabel = [data.vehicle.year, data.vehicle.make, data.vehicle.model].filter(Boolean).join(" ");
-    const stock = data.vehicle.stock_number ? `  \u2022  Stock #${data.vehicle.stock_number}` : "";
-    doc.text(vLabel + stock, pageW - mx, 46, { align: "right" });
+    section("Vehicle of Interest");
+    row([
+      [0.15, "Year", val(data.vehicle.year)],
+      [0.30, "Make", val(data.vehicle.make)],
+      [0.35, "Model", val(data.vehicle.model)],
+      [0.20, "Stock #", val(data.vehicle.stock_number)],
+    ]);
   }
 
-  y = 104;
+  /* ═══════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════ */
 
-  // ── Section heading ──
-  const sectionHeading = (text: string) => {
-    ensureSpace(40);
-    y += 6;
-    doc.setFillColor(...ACCENT);
-    doc.rect(mx, y, 3, 14, "F");
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...DARK);
-    doc.text(text, mx + 12, y + 11);
-    y += 28;
-  };
-
-  // ── Row drawing ──
-  let rowIdx = 0;
-  const startTable = () => { rowIdx = 0; };
-
-  const row = (label: string, value: string) => {
-    ensureSpace(22);
-    if (rowIdx % 2 === 0) {
-      doc.setFillColor(...ZEBRA);
-      doc.rect(mx, y - 4, contentW, 20, "F");
-    }
-    doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...MID);
-    doc.text(label, mx + 8, y + 9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...DARK);
-    doc.text(value, mx + 180, y + 9);
-    y += 20;
-    rowIdx++;
-  };
-
-  const twoCol = (l1: string, v1: string, l2: string, v2: string) => {
-    ensureSpace(22);
-    const halfW = contentW / 2;
-    if (rowIdx % 2 === 0) {
-      doc.setFillColor(...ZEBRA);
-      doc.rect(mx, y - 4, contentW, 20, "F");
-    }
-    doc.setFontSize(8.5);
-
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...MID);
-    doc.text(l1, mx + 8, y + 9);
-    doc.setTextColor(...DARK);
-    doc.text(v1, mx + 100, y + 9);
-
-    doc.setTextColor(...MID);
-    doc.text(l2, mx + halfW + 8, y + 9);
-    doc.setTextColor(...DARK);
-    doc.text(v2, mx + halfW + 100, y + 9);
-
-    y += 20;
-    rowIdx++;
-  };
-
-  const sectionDivider = () => {
-    y += 8;
-    doc.setDrawColor(...LIGHT_LINE);
-    doc.line(mx, y, pageW - mx, y);
-    y += 4;
-  };
-
-  // ═══════════════════════════════════════════
-  // PERSONAL INFORMATION
-  // ═══════════════════════════════════════════
-  sectionHeading("Personal Information");
-  startTable();
-  twoCol("Name", `${data.first_name} ${data.last_name}`, "Date of Birth", fmt(data.date_of_birth));
-  twoCol("Email", data.email, "Phone", fmtPhone(data.phone));
-  row("SSN", fmtSSN(data.ssn));
-  row("Address", fmt(data.address));
-  twoCol(
-    "City / State",
-    [fmt(data.city), fmt(data.state)].join(", "),
-    "Zip",
-    fmt(data.zip),
-  );
-  twoCol("Residential Status", fmt(data.residential_status), "Housing Payment", fmtMoney(data.monthly_payment));
-
-  sectionDivider();
-
-  // ═══════════════════════════════════════════
-  // EMPLOYMENT & INCOME
-  // ═══════════════════════════════════════════
-  sectionHeading("Employment & Income");
-  startTable();
-  twoCol("Employer", fmt(data.employer), "Occupation", fmt(data.occupation));
-  twoCol("Status", fmt(data.employment_status), "Monthly Income", fmtMoney(data.monthly_income));
-  if (data.years_employed || data.months_employed) {
-    row("Time at Employer", `${fmt(data.years_employed)} yr ${fmt(data.months_employed)} mo`);
-  }
-  if (data.employer_address) {
-    row("Employer Address", fmt(data.employer_address));
-    twoCol(
-      "Employer City / State",
-      [fmt(data.employer_city), fmt(data.employer_state)].join(", "),
-      "Zip",
-      fmt(data.employer_zip),
-    );
-  }
-  if (data.employer_phone) row("Employer Phone", fmtPhone(data.employer_phone));
-  if (data.other_income_sources) row("Other Income Sources", fmt(data.other_income_sources));
-  if (data.additional_monthly_income) row("Additional Income", fmtMoney(data.additional_monthly_income));
-
-  // ═══════════════════════════════════════════
-  // CO-APPLICANT
-  // ═══════════════════════════════════════════
-  if (data.has_co_applicant) {
-    sectionDivider();
-    sectionHeading("Co-Applicant");
-    startTable();
-    twoCol("Name", `${fmt(data.co_first_name)} ${fmt(data.co_last_name)}`, "Date of Birth", fmt(data.co_date_of_birth));
-    twoCol("Email", fmt(data.co_email), "Phone", fmtPhone(data.co_phone));
-    row("SSN", fmtSSN(data.co_ssn));
-    row("Address", fmt(data.co_address));
-    twoCol(
-      "City / State",
-      [fmt(data.co_city), fmt(data.co_state)].join(", "),
-      "Zip",
-      fmt(data.co_zip),
-    );
-    twoCol("Residential Status", fmt(data.co_residential_status), "Housing Payment", fmtMoney(data.co_monthly_payment));
-    twoCol("Employer", fmt(data.co_employer), "Occupation", fmt(data.co_occupation));
-    twoCol("Status", fmt(data.co_employment_status), "Monthly Income", fmtMoney(data.co_monthly_income));
-  }
-
-  // ═══════════════════════════════════════════
-  // BUSINESS
-  // ═══════════════════════════════════════════
-  if (data.is_business_app) {
-    sectionDivider();
-    sectionHeading("Business Information");
-    startTable();
-    twoCol("Business Name", fmt(data.business_name), "Type", fmt(data.business_type));
-    row("EIN", fmt(data.business_ein));
-  }
-
+  drawFooter(pg);
   return doc.output("arraybuffer") as unknown as Uint8Array;
 }

@@ -77,11 +77,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertErr.message }, { status: 400 });
     }
 
+    let pdfBytes: Uint8Array | null = null;
     try {
-      const { data: dealershipForLogo } = await admin.from("dealerships").select("logo_url").eq("id", dealership_id).single();
-      const logo_data = await fetchLogoData(dealershipForLogo?.logo_url);
+      const { data: dealershipInfo } = await admin.from("dealerships").select("name, phone, logo_url").eq("id", dealership_id).single();
+      const logo_data = await fetchLogoData(dealershipInfo?.logo_url);
 
-      const pdfBytes = generateCreditApplicationPDF({
+      pdfBytes = generateCreditApplicationPDF({
         ...rest,
         ssn,
         co_ssn,
@@ -91,6 +92,8 @@ export async function POST(request: NextRequest) {
         vehicle: vehicleData,
         created_at: inserted.created_at,
         logo_data,
+        dealership_name: dealershipInfo?.name || null,
+        dealership_phone: dealershipInfo?.phone || null,
       });
 
       const pdfPath = `${storagePath}/application-${inserted.id}.pdf`;
@@ -121,6 +124,8 @@ export async function POST(request: NextRequest) {
           vehicleLabel,
           applicationId: inserted.id,
           portalUrl: `${baseUrl}/credit-applications/${inserted.id}`,
+          pdfBytes,
+          frontIdBase64: front_id_base64 || null,
         });
       }
     } catch {
