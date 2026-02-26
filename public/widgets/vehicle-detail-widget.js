@@ -97,13 +97,13 @@
     s.id = "vh-det-css";
     if (!cl) cl = deriveColors("#ffffff");
     s.textContent = `
-.vhd{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important;color:${cl.text};-webkit-font-smoothing:antialiased;line-height:1.5;max-width:1100px;margin:0 auto;background:${cl.bg}}
-.vhd *,.vhd *::before,.vhd *::after{box-sizing:border-box;margin:0;padding:0;font-family:inherit !important;line-height:inherit}
+.vhd{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important;color:${cl.text} !important;-webkit-font-smoothing:antialiased;font-size:16px !important;font-weight:400 !important;font-style:normal !important;letter-spacing:normal !important;text-transform:none !important;word-spacing:normal !important;line-height:1.5 !important;max-width:1100px;margin:0 auto;background:${cl.bg}}
+.vhd *,.vhd *::before,.vhd *::after{box-sizing:border-box;margin:0;padding:0;font-family:inherit !important;font-size:inherit !important;font-weight:inherit !important;font-style:inherit !important;letter-spacing:inherit !important;text-transform:inherit !important;word-spacing:inherit !important;line-height:inherit !important;color:inherit !important;text-decoration:inherit !important}
 .vhd-top{display:flex;gap:32px;margin-bottom:32px}
 .vhd-gallery{flex:1;min-width:0}
 .vhd-main-img{width:100%;aspect-ratio:16/10;background:${cl.imgBg};border-radius:${r.gallery}px;overflow:hidden;margin-bottom:10px;position:relative}
 .vhd-main-img img{width:100%;height:100%;object-fit:contain}
-.vhd-main-img .vhd-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.vhd-main-img .vhd-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.55);color:#fff !important;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px !important;display:flex;align-items:center;justify-content:center;transition:background .15s}
 .vhd-main-img .vhd-nav:hover{background:rgba(0,0,0,.75)}
 .vhd-main-img .vhd-nav.prev{left:12px}
 .vhd-main-img .vhd-nav.next{right:12px}
@@ -112,18 +112,18 @@
 .vhd-thumbs img.active{border-color:${cl.text};opacity:1}
 .vhd-thumbs img:hover{opacity:1}
 .vhd-info{width:380px;flex-shrink:0}
-.vhd-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:4px 12px;border-radius:${r.badge}px;color:#fff;margin-bottom:10px}
-.vhd-title{font-size:26px;font-weight:800;color:${cl.text};margin-bottom:4px;line-height:1.2}
-.vhd-subtitle{font-size:14px;color:${cl.textMuted};margin-bottom:16px}
-.vhd-price{font-size:32px;font-weight:800;color:${cl.text};margin-bottom:4px}
-.vhd-price-sub{font-size:12px;color:${cl.textMuted};margin-bottom:20px}
+.vhd-badge{display:inline-block;font-size:10px !important;font-weight:700 !important;text-transform:uppercase !important;letter-spacing:.6px !important;padding:4px 12px;border-radius:${r.badge}px;color:#fff !important;margin-bottom:10px}
+.vhd-title{font-size:26px !important;font-weight:800 !important;color:${cl.text} !important;margin-bottom:4px;line-height:1.2 !important;letter-spacing:normal !important}
+.vhd-subtitle{font-size:14px !important;color:${cl.textMuted} !important;margin-bottom:16px}
+.vhd-price{font-size:32px !important;font-weight:800 !important;color:${cl.text} !important;margin-bottom:4px}
+.vhd-price-sub{font-size:12px !important;color:${cl.textMuted} !important;margin-bottom:20px}
 .vhd-details{border:1px solid ${cl.border};border-radius:${r.card}px;overflow:hidden;margin-bottom:20px}
-.vhd-detail-row{display:flex;justify-content:space-between;padding:10px 16px;font-size:13px;border-bottom:1px solid ${cl.border}}
+.vhd-detail-row{display:flex;justify-content:space-between;padding:10px 16px;font-size:13px !important;border-bottom:1px solid ${cl.border}}
 .vhd-detail-row:last-child{border-bottom:none}
-.vhd-detail-row .label{color:${cl.textMuted}}
-.vhd-detail-row .value{font-weight:600;color:${cl.text};text-align:right}
-.vhd-cta{display:block;width:100%;padding:14px;border:none;border-radius:${r.btn}px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;text-align:center;text-decoration:none;color:#fff}
-.vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid ${cl.border};border-radius:${r.btn}px;font-size:14px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;color:${cl.text};background:${cl.card};transition:border-color .15s;margin-top:10px}
+.vhd-detail-row .label{color:${cl.textMuted} !important;font-size:13px !important;text-transform:none !important;letter-spacing:normal !important;font-weight:400 !important}
+.vhd-detail-row .value{font-weight:600 !important;color:${cl.text} !important;text-align:right;font-size:13px !important}
+.vhd-cta{display:block;width:100%;padding:14px;border:none;border-radius:${r.btn}px;font-size:15px !important;font-weight:700 !important;cursor:pointer;transition:background .15s;text-align:center;text-decoration:none !important;color:#fff !important}
+.vhd-cta-secondary{display:block;width:100%;padding:12px;border:2px solid ${cl.border};border-radius:${r.btn}px;font-size:14px !important;font-weight:600 !important;cursor:pointer;text-align:center;text-decoration:none !important;color:${cl.text} !important;background:${cl.card};transition:border-color .15s;margin-top:10px}
 .vhd-cta-secondary:hover{border-color:${cl.textMuted}}
 .vhd-cta-row{display:flex;gap:10px;margin-top:10px}
 .vhd-cta-row .vhd-cta-secondary{margin-top:0;flex:1}
@@ -132,19 +132,19 @@
 .vhd-modal{background:${cl.card};border-radius:${r.card}px;width:100%;max-width:640px;max-height:90vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);display:flex;flex-direction:column;transform:translateY(20px);transition:transform .25s ease}
 .vhd-modal-overlay.vhd-modal--open .vhd-modal{transform:translateY(0)}
 .vhd-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid ${cl.border}}
-.vhd-modal-header h2{font-size:16px;font-weight:700;color:${cl.text}}
-.vhd-modal-close{background:none;border:none;cursor:pointer;color:${cl.textMuted};padding:4px;border-radius:6px;transition:background .15s;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+.vhd-modal-header h2{font-size:16px !important;font-weight:700 !important;color:${cl.text} !important}
+.vhd-modal-close{background:none;border:none;cursor:pointer;color:${cl.textMuted} !important;padding:4px;border-radius:6px;transition:background .15s;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
 .vhd-modal-close:hover{background:${cl.border}}
 .vhd-modal iframe{width:100%;flex:1;border:none;min-height:min(75vh,700px)}
 .vhd-specs{margin-top:32px}
-.vhd-specs h2{font-size:18px;font-weight:700;margin-bottom:16px}
+.vhd-specs h2{font-size:18px !important;font-weight:700 !important;margin-bottom:16px}
 .vhd-spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;border:1px solid ${cl.border};border-radius:${r.card}px;overflow:hidden;background:${cl.border}}
 .vhd-spec-cell{background:${cl.card};padding:14px 18px}
-.vhd-spec-cell .label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:${cl.textMuted};margin-bottom:2px}
-.vhd-spec-cell .value{font-size:14px;font-weight:600;color:${cl.text}}
-.vhd-desc{margin-top:24px;font-size:14px;color:${cl.textStrong};line-height:1.7;white-space:pre-wrap}
-.vhd-loading{text-align:center;padding:60px;font-size:14px;color:${cl.textMuted}}
-.vhd-error{text-align:center;padding:60px;color:${cl.textMuted};font-size:14px}
+.vhd-spec-cell .label{font-size:10px !important;text-transform:uppercase !important;letter-spacing:.5px !important;color:${cl.textMuted} !important;margin-bottom:2px}
+.vhd-spec-cell .value{font-size:14px !important;font-weight:600 !important;color:${cl.text} !important}
+.vhd-desc{margin-top:24px;font-size:14px !important;color:${cl.textStrong} !important;line-height:1.7 !important;white-space:pre-wrap}
+.vhd-loading{text-align:center;padding:60px;font-size:14px !important;color:${cl.textMuted} !important}
+.vhd-error{text-align:center;padding:60px;color:${cl.textMuted} !important;font-size:14px !important}
 @media(max-width:768px){.vhd-top{flex-direction:column}.vhd-info{width:100%}}
 `;
     document.head.appendChild(s);
