@@ -98,7 +98,7 @@
     if (!cl) cl = deriveColors("#ffffff");
     s.textContent = `
 .vhd{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important;color:${cl.text} !important;-webkit-font-smoothing:antialiased;font-size:16px !important;font-weight:400 !important;font-style:normal !important;letter-spacing:normal !important;text-transform:none !important;word-spacing:normal !important;line-height:1.5 !important;max-width:1100px;margin:0 auto;background:${cl.bg}}
-.vhd *,.vhd *::before,.vhd *::after{box-sizing:border-box;margin:0;padding:0;font-family:inherit !important;font-size:inherit !important;font-weight:inherit !important;font-style:inherit !important;letter-spacing:inherit !important;text-transform:inherit !important;word-spacing:inherit !important;line-height:inherit !important;color:inherit !important;text-decoration:inherit !important}
+.vhd *,.vhd *::before,.vhd *::after{box-sizing:border-box;margin:0;padding:0;border:0;font-family:inherit !important;font-size:inherit !important;font-weight:inherit !important;font-style:inherit !important;letter-spacing:inherit !important;text-transform:inherit !important;word-spacing:inherit !important;line-height:inherit !important;color:inherit !important;text-decoration:inherit !important;background:transparent}
 .vhd-top{display:flex;gap:32px;margin-bottom:32px}
 .vhd-gallery{flex:1;min-width:0}
 .vhd-main-img{width:100%;aspect-ratio:16/10;background:${cl.imgBg};border-radius:${r.gallery}px;overflow:hidden;margin-bottom:10px;position:relative}

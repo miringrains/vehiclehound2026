@@ -109,7 +109,7 @@
     if (!cl) cl = deriveColors("#ffffff");
     s.textContent = `
 .vh{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important;color:${cl.text} !important;-webkit-font-smoothing:antialiased;font-size:16px !important;font-weight:400 !important;font-style:normal !important;letter-spacing:normal !important;text-transform:none !important;word-spacing:normal !important;line-height:1.5 !important;background:${cl.bg}}
-.vh *,.vh *::before,.vh *::after{box-sizing:border-box;margin:0;padding:0;font-family:inherit !important;font-size:inherit !important;font-weight:inherit !important;font-style:inherit !important;letter-spacing:inherit !important;text-transform:inherit !important;word-spacing:inherit !important;line-height:inherit !important;color:inherit !important;text-decoration:inherit !important}
+.vh *,.vh *::before,.vh *::after{box-sizing:border-box;margin:0;padding:0;border:0;font-family:inherit !important;font-size:inherit !important;font-weight:inherit !important;font-style:inherit !important;letter-spacing:inherit !important;text-transform:inherit !important;word-spacing:inherit !important;line-height:inherit !important;color:inherit !important;text-decoration:inherit !important;background:transparent}
 .vh-search{display:flex;align-items:center;border:1px solid ${cl.border};border-radius:${r.search}px;padding:12px 16px;background:${cl.card};margin-bottom:20px;gap:10px;transition:border-color .15s}
 .vh-search:focus-within{border-color:${cl.textMuted}}
 .vh-search svg{flex-shrink:0;color:${cl.textMuted} !important}
