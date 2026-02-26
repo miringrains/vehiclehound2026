@@ -218,6 +218,7 @@ export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug
 
   const inventoryEmbed = `<div id="vh-inventory" data-api-key="${config.api_key}" data-detail-url="/vehicle-details"></div>\n<script src="${appUrl}/widgets/inventory-widget.js"></script>`;
   const detailEmbed = `<div id="vh-vehicle" data-api-key="${config.api_key}"></div>\n<script src="${appUrl}/widgets/vehicle-detail-widget.js"></script>`;
+  const creditAppEmbed = `<div id="vh-credit-app" data-api-key="${config.api_key}"></div>\n<script src="${appUrl}/widgets/credit-app-widget.js"></script>`;
 
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" className="space-y-6">
@@ -527,6 +528,28 @@ export function IntegrationManager({ initialConfig, dealershipId, storefrontSlug
                   <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
                     {detailEmbed}
                   </pre>
+                </div>
+
+                {/* Credit app widget */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Credit Application</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(creditAppEmbed, "ca")}
+                      className="h-7 text-xs"
+                    >
+                      {copied === "ca" ? <Check size={12} className="mr-1 text-green-500" /> : <Copy size={12} className="mr-1" strokeWidth={ICON_STROKE_WIDTH} />}
+                      {copied === "ca" ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                  <pre className="text-[11px] font-mono bg-muted rounded-lg px-4 py-3 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed select-all">
+                    {creditAppEmbed}
+                  </pre>
+                  <p className="text-[11px] text-muted-foreground">
+                    Standalone credit application — not tied to a specific vehicle
+                  </p>
                 </div>
               </div>
             )}

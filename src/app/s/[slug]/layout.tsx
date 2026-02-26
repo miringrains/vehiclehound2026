@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { deriveColors } from "@/lib/storefront/colors";
+import { deriveColors, mixHex, hexToRgb, luminance } from "@/lib/storefront/colors";
 import { StorefrontHeader } from "./_components/StorefrontHeader";
 import { StorefrontTracker } from "./_components/StorefrontTracker";
 
@@ -110,6 +110,15 @@ export default async function StorefrontLayout({
   const radiusMap: Record<string, number> = { sharp: 4, rounded: 12, soft: 20 };
   const radius = radiusMap[config.borderRadius] || 12;
 
+  const muted = colors.isLight
+    ? mixHex(colors.bg, "#000000", 0.04)
+    : mixHex(colors.bg, "#ffffff", 0.08);
+  const secondary = colors.isLight
+    ? mixHex(colors.bg, "#000000", 0.03)
+    : mixHex(colors.bg, "#ffffff", 0.05);
+  const [pr, pg, pb] = hexToRgb(config.primaryColor);
+  const primaryFg = luminance(pr, pg, pb) > 0.4 ? "#1a1d1e" : "#ffffff";
+
   return (
     <html lang="en">
       <body
@@ -133,15 +142,37 @@ export default async function StorefrontLayout({
             --sf-primary: ${config.primaryColor};
             --sf-radius: ${radius}px;
             --sf-is-light: ${colors.isLight ? "1" : "0"};
+
+            --background: ${colors.bg};
+            --foreground: ${colors.text};
+            --card: ${colors.card};
+            --card-foreground: ${colors.text};
+            --popover: ${colors.card};
+            --popover-foreground: ${colors.text};
+            --primary: ${config.primaryColor};
+            --primary-foreground: ${primaryFg};
+            --secondary: ${secondary};
+            --secondary-foreground: ${colors.text};
+            --muted: ${muted};
+            --muted-foreground: ${colors.textMuted};
+            --accent: ${config.primaryColor};
+            --accent-foreground: ${primaryFg};
+            --border: ${colors.border};
+            --input: ${colors.border};
+            --ring: ${config.primaryColor};
           }
           * { box-sizing: border-box; }
           a { color: inherit; text-decoration: none; }
+          body.sf-embed [data-sf-header],
+          body.sf-embed [data-sf-footer] { display: none !important; }
+          body.sf-embed main { padding-top: 0.5rem !important; }
         `}</style>
+        <script dangerouslySetInnerHTML={{ __html: `try{if(window.self!==window.top)document.body.classList.add("sf-embed")}catch(e){document.body.classList.add("sf-embed")}` }} />
         <StorefrontHeader config={config} />
         <main style={{ maxWidth: 1200, margin: "0 auto", padding: "1.5rem 1rem" }}>
           {children}
         </main>
-        <footer style={{ borderTop: `1px solid ${colors.border}`, padding: "1.5rem 1rem", textAlign: "center", marginTop: "2rem" }}>
+        <footer data-sf-footer style={{ borderTop: `1px solid ${colors.border}`, padding: "1.5rem 1rem", textAlign: "center", marginTop: "2rem" }}>
           <p style={{ fontSize: 12, color: colors.textMuted }}>
             Powered by{" "}
             <a href="https://vehiclehound.com" target="_blank" rel="noopener noreferrer" style={{ color: config.primaryColor }}>

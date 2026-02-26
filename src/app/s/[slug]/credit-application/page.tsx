@@ -1,13 +1,14 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { CreditAppForm } from "@/components/credit-app/CreditAppForm";
+import { EmbedHeightReporter } from "./EmbedHeightReporter";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ vehicle?: string }>;
+  searchParams: Promise<{ vehicle?: string; embed?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,6 +44,8 @@ export default async function StorefrontCreditAppPage({ params, searchParams }: 
   const showCreditApp = widgetConfig?.config?.showCreditApp !== false;
   if (!showCreditApp) notFound();
 
+  const isEmbed = sp.embed === "true";
+
   let vehicleLabel: string | undefined;
   if (sp.vehicle) {
     const { data: v } = await admin
@@ -55,18 +58,22 @@ export default async function StorefrontCreditAppPage({ params, searchParams }: 
   }
 
   return (
-    <div>
+    <div data-embed={isEmbed ? "true" : undefined}>
+      {isEmbed && <EmbedHeightReporter />}
       <div style={{ maxWidth: 680, margin: "0 auto" }}>
-        <div style={{ marginBottom: 24, textAlign: "center" }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>Credit Application</h1>
-          <p style={{ fontSize: 13, color: "var(--sf-text-muted)", marginTop: 4 }}>
-            Apply for financing{vehicleLabel ? ` for the ${vehicleLabel}` : ""} at {dealership.name}
-          </p>
-        </div>
+        {!isEmbed && (
+          <div style={{ marginBottom: 24, textAlign: "center" }}>
+            <h1 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>Credit Application</h1>
+            <p style={{ fontSize: 13, color: "var(--sf-text-muted)", marginTop: 4 }}>
+              Apply for financing{vehicleLabel ? ` for the ${vehicleLabel}` : ""} at {dealership.name}
+            </p>
+          </div>
+        )}
         <CreditAppForm
           dealershipId={dealership.id}
           vehicleId={sp.vehicle || null}
           vehicleLabel={vehicleLabel}
+          embed={isEmbed}
         />
       </div>
     </div>

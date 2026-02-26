@@ -108,8 +108,8 @@
     s.id = "vh-inv-css";
     if (!cl) cl = deriveColors("#ffffff");
     s.textContent = `
-.vh{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:${cl.text};-webkit-font-smoothing:antialiased;line-height:1.5;background:${cl.bg}}
-.vh *{box-sizing:border-box;margin:0;padding:0}
+.vh{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif !important;color:${cl.text};-webkit-font-smoothing:antialiased;line-height:1.5;background:${cl.bg}}
+.vh *,.vh *::before,.vh *::after{box-sizing:border-box;margin:0;padding:0;font-family:inherit !important;line-height:inherit}
 .vh-search{display:flex;align-items:center;border:1px solid ${cl.border};border-radius:${r.search}px;padding:12px 16px;background:${cl.card};margin-bottom:20px;gap:10px;transition:border-color .15s}
 .vh-search:focus-within{border-color:${cl.textMuted}}
 .vh-search svg{flex-shrink:0;color:${cl.textMuted}}

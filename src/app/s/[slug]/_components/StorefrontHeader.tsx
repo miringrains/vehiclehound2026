@@ -7,6 +7,7 @@ import type { StorefrontConfig } from "../layout";
 export function StorefrontHeader({ config }: { config: StorefrontConfig }) {
   return (
     <header
+      data-sf-header=""
       style={{
         borderBottom: "1px solid var(--sf-border)",
         background: "var(--sf-card)",

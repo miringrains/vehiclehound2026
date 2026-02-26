@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       .eq("id", authData.user.id);
 
     try {
-      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://vehiclehound.com"}/login`;
+      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com"}/login`;
       await sendEmail({
         to: email,
         subject: `Welcome to Vehicle Hound — ${dealershipName} is all set`,

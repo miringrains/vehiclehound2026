@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No billing account found. Subscribe to a plan first." }, { status: 400 });
     }
 
-    const origin = request.headers.get("origin") || request.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "https://vehiclehound.com";
+    const origin = request.headers.get("origin") || request.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com";
 
     const session = await stripe.billingPortal.sessions.create({
       customer: dealership.stripe_customer_id,

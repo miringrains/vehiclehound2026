@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         .eq("id", dealership.id);
     }
 
-    const origin = request.headers.get("origin") || request.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "https://vehiclehound.com";
+    const origin = request.headers.get("origin") || request.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com";
 
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,

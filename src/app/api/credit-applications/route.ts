@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       if (emails.length > 0) {
         const vehicleLabel = vehicleData ? [vehicleData.year, vehicleData.make, vehicleData.model].filter(Boolean).join(" ") : null;
 
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vehiclehound.com";
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com";
         await notifyCreditAppSubmission({
           to: emails,
           dealershipName: dealership?.name ?? "Dealership",
