@@ -2,11 +2,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const STOREFRONT_HOST = "vhlist.com";
+const MARKETING_HOSTS = new Set(["vehiclehound.com", "www.vehiclehound.com"]);
 const RESERVED_SUBDOMAINS = new Set(["www", "api", "admin", "app", "mail", "smtp", "ftp", "ns1", "ns2"]);
 
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const bare = hostname.split(":")[0];
+
+  if (MARKETING_HOSTS.has(bare)) {
+    const { pathname, search } = request.nextUrl;
+    if (pathname.startsWith("/m")) return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = `/m${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(url);
+  }
 
   if (bare === STOREFRONT_HOST) {
     const url = request.nextUrl.clone();
