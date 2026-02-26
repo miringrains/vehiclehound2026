@@ -8,7 +8,7 @@ import { FAQ } from "./FAQ";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Simple, transparent pricing for dealerships of every size. Start your 14-day free trial today.",
+    "No hidden setup fees, no bloated features. 14-day free trial, cancel anytime.",
 };
 
 type Row = {
@@ -54,12 +54,13 @@ export default function PricingPage() {
         <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Simple, transparent pricing
+              Pricing that actually makes sense.
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="mt-4 text-lg text-muted-foreground">
-              Start free for 14 days. No credit card required. Upgrade, downgrade, or cancel anytime.
+              No hidden setup fees, no required onboarding calls, and no paying
+              for bloated features you&apos;ll never use. 14-day free trial. Cancel anytime.
             </p>
           </ScrollReveal>
         </div>

@@ -3,16 +3,19 @@
 import {
   LayoutDashboard,
   TrendingUp,
-  BarChart3,
+  RefreshCw,
   Code2,
   Globe,
-  Palette,
-  FileText,
-  Shield,
-  Clock,
-  Smartphone,
   Layers,
-  Sparkles,
+  FileText,
+  UserPlus,
+  Shield,
+  Presentation,
+  FileDown,
+  MessageSquare,
+  Palette,
+  Smartphone,
+  Link2,
 } from "lucide-react";
 import { Hero } from "./_components/Hero";
 import { StatsBar } from "./_components/StatsBar";
@@ -20,6 +23,7 @@ import { FeatureShowcase } from "./_components/FeatureShowcase";
 import { DashboardDemo } from "./_components/DashboardDemo";
 import { WidgetDemo } from "./_components/WidgetDemo";
 import { CreditAppDemo } from "./_components/CreditAppDemo";
+import { DealSheetDemo } from "./_components/DealSheetDemo";
 import { StorefrontDemo } from "./_components/StorefrontDemo";
 import { BrowserFrame } from "./_components/BrowserFrame";
 import { PricingCards } from "./_components/PricingCards";
@@ -34,36 +38,36 @@ export default function LandingPage() {
       <StatsBar />
 
       <div id="features">
-        {/* Feature 1: Inventory Management — dark */}
+        {/* Feature 1: Dual inventory management — dark */}
         <FeatureShowcase
           badge="Inventory Management"
           title={
             <>
-              Your entire lot.{" "}
+              Built for both{" "}
               <span className="bg-gradient-to-r from-violet-400 to-violet-600 bg-clip-text text-transparent">
-                One command center.
+                retail and leasing.
               </span>
             </>
           }
-          description="Add vehicles individually or import thousands at once. Track every unit from intake to sold — with real-time analytics on what's getting attention."
+          description="Stop trying to force lease specials into software designed only for physical car lots. VehicleHound handles both natively. Manage your retail units and broker lease deals side-by-side, seamlessly organized in one clean dashboard."
           highlights={[
             {
               icon: LayoutDashboard,
-              title: "Live Overview",
+              title: "One Dashboard, Both Worlds",
               description:
-                "See active inventory, engagement trends, and new leads the moment you log in.",
+                "Retail inventory and lease specials live in the same place — sorted, filtered, and tracked together.",
             },
             {
               icon: TrendingUp,
-              title: "Know What Sells",
+              title: "Know What Moves",
               description:
-                "Track views and applications per vehicle so you stock what your market actually wants.",
+                "See which units get views, which generate applications, and which sit. Stock smarter.",
             },
             {
-              icon: BarChart3,
+              icon: RefreshCw,
               title: "Bulk Operations",
               description:
-                "CSV imports, batch status updates, and photo management — built for volume.",
+                "CSV imports, batch updates, multi-photo uploads. Built for volume, not one-at-a-time entry.",
             },
           ]}
           demo={
@@ -73,37 +77,37 @@ export default function LandingPage() {
           }
         />
 
-        {/* Feature 2: Embeddable Widgets — light */}
+        {/* Feature 2: Embeddable widgets — light */}
         <FeatureShowcase
           id="widgets"
-          badge="Embeddable Widgets"
+          badge="Website Widgets"
           title={
             <>
-              Your inventory.{" "}
+              Drop your inventory onto{" "}
               <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
-                Their website.
+                any website.
               </span>
             </>
           }
-          description="Paste two lines of code and your full inventory appears on any website — searchable, responsive, and always up to date. No rebuilds, no maintenance."
+          description="Keep your current Wix, Squarespace, or WordPress site, but give it an actual engine. Paste two lines of code to embed your live inventory and secure credit application right onto your pages. Update a price in your portal, and it syncs to your website instantly. No developer required."
           highlights={[
             {
               icon: Code2,
-              title: "Two-Line Setup",
+              title: "Two Lines of Code",
               description:
-                "One script tag, one div. Works on WordPress, Squarespace, Wix, or any custom site.",
+                "One script tag, one div. Your full inventory appears — searchable, responsive, branded.",
             },
             {
               icon: Globe,
-              title: "Always in Sync",
+              title: "Instant Sync",
               description:
-                "Update a vehicle in the portal and it's instantly reflected on every widget.",
+                "Change a price or mark a unit sold in the portal. It's reflected on your site immediately.",
             },
             {
               icon: Layers,
-              title: "Inventory, Details & Credit Apps",
+              title: "Three Widgets",
               description:
-                "Three widgets for different needs — browse, drill down, or apply for financing.",
+                "Inventory grid, vehicle detail pages, and a standalone credit application — pick what you need.",
             },
           ]}
           demo={<WidgetDemo />}
@@ -111,100 +115,141 @@ export default function LandingPage() {
           light
         />
 
-        {/* Feature 3: Credit Applications — dark */}
+        {/* Feature 3: Credit applications — dark */}
         <FeatureShowcase
           badge="Credit Applications"
           title={
             <>
-              Leads that come to{" "}
+              From credit app to{" "}
               <span className="bg-gradient-to-r from-emerald-400 to-violet-400 bg-clip-text text-transparent">
-                you.
+                CRM profile, instantly.
               </span>
             </>
           }
-          description="Customers apply for financing directly on your site or storefront. You get the full application, their documents, and a professional PDF — instantly."
+          description="No more double data entry. When a customer submits an application, we automatically generate the exact grid-style PDF your lenders require. Simultaneously, their information builds a new profile in your CRM. The lead comes in, the paperwork is formatted, and the deal is ready to work."
           highlights={[
             {
               icon: FileText,
-              title: "Professional Applications",
+              title: "Lender-Ready PDFs",
               description:
-                "Clean, branded forms your customers trust — with the grid-style PDFs your finance team expects.",
+                "Clean, grid-style applications with your dealership branding — the format your finance team already uses.",
             },
             {
-              icon: Clock,
-              title: "Instant Delivery",
+              icon: UserPlus,
+              title: "Auto-Built CRM Profiles",
               description:
-                "Application and uploaded documents hit your inbox and portal the second they submit.",
+                "Every submission creates a customer record with their info, documents, and application history.",
             },
             {
               icon: Shield,
               title: "Secure by Default",
               description:
-                "Sensitive data encrypted at rest. Every submission logged with timestamps and IP.",
+                "SSN data encrypted at rest, submissions logged with IP and timestamps. Built for compliance.",
             },
           ]}
           demo={<CreditAppDemo />}
         />
 
-        {/* Feature 4: Storefront — light */}
+        {/* Feature 4: Deal sheets — light */}
+        <FeatureShowcase
+          badge="Deal Sheets"
+          title={
+            <>
+              Present deals that{" "}
+              <span className="bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent">
+                actually look good.
+              </span>
+            </>
+          }
+          description="Help your buyers make decisions without the messy scratchpads and confusing texts. Generate beautifully branded, side-by-side deal comparisons directly from your CRM. Show them their options clearly, look like a premium operation, and get the &ldquo;yes.&rdquo;"
+          highlights={[
+            {
+              icon: Presentation,
+              title: "Side-by-Side Scenarios",
+              description:
+                "Compare finance vs. lease, different terms, or different vehicles — up to 4 options at a glance.",
+            },
+            {
+              icon: FileDown,
+              title: "PDF Export & Sharing",
+              description:
+                "Generate a polished PDF and send it directly to your customer. Professional, fast, done.",
+            },
+            {
+              icon: MessageSquare,
+              title: "Close Faster",
+              description:
+                "Clear comparisons mean fewer back-and-forth texts. Your buyer sees the numbers and decides.",
+            },
+          ]}
+          demo={
+            <BrowserFrame url="portal.vehiclehound.com/deal-sheets">
+              <DealSheetDemo />
+            </BrowserFrame>
+          }
+          reversed
+          light
+        />
+
+        {/* Feature 5: Storefront — dark */}
         <FeatureShowcase
           badge="Branded Storefront"
           title={
             <>
-              A dealership site{" "}
-              <span className="bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent">
-                in minutes.
+              No website?{" "}
+              <span className="bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">
+                You do now.
               </span>
             </>
           }
-          description="Don't have a website? Every dealership gets a fully branded, mobile-optimized storefront. Your logo, your colors, your inventory — live on its own URL."
+          description="If you don't have a digital home yet, VehicleHound auto-generates a clean, mobile-ready storefront the moment you sign up. Add your logo, pick your colors, and start sending clients a link you're actually proud of."
           highlights={[
             {
               icon: Palette,
-              title: "Fully Branded",
+              title: "Your Brand, Instantly",
               description:
-                "Upload your logo, pick your colors, and your storefront matches your identity automatically.",
+                "Upload your logo, pick a primary color, and your storefront matches your identity automatically.",
             },
             {
               icon: Smartphone,
-              title: "Built for Every Screen",
+              title: "Mobile-First",
               description:
-                "Responsive from phone to desktop — because your customers are shopping everywhere.",
+                "Fully responsive from phone to desktop — because your customers are shopping on everything.",
             },
             {
-              icon: Sparkles,
-              title: "Financing Built In",
+              icon: Link2,
+              title: "One Link, Full Experience",
               description:
-                "Credit application forms integrated right into the storefront. Browse to apply in one flow.",
+                "Browse inventory, view details, apply for financing — all from a single shareable URL.",
             },
           ]}
           demo={<StorefrontDemo />}
-          reversed
-          light
         />
       </div>
 
       {/* Pricing Teaser */}
-      <section className="px-6 py-24 md:py-32">
+      <section className="bg-white px-6 py-24 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
-            <span className="inline-flex items-center rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-xs font-medium text-violet-300">
+            <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-medium text-violet-600">
               Pricing
             </span>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              Straightforward pricing
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+              Pricing that actually makes sense.
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
-            <p className="mt-4 text-lg text-muted-foreground">
-              14-day free trial. No credit card. Cancel anytime.
+            <p className="mt-4 text-lg text-gray-500">
+              No hidden setup fees, no required onboarding calls, and no paying
+              for bloated features you&apos;ll never use. 14-day free trial. Cancel
+              anytime.
             </p>
           </ScrollReveal>
         </div>
         <div className="mt-12">
-          <PricingCards />
+          <PricingCards light />
         </div>
       </section>
 
