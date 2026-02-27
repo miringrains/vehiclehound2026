@@ -235,7 +235,7 @@ export default function LandingPage() {
             </span>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
-            <h2 className="mt-4 text-3xl font-medium tracking-[-0.025em] text-gray-900 sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="mt-4 text-3xl font-[530] tracking-[-0.025em] text-gray-900 sm:text-4xl lg:text-[2.75rem]">
               Pricing That Actually Makes Sense.
             </h2>
           </ScrollReveal>

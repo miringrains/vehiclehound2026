@@ -32,7 +32,7 @@ function AnimatedHeadline() {
   const line1Words = "The Modern Way To Manage".split(" ");
 
   return (
-    <h1 className="text-[1.75rem] font-medium leading-[1.15] tracking-[-0.025em] text-foreground sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem]">
+    <h1 className="text-[1.75rem] font-[530] leading-[1.15] tracking-[-0.025em] text-foreground sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem]">
       {/* Line 1 — word-by-word stagger */}
       <motion.span
         initial="hidden"
@@ -153,7 +153,7 @@ export function Hero() {
           scale: demoScale,
           opacity: demoOpacity,
         }}
-        className="relative z-10 mt-14 w-[108vw] max-w-[1360px]"
+        className="relative z-10 mt-14 w-full max-w-[1360px] md:w-[108vw]"
       >
         <div style={{ perspective: "1200px" }}>
           <motion.div style={{ rotateX: demoRotate }}>

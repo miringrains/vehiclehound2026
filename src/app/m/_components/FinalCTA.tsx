@@ -26,7 +26,7 @@ export function FinalCTA() {
 
       <div className="relative z-10 mx-auto max-w-3xl text-center">
         <ScrollReveal>
-          <h2 className="text-3xl font-medium tracking-[-0.025em] text-foreground sm:text-4xl lg:text-[2.75rem]">
+          <h2 className="text-3xl font-[530] tracking-[-0.025em] text-foreground sm:text-4xl lg:text-[2.75rem]">
             Ready To Drop The Outdated Software?
           </h2>
         </ScrollReveal>

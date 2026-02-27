@@ -57,7 +57,7 @@ export function FeatureShowcase({
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
-            <h2 className={`text-3xl font-medium tracking-[-0.025em] sm:text-4xl lg:text-[2.75rem] ${titleColor}`}>
+            <h2 className={`text-3xl font-[530] tracking-[-0.025em] sm:text-4xl lg:text-[2.75rem] ${titleColor}`}>
               {title}
             </h2>
           </ScrollReveal>
