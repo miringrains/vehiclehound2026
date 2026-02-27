@@ -44,7 +44,9 @@ export default function LandingPage() {
             <>
               Built For Both{" "}
               <span className="bg-gradient-to-r from-violet-400 to-violet-600 bg-clip-text text-transparent">
-                Retail And Leasing.
+                Retail
+                <br />
+                And Leasing.
               </span>
             </>
           }
@@ -235,7 +237,7 @@ export default function LandingPage() {
             </span>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
-            <h2 className="mt-4 text-3xl font-[530] tracking-[-0.025em] text-gray-900 sm:text-4xl lg:text-[2.75rem]">
+            <h2 className="mt-4 text-3xl font-[530] tracking-[-0.05em] text-gray-900 sm:text-4xl lg:text-[2.75rem]">
               Pricing That Actually Makes Sense.
             </h2>
           </ScrollReveal>

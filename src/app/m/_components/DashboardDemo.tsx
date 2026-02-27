@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import {
   LayoutDashboard,
@@ -16,10 +16,12 @@ import {
   CreditCard,
   TrendingUp,
   PlusCircle,
+  Search,
+  Filter,
 } from "lucide-react";
 
 const sidebarNav = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
+  { icon: LayoutDashboard, label: "Dashboard" },
   { icon: PlusCircle, label: "New Vehicle" },
   { icon: List, label: "Manage Inventory" },
   { icon: Upload, label: "CSV Import" },
@@ -45,6 +47,15 @@ const activities = [
   { icon: FileText, text: "Credit app from J. Smith", time: "15m ago", fresh: true },
   { icon: Users, text: "Maria Lopez added as customer", time: "1h ago", fresh: false },
   { icon: Car, text: "Mercedes C300 marked as sold", time: "3h ago", fresh: false },
+];
+
+const inventoryItems = [
+  { color: "#1e3a5f", year: 2025, make: "BMW", model: "330i xDrive", type: "Retail" as const, status: "Active" as const, price: "$42,500", views: 234 },
+  { color: "#2d1b4e", year: 2024, make: "Mercedes-Benz", model: "C300", type: "Lease" as const, status: "Active" as const, price: "$489/mo", views: 187 },
+  { color: "#1a1a2e", year: 2025, make: "Audi", model: "A4 Premium", type: "Retail" as const, status: "Active" as const, price: "$39,900", views: 156 },
+  { color: "#2b3d2f", year: 2024, make: "Lexus", model: "IS 350 F Sport", type: "Lease" as const, status: "Active" as const, price: "$449/mo", views: 203 },
+  { color: "#3d2b2b", year: 2025, make: "Tesla", model: "Model 3 LR", type: "Retail" as const, status: "Pending" as const, price: "$38,990", views: 312 },
+  { color: "#1a2d3d", year: 2024, make: "Genesis", model: "G70 3.3T", type: "Retail" as const, status: "Sold" as const, price: "$36,500", views: 98 },
 ];
 
 function useCountUp(target: number, delay: number, inView: boolean) {
@@ -126,7 +137,6 @@ function AnimatedAreaChart({ data, inView }: { data: number[]; inView: boolean }
       <g clipPath="url(#chart-reveal)">
         <polygon points={`0,${h} ${pts} ${w},${h}`} fill="url(#chart-fill-demo)" />
         <polyline points={pts} fill="none" stroke="oklch(0.65 0.25 280)" strokeWidth="1.5" />
-        {/* Animated dot at the end of the line */}
         {inView && (
           <circle r="2.5" fill="oklch(0.65 0.25 280)">
             <animateMotion
@@ -143,130 +153,245 @@ function AnimatedAreaChart({ data, inView }: { data: number[]; inView: boolean }
   );
 }
 
-export function DashboardDemo() {
+function StatCard({ s, i, inView }: { s: (typeof stats)[number]; i: number; inView: boolean }) {
+  const count = useCountUp(s.value, 0.6 + i * 0.15, inView);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: 0.5 + i * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="relative overflow-hidden rounded-lg border border-white/[0.06] bg-[#0a0a0c] p-2.5"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent" />
+      <div className="relative">
+        <div className="flex items-center justify-between">
+          <div className="flex h-5 w-5 items-center justify-center rounded-md bg-white/[0.06]">
+            <s.icon className="h-2.5 w-2.5 text-white/50" strokeWidth={1.75} />
+          </div>
+          <MiniSparkline data={s.spark} animate={inView} color={s.accent ? "rgba(52,211,153,0.6)" : undefined} />
+        </div>
+        <p className="mt-2 text-sm font-medium tracking-tight text-white tabular-nums">{formatNum(count)}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[8px] font-medium text-white/45">{s.label}</p>
+          <span className="flex items-center text-[8px] text-emerald-400">
+            <TrendingUp className="mr-0.5 h-2 w-2" />{s.delta}
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function DashboardContent({ inView }: { inView: boolean }) {
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: 0.4, duration: 0.4 }}
+        className="mb-3 flex items-center justify-between"
+      >
+        <div>
+          <p className="text-[11px] font-medium text-[oklch(0.145_0.005_285)]">Welcome back, Kevin</p>
+          <p className="text-[8px] text-[oklch(0.44_0.02_280)]">Platinum Auto Group</p>
+        </div>
+        <div className="flex gap-1.5">
+          <div className="rounded-md border border-[oklch(0.91_0.005_280)] px-2 py-0.5 text-[8px] text-[oklch(0.44_0.02_280)]">View Inventory</div>
+          <div className="rounded-md bg-[oklch(0.46_0.16_280)] px-2 py-0.5 text-[8px] text-white">Add Vehicle</div>
+        </div>
+      </motion.div>
+
+      <div className="mb-3 grid grid-cols-2 md:grid-cols-4 gap-2">
+        {stats.map((s, i) => (
+          <StatCard key={s.label} s={s} i={i} inView={inView} />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-5 gap-2">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 1.0, duration: 0.4 }}
+          className="col-span-3 rounded-lg border border-[oklch(0.91_0.005_280)] bg-white p-2.5"
+        >
+          <p className="text-[9px] font-medium text-[oklch(0.145_0.005_285)]">Engagement</p>
+          <p className="mb-2 text-[7px] text-[oklch(0.44_0.02_280)]">Widget views — last 7 days</p>
+          <div className="h-16">
+            <AnimatedAreaChart data={chartData} inView={inView} />
+          </div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 1.1, duration: 0.4 }}
+          className="col-span-2 rounded-lg border border-[oklch(0.91_0.005_280)] bg-white p-2.5"
+        >
+          <p className="mb-2 text-[9px] font-medium text-[oklch(0.145_0.005_285)]">Recent Activity</p>
+          <div className="space-y-1.5">
+            {activities.map((a, i) => (
+              <motion.div
+                key={a.text}
+                initial={{ opacity: 0, x: 8 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: 1.3 + i * 0.12, duration: 0.35 }}
+                className="flex items-center gap-1.5"
+              >
+                <div className={`flex h-4 w-4 items-center justify-center rounded-full ${a.fresh ? "bg-violet-50" : "bg-[oklch(0.955_0.003_285)]"}`}>
+                  <a.icon className={`h-2 w-2 ${a.fresh ? "text-violet-500" : "text-[oklch(0.44_0.02_280)]"}`} />
+                </div>
+                <span className="flex-1 truncate text-[7px] text-[oklch(0.145_0.005_285)]">{a.text}</span>
+                <span className="shrink-0 text-[7px] text-[oklch(0.44_0.02_280)]">{a.time}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
+const statusColors: Record<string, string> = {
+  Active: "bg-emerald-50 text-emerald-600",
+  Pending: "bg-amber-50 text-amber-600",
+  Sold: "bg-gray-100 text-gray-500",
+};
+
+const typeColors: Record<string, string> = {
+  Retail: "bg-blue-50 text-blue-600",
+  Lease: "bg-violet-50 text-violet-600",
+};
+
+function InventoryContent() {
+  return (
+    <>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <p className="text-[11px] font-medium text-[oklch(0.145_0.005_285)]">Manage Inventory</p>
+          <p className="text-[8px] text-[oklch(0.44_0.02_280)]">47 vehicles · 38 active</p>
+        </div>
+        <div className="flex gap-1.5">
+          <div className="flex items-center gap-1 rounded-md border border-[oklch(0.91_0.005_280)] px-2 py-0.5 text-[8px] text-[oklch(0.44_0.02_280)]">
+            <Filter className="h-2.5 w-2.5" />
+            Filter
+          </div>
+          <div className="rounded-md bg-[oklch(0.46_0.16_280)] px-2 py-0.5 text-[8px] text-white">+ Add Vehicle</div>
+        </div>
+      </div>
+
+      <div className="mb-3 flex items-center gap-1.5 rounded-md border border-[oklch(0.91_0.005_280)] bg-white px-2 py-1.5">
+        <Search className="h-2.5 w-2.5 text-[oklch(0.44_0.02_280)]" />
+        <span className="text-[8px] text-[oklch(0.65_0.02_280)]">Search vehicles...</span>
+      </div>
+
+      <div className="rounded-lg border border-[oklch(0.91_0.005_280)] overflow-hidden">
+        <div className="grid grid-cols-12 gap-2 border-b border-[oklch(0.91_0.005_280)] bg-[oklch(0.97_0.002_285)] px-2.5 py-1.5">
+          <span className="col-span-5 text-[7px] font-medium text-[oklch(0.44_0.02_280)]">Vehicle</span>
+          <span className="col-span-2 text-[7px] font-medium text-[oklch(0.44_0.02_280)]">Type</span>
+          <span className="col-span-2 text-[7px] font-medium text-[oklch(0.44_0.02_280)]">Status</span>
+          <span className="col-span-2 text-[7px] font-medium text-[oklch(0.44_0.02_280)] text-right">Price</span>
+          <span className="col-span-1 text-[7px] font-medium text-[oklch(0.44_0.02_280)] text-right">Views</span>
+        </div>
+        {inventoryItems.map((item, i) => (
+          <motion.div
+            key={item.model}
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.08 + i * 0.04, duration: 0.3 }}
+            className={`grid grid-cols-12 items-center gap-2 px-2.5 py-2 ${
+              i < inventoryItems.length - 1 ? "border-b border-[oklch(0.95_0.002_285)]" : ""
+            }`}
+          >
+            <div className="col-span-5 flex items-center gap-2">
+              <div className="h-5 w-8 shrink-0 rounded" style={{ backgroundColor: item.color }} />
+              <span className="text-[8px] font-medium text-[oklch(0.145_0.005_285)] truncate">
+                {item.year} {item.make} {item.model}
+              </span>
+            </div>
+            <div className="col-span-2">
+              <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[6.5px] font-medium ${typeColors[item.type]}`}>
+                {item.type}
+              </span>
+            </div>
+            <div className="col-span-2">
+              <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[6.5px] font-medium ${statusColors[item.status]}`}>
+                {item.status}
+              </span>
+            </div>
+            <span className="col-span-2 text-[8px] font-medium text-[oklch(0.145_0.005_285)] tabular-nums text-right">
+              {item.price}
+            </span>
+            <span className="col-span-1 text-[8px] text-[oklch(0.44_0.02_280)] tabular-nums text-right">
+              {item.views}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+type DashboardDemoProps = {
+  showInventory?: boolean;
+};
+
+export function DashboardDemo({ showInventory = false }: DashboardDemoProps) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
+  const activeNav = showInventory ? "Manage Inventory" : "Dashboard";
 
   return (
-    <div ref={ref} className="flex bg-[oklch(0.07_0.005_285)] rounded-b-lg overflow-hidden" style={{ height: 360 }}>
+    <div ref={ref} className="flex bg-[oklch(0.07_0.005_285)] rounded-b-lg overflow-hidden" style={{ minHeight: 380 }}>
       {/* Sidebar */}
       <div className="hidden md:flex w-[140px] shrink-0 flex-col border-r border-white/[0.06] py-3 px-2">
         <div className="mb-4 px-2">
           <div className="h-4 w-20 rounded bg-white/10" />
         </div>
         <div className="space-y-0.5">
-          {sidebarNav.map((item, i) => (
-            <motion.div
-              key={item.label}
-              initial={{ opacity: 0, x: -8 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: 0.3 + i * 0.04, duration: 0.3 }}
-              className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[9px] ${
-                item.active
-                  ? "bg-violet-950/60 text-violet-200"
-                  : "text-white/40"
-              }`}
-            >
-              <item.icon className="h-3 w-3 shrink-0" strokeWidth={1.75} />
-              <span className="truncate">{item.label}</span>
-            </motion.div>
-          ))}
+          {sidebarNav.map((item, i) => {
+            const isActive = item.label === activeNav;
+            return (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, x: -8 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: 0.3 + i * 0.04, duration: 0.3 }}
+                className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[9px] transition-colors duration-300 ${
+                  isActive
+                    ? "bg-violet-950/60 text-violet-200"
+                    : "text-white/40"
+                }`}
+              >
+                <item.icon className="h-3 w-3 shrink-0" strokeWidth={1.75} />
+                <span className="truncate">{item.label}</span>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Content area — light panel */}
+      {/* Content area */}
       <div className="flex-1 p-2 md:p-2.5">
         <div className="h-full rounded-xl bg-[oklch(0.98_0.002_285)] p-3 md:p-4 overflow-hidden">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.4, duration: 0.4 }}
-            className="mb-3 flex items-center justify-between"
-          >
-            <div>
-              <p className="text-[11px] font-medium text-[oklch(0.145_0.005_285)]">Welcome back, Kevin</p>
-              <p className="text-[8px] text-[oklch(0.44_0.02_280)]">Platinum Auto Group</p>
-            </div>
-            <div className="flex gap-1.5">
-              <div className="rounded-md border border-[oklch(0.91_0.005_280)] px-2 py-0.5 text-[8px] text-[oklch(0.44_0.02_280)]">View Inventory</div>
-              <div className="rounded-md bg-[oklch(0.46_0.16_280)] px-2 py-0.5 text-[8px] text-white">Add Vehicle</div>
-            </div>
-          </motion.div>
-
-          {/* Stat cards */}
-          <div className="mb-3 grid grid-cols-2 md:grid-cols-4 gap-2">
-            {stats.map((s, i) => {
-              const count = useCountUp(s.value, 0.6 + i * 0.15, inView);
-              return (
-                <motion.div
-                  key={s.label}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: 0.5 + i * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative overflow-hidden rounded-lg border border-white/[0.06] bg-[#0a0a0c] p-2.5"
-                >
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent" />
-                  <div className="relative">
-                    <div className="flex items-center justify-between">
-                      <div className="flex h-5 w-5 items-center justify-center rounded-md bg-white/[0.06]">
-                        <s.icon className="h-2.5 w-2.5 text-white/50" strokeWidth={1.75} />
-                      </div>
-                      <MiniSparkline data={s.spark} animate={inView} color={s.accent ? "rgba(52,211,153,0.6)" : undefined} />
-                    </div>
-                    <p className="mt-2 text-sm font-medium tracking-tight text-white tabular-nums">{formatNum(count)}</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-[8px] font-medium text-white/45">{s.label}</p>
-                      <span className="flex items-center text-[8px] text-emerald-400">
-                        <TrendingUp className="mr-0.5 h-2 w-2" />{s.delta}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Chart + Activity */}
-          <div className="grid grid-cols-5 gap-2">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 1.0, duration: 0.4 }}
-              className="col-span-3 rounded-lg border border-[oklch(0.91_0.005_280)] bg-white p-2.5"
-            >
-              <p className="text-[9px] font-medium text-[oklch(0.145_0.005_285)]">Engagement</p>
-              <p className="mb-2 text-[7px] text-[oklch(0.44_0.02_280)]">Widget views — last 7 days</p>
-              <div className="h-16">
-                <AnimatedAreaChart data={chartData} inView={inView} />
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 1.1, duration: 0.4 }}
-              className="col-span-2 rounded-lg border border-[oklch(0.91_0.005_280)] bg-white p-2.5"
-            >
-              <p className="mb-2 text-[9px] font-medium text-[oklch(0.145_0.005_285)]">Recent Activity</p>
-              <div className="space-y-1.5">
-                {activities.map((a, i) => (
-                  <motion.div
-                    key={a.text}
-                    initial={{ opacity: 0, x: 8 }}
-                    animate={inView ? { opacity: 1, x: 0 } : {}}
-                    transition={{ delay: 1.3 + i * 0.12, duration: 0.35 }}
-                    className="flex items-center gap-1.5"
-                  >
-                    <div className={`flex h-4 w-4 items-center justify-center rounded-full ${a.fresh ? "bg-violet-50" : "bg-[oklch(0.955_0.003_285)]"}`}>
-                      <a.icon className={`h-2 w-2 ${a.fresh ? "text-violet-500" : "text-[oklch(0.44_0.02_280)]"}`} />
-                    </div>
-                    <span className="flex-1 truncate text-[7px] text-[oklch(0.145_0.005_285)]">{a.text}</span>
-                    <span className="shrink-0 text-[7px] text-[oklch(0.44_0.02_280)]">{a.time}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
+          <AnimatePresence mode="wait">
+            {!showInventory ? (
+              <motion.div
+                key="dashboard"
+                exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              >
+                <DashboardContent inView={inView} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="inventory"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, delay: 0.05 }}
+              >
+                <InventoryContent />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
