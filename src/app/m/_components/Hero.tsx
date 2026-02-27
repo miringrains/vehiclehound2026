@@ -29,7 +29,7 @@ const wordUp = {
 };
 
 function AnimatedHeadline() {
-  const line1Words = "The modern way to manage".split(" ");
+  const line1Words = "The Modern Way To Manage".split(" ");
 
   return (
     <h1 className="text-[1.75rem] font-medium leading-[1.15] tracking-[-0.025em] text-foreground sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem]">
@@ -54,7 +54,7 @@ function AnimatedHeadline() {
         transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="block bg-gradient-to-r from-violet-400 to-violet-600 bg-clip-text text-transparent"
       >
-        auto sales, leasing, and leads.
+        Auto Sales, Leasing, And Leads.
       </motion.span>
     </h1>
   );

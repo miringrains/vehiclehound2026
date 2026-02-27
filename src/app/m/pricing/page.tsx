@@ -54,7 +54,7 @@ export default function PricingPage() {
         <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
             <h1 className="text-4xl font-medium tracking-[-0.025em] text-foreground sm:text-[2.75rem]">
-              Pricing that actually makes sense.
+              Pricing That Actually Makes Sense.
             </h1>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
@@ -75,7 +75,7 @@ export default function PricingPage() {
         <div className="mx-auto max-w-5xl">
           <ScrollReveal>
             <h2 className="text-center text-2xl font-medium tracking-[-0.025em] text-foreground sm:text-3xl">
-              Compare plans
+              Compare Plans
             </h2>
           </ScrollReveal>
 
@@ -125,7 +125,7 @@ export default function PricingPage() {
         <div className="mx-auto max-w-3xl">
           <ScrollReveal>
             <h2 className="text-center text-2xl font-medium tracking-[-0.025em] text-foreground sm:text-3xl">
-              Frequently asked questions
+              Frequently Asked Questions
             </h2>
           </ScrollReveal>
           <div className="mt-10">

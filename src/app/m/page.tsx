@@ -18,7 +18,7 @@ import {
   Link2,
 } from "lucide-react";
 import { Hero } from "./_components/Hero";
-import { StatsBar } from "./_components/StatsBar";
+
 import { FeatureShowcase } from "./_components/FeatureShowcase";
 import { DashboardDemo } from "./_components/DashboardDemo";
 import { WidgetDemo } from "./_components/WidgetDemo";
@@ -35,7 +35,6 @@ export default function LandingPage() {
     <>
       <Hero />
 
-      <StatsBar />
 
       <div id="features">
         {/* Feature 1: Dual inventory management — dark */}
@@ -43,9 +42,9 @@ export default function LandingPage() {
           badge="Inventory Management"
           title={
             <>
-              Built for both{" "}
+              Built For Both{" "}
               <span className="bg-gradient-to-r from-violet-400 to-violet-600 bg-clip-text text-transparent">
-                retail and leasing.
+                Retail And Leasing.
               </span>
             </>
           }
@@ -83,9 +82,9 @@ export default function LandingPage() {
           badge="Website Widgets"
           title={
             <>
-              Drop your inventory onto{" "}
+              Drop Your Inventory Onto{" "}
               <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
-                any website.
+                Any Website.
               </span>
             </>
           }
@@ -120,9 +119,9 @@ export default function LandingPage() {
           badge="Credit Applications"
           title={
             <>
-              From credit app to{" "}
+              From Credit App To{" "}
               <span className="bg-gradient-to-r from-emerald-400 to-violet-400 bg-clip-text text-transparent">
-                CRM profile, instantly.
+                CRM Profile, Instantly.
               </span>
             </>
           }
@@ -155,9 +154,9 @@ export default function LandingPage() {
           badge="Deal Sheets"
           title={
             <>
-              Present deals that{" "}
+              Present Deals That{" "}
               <span className="bg-gradient-to-r from-violet-500 to-pink-500 bg-clip-text text-transparent">
-                actually look good.
+                Actually Look Good.
               </span>
             </>
           }
@@ -196,9 +195,9 @@ export default function LandingPage() {
           badge="Branded Storefront"
           title={
             <>
-              No website?{" "}
+              No Website?{" "}
               <span className="bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">
-                You do now.
+                You Do Now.
               </span>
             </>
           }
@@ -237,7 +236,7 @@ export default function LandingPage() {
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <h2 className="mt-4 text-3xl font-medium tracking-[-0.025em] text-gray-900 sm:text-4xl lg:text-[2.75rem]">
-              Pricing that actually makes sense.
+              Pricing That Actually Makes Sense.
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.15}>
