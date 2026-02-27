@@ -71,16 +71,16 @@ export function Hero() {
     setShowInventory(v > 0.45);
   });
 
-  // Phase 1: Tilt straightens, scale grows (0 → 0.25)
+  // Phase 1: Tilt straightens, scale grows
   const demoRotate = useTransform(scrollYProgress, [0, 0.25], [5, 0]);
   const demoScale = useTransform(scrollYProgress, [0, 0.25], [0.88, 1]);
 
-  // Phase 2: Text fades out and lifts (0.1 → 0.28)
-  const textOpacity = useTransform(scrollYProgress, [0.1, 0.28], [1, 0]);
-  const textY = useTransform(scrollYProgress, [0.1, 0.28], [0, -80]);
+  // Phase 2: Text fades out and lifts
+  const textOpacity = useTransform(scrollYProgress, [0.08, 0.25], [1, 0]);
+  const textY = useTransform(scrollYProgress, [0.08, 0.25], [0, -80]);
 
-  // Phase 3: Dashboard slides up to fill viewport (0.15 → 0.38)
-  const demoY = useTransform(scrollYProgress, [0.15, 0.38], [0, -340]);
+  // Phase 3: Dashboard rises from below text to viewport center (y=0)
+  const demoY = useTransform(scrollYProgress, [0.08, 0.35], [200, 0]);
 
   return (
     <section
@@ -88,7 +88,7 @@ export function Hero() {
       className="relative"
       style={{ height: "280vh" }}
     >
-      <div className="sticky top-0 flex h-screen flex-col items-center overflow-hidden px-6 pt-36 md:pt-40">
+      <div className="sticky top-0 h-screen overflow-hidden">
         {/* Aurora backdrop */}
         <div className="pointer-events-none absolute inset-0 z-0">
           <div className="absolute inset-0 bg-background" />
@@ -102,81 +102,85 @@ export function Hero() {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
         </div>
 
-        {/* Text content — fades out on scroll */}
+        {/* Text — absolutely positioned at top, fades on scroll */}
         <motion.div
           style={{ opacity: textOpacity, y: textY }}
-          className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center"
+          className="absolute inset-x-0 top-0 z-20 flex justify-center px-6 pt-36 md:pt-40"
         >
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3.5 py-1"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
-            <span className="text-[11px] font-medium text-violet-300/80">
-              14-day free trial — no credit card required
-            </span>
-          </motion.div>
-
-          <AnimatedHeadline />
-
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="mt-5 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground sm:text-base md:text-lg"
-          >
-            Running a dealership or brokerage is chaotic enough — your software
-            shouldn&apos;t make it worse. VehicleHound puts your lease specials,
-            retail inventory, CRM, and credit applications into one beautifully
-            organized platform.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.9 }}
-            className="mt-8 flex flex-col items-center gap-3 sm:flex-row"
-          >
-            <a
-              href={`${PORTAL}/signup`}
-              className="inline-flex h-11 items-center rounded-xl bg-violet-600 px-7 text-sm font-medium text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 hover:shadow-violet-500/25"
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="mb-8 inline-flex items-center gap-2 rounded-full border border-violet-500/20 bg-violet-500/10 px-3.5 py-1"
             >
-              Start 14-Day Free Trial
-            </a>
-            <a
-              href="/pricing"
-              className="inline-flex h-11 items-center rounded-xl border border-border/50 bg-card/30 px-7 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all hover:border-violet-500/30 hover:text-foreground"
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
+              <span className="text-[11px] font-medium text-violet-300/80">
+                14-day free trial — no credit card required
+              </span>
+            </motion.div>
+
+            <AnimatedHeadline />
+
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="mt-5 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground sm:text-base md:text-lg"
             >
-              See Pricing
-            </a>
-          </motion.div>
+              Running a dealership or brokerage is chaotic enough — your software
+              shouldn&apos;t make it worse. VehicleHound puts your lease specials,
+              retail inventory, CRM, and credit applications into one beautifully
+              organized platform.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+              className="mt-8 flex flex-col items-center gap-3 sm:flex-row"
+            >
+              <a
+                href={`${PORTAL}/signup`}
+                className="inline-flex h-11 items-center rounded-xl bg-violet-600 px-7 text-sm font-medium text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 hover:shadow-violet-500/25"
+              >
+                Start 14-Day Free Trial
+              </a>
+              <a
+                href="/pricing"
+                className="inline-flex h-11 items-center rounded-xl border border-border/50 bg-card/30 px-7 text-sm font-medium text-muted-foreground backdrop-blur-sm transition-all hover:border-violet-500/30 hover:text-foreground"
+              >
+                See Pricing
+              </a>
+            </motion.div>
+          </div>
         </motion.div>
 
-        {/* Dashboard — scroll-driven tilt, scale, and vertical shift */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 mt-14 w-full max-w-[1360px] md:w-[108vw]"
-        >
-          <motion.div style={{ y: demoY, scale: demoScale }}>
-            <div style={{ perspective: "1200px" }}>
-              <motion.div style={{ rotateX: demoRotate }}>
-                <BrowserFrame
-                  url={
-                    showInventory
-                      ? "portal.vehiclehound.com/inventory"
-                      : "portal.vehiclehound.com/dashboard"
-                  }
-                >
-                  <DashboardDemo showInventory={showInventory} />
-                </BrowserFrame>
-              </motion.div>
-            </div>
+        {/* Dashboard — flex-centered in viewport, locks in place */}
+        <div className="relative z-10 flex h-full items-center justify-center px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 80 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-[1360px] md:w-[108vw]"
+          >
+            <motion.div style={{ y: demoY, scale: demoScale }}>
+              <div style={{ perspective: "1200px" }}>
+                <motion.div style={{ rotateX: demoRotate }}>
+                  <BrowserFrame
+                    url={
+                      showInventory
+                        ? "portal.vehiclehound.com/inventory"
+                        : "portal.vehiclehound.com/dashboard"
+                    }
+                  >
+                    <DashboardDemo showInventory={showInventory} />
+                  </BrowserFrame>
+                </motion.div>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
