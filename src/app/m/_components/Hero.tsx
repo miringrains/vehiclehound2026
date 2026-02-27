@@ -32,7 +32,7 @@ function AnimatedHeadline() {
   const line1Words = "The modern way to manage".split(" ");
 
   return (
-    <h1 className="text-[1.75rem] font-medium leading-[1.15] tracking-[-0.015em] text-foreground sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem]">
+    <h1 className="text-[1.75rem] font-medium leading-[1.15] tracking-[-0.025em] text-foreground sm:text-4xl md:text-[2.75rem] lg:text-[3.25rem]">
       {/* Line 1 — word-by-word stagger */}
       <motion.span
         initial="hidden"
