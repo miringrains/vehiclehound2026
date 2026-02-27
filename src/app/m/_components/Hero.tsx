@@ -88,16 +88,12 @@ export function Hero() {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // Phase 1: Tilt straightens + scale grows
-  const demoRotate = useTransform(scrollYProgress, [0, 0.25], [5, 0]);
-  const demoScale = useTransform(scrollYProgress, [0, 0.25], [0.88, 1]);
-
-  // Phase 2: Text fades out + lifts
-  const textOpacity = useTransform(scrollYProgress, [0.08, 0.25], [1, 0]);
-  const textY = useTransform(scrollYProgress, [0.08, 0.25], [0, -80]);
-
-  // Phase 3: Dashboard rises from natural position to viewport center
-  const demoY = useTransform(scrollYProgress, [0.1, 0.35], [0, centerY]);
+  // All ranges include explicit hold keyframes so values clamp (useTransform extrapolates by default)
+  const demoRotate = useTransform(scrollYProgress, [0, 0.25, 1], [5, 0, 0]);
+  const demoScale = useTransform(scrollYProgress, [0, 0.25, 1], [0.88, 1, 1]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.08, 0.25, 1], [1, 1, 0, 0]);
+  const textY = useTransform(scrollYProgress, [0, 0.08, 0.25, 1], [0, 0, -80, -80]);
+  const demoY = useTransform(scrollYProgress, [0, 0.1, 0.35, 1], [0, 0, centerY, centerY]);
 
   return (
     <section
