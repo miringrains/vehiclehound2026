@@ -68,20 +68,25 @@ export function Hero() {
   });
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setShowInventory(v > 0.55);
+    setShowInventory(v > 0.45);
   });
 
-  const demoRotate = useTransform(scrollYProgress, [0, 0.3], [4, 0]);
-  const demoScale = useTransform(scrollYProgress, [0, 0.3], [0.92, 1]);
-  const textOpacity = useTransform(scrollYProgress, [0.15, 0.35], [1, 0]);
-  const textY = useTransform(scrollYProgress, [0.15, 0.35], [0, -60]);
-  const demoY = useTransform(scrollYProgress, [0.2, 0.5], [0, -220]);
+  // Phase 1: Tilt straightens, scale grows (0 → 0.25)
+  const demoRotate = useTransform(scrollYProgress, [0, 0.25], [5, 0]);
+  const demoScale = useTransform(scrollYProgress, [0, 0.25], [0.88, 1]);
+
+  // Phase 2: Text fades out and lifts (0.1 → 0.28)
+  const textOpacity = useTransform(scrollYProgress, [0.1, 0.28], [1, 0]);
+  const textY = useTransform(scrollYProgress, [0.1, 0.28], [0, -80]);
+
+  // Phase 3: Dashboard slides up to fill viewport (0.15 → 0.38)
+  const demoY = useTransform(scrollYProgress, [0.15, 0.38], [0, -340]);
 
   return (
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: "200vh" }}
+      style={{ height: "280vh" }}
     >
       <div className="sticky top-0 flex h-screen flex-col items-center overflow-hidden px-6 pt-36 md:pt-40">
         {/* Aurora backdrop */}

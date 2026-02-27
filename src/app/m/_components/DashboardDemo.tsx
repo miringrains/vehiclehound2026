@@ -17,7 +17,7 @@ import {
   TrendingUp,
   PlusCircle,
   Search,
-  Filter,
+  Plus,
 } from "lucide-react";
 
 const sidebarNav = [
@@ -49,13 +49,13 @@ const activities = [
   { icon: Car, text: "Mercedes C300 marked as sold", time: "3h ago", fresh: false },
 ];
 
-const inventoryItems = [
-  { color: "#1e3a5f", year: 2025, make: "BMW", model: "330i xDrive", type: "Retail" as const, status: "Active" as const, price: "$42,500", views: 234 },
-  { color: "#2d1b4e", year: 2024, make: "Mercedes-Benz", model: "C300", type: "Lease" as const, status: "Active" as const, price: "$489/mo", views: 187 },
-  { color: "#1a1a2e", year: 2025, make: "Audi", model: "A4 Premium", type: "Retail" as const, status: "Active" as const, price: "$39,900", views: 156 },
-  { color: "#2b3d2f", year: 2024, make: "Lexus", model: "IS 350 F Sport", type: "Lease" as const, status: "Active" as const, price: "$449/mo", views: 203 },
-  { color: "#3d2b2b", year: 2025, make: "Tesla", model: "Model 3 LR", type: "Retail" as const, status: "Pending" as const, price: "$38,990", views: 312 },
-  { color: "#1a2d3d", year: 2024, make: "Genesis", model: "G70 3.3T", type: "Retail" as const, status: "Sold" as const, price: "$36,500", views: 98 },
+const inventoryVehicles = [
+  { gradient: "linear-gradient(135deg, #1a2940, #2d5a8e)", year: 2025, make: "BMW", model: "330i xDrive", trim: "M Sport", type: "sale", status: "Available", price: "$42,500", chips: ["AWD", "12,450 mi", "Alpine White"] },
+  { gradient: "linear-gradient(135deg, #2d1b3e, #5a3d7a)", year: 2024, make: "Mercedes-Benz", model: "C300", trim: "4MATIC", type: "lease", status: "Available", price: "$489/mo", chips: ["36mo", "10,000 mi/yr"] },
+  { gradient: "linear-gradient(135deg, #1a1a2e, #3d3d5c)", year: 2025, make: "Audi", model: "A4 Premium", trim: "45 TFSI", type: "sale", status: "Available", price: "$39,900", chips: ["AWD", "8,200 mi", "Mythos Black"] },
+  { gradient: "linear-gradient(135deg, #1e3329, #3d6b52)", year: 2024, make: "Lexus", model: "IS 350", trim: "F Sport", type: "lease", status: "Available", price: "$449/mo", chips: ["36mo", "12,000 mi/yr"] },
+  { gradient: "linear-gradient(135deg, #3d2020, #6b3d3d)", year: 2025, make: "Tesla", model: "Model 3", trim: "Long Range", type: "sale", status: "Pending", price: "$38,990", chips: ["AWD", "New", "Ultra Red"] },
+  { gradient: "linear-gradient(135deg, #1a2d3d, #3d5a6b)", year: 2024, make: "Genesis", model: "G70", trim: "3.3T Sport", type: "sale", status: "Sold", price: "$36,500", chips: ["RWD", "18,300 mi", "Havana Red"] },
 ];
 
 function useCountUp(target: number, delay: number, inView: boolean) {
@@ -216,7 +216,7 @@ function DashboardContent({ inView }: { inView: boolean }) {
         >
           <p className="text-[9px] font-medium text-[oklch(0.145_0.005_285)]">Engagement</p>
           <p className="mb-2 text-[7px] text-[oklch(0.44_0.02_280)]">Widget views — last 7 days</p>
-          <div className="h-16">
+          <div className="h-20">
             <AnimatedAreaChart data={chartData} inView={inView} />
           </div>
         </motion.div>
@@ -227,7 +227,7 @@ function DashboardContent({ inView }: { inView: boolean }) {
           className="col-span-2 rounded-lg border border-[oklch(0.91_0.005_280)] bg-white p-2.5"
         >
           <p className="mb-2 text-[9px] font-medium text-[oklch(0.145_0.005_285)]">Recent Activity</p>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {activities.map((a, i) => (
               <motion.div
                 key={a.text}
@@ -250,79 +250,85 @@ function DashboardContent({ inView }: { inView: boolean }) {
   );
 }
 
-const statusColors: Record<string, string> = {
-  Active: "bg-emerald-50 text-emerald-600",
-  Pending: "bg-amber-50 text-amber-600",
-  Sold: "bg-gray-100 text-gray-500",
-};
-
-const typeColors: Record<string, string> = {
-  Retail: "bg-blue-50 text-blue-600",
-  Lease: "bg-violet-50 text-violet-600",
+const statusStyles: Record<string, string> = {
+  Available: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Pending: "bg-amber-50 text-amber-700 border-amber-200",
+  Sold: "bg-gray-100 text-gray-500 border-gray-200",
 };
 
 function InventoryContent() {
   return (
     <>
+      {/* Page header */}
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-[11px] font-medium text-[oklch(0.145_0.005_285)]">Manage Inventory</p>
-          <p className="text-[8px] text-[oklch(0.44_0.02_280)]">47 vehicles · 38 active</p>
+          <p className="text-[11px] font-medium text-[oklch(0.145_0.005_285)]">Inventory</p>
+          <p className="text-[8px] text-[oklch(0.44_0.02_280)]">47 vehicles in your inventory.</p>
         </div>
-        <div className="flex gap-1.5">
-          <div className="flex items-center gap-1 rounded-md border border-[oklch(0.91_0.005_280)] px-2 py-0.5 text-[8px] text-[oklch(0.44_0.02_280)]">
-            <Filter className="h-2.5 w-2.5" />
-            Filter
+        <div className="flex items-center gap-1 rounded-md bg-[oklch(0.46_0.16_280)] px-2 py-1 text-[8px] font-medium text-white">
+          <Plus className="h-2.5 w-2.5" />
+          Add Vehicle
+        </div>
+      </div>
+
+      {/* Filters row */}
+      <div className="mb-3 flex gap-1.5">
+        <div className="relative flex-1">
+          <Search className="absolute left-1.5 top-1/2 h-2.5 w-2.5 -translate-y-1/2 text-[oklch(0.44_0.02_280)]" />
+          <div className="rounded-md border border-[oklch(0.91_0.005_280)] bg-white py-1 pl-5 pr-2 text-[8px] text-[oklch(0.65_0.02_280)]">
+            Search by year, make, model, VIN...
           </div>
-          <div className="rounded-md bg-[oklch(0.46_0.16_280)] px-2 py-0.5 text-[8px] text-white">+ Add Vehicle</div>
+        </div>
+        <div className="rounded-md border border-[oklch(0.91_0.005_280)] bg-white px-2 py-1 text-[8px] text-[oklch(0.35_0.02_280)]">
+          All Types ▾
+        </div>
+        <div className="rounded-md border border-[oklch(0.91_0.005_280)] bg-white px-2 py-1 text-[8px] text-[oklch(0.35_0.02_280)]">
+          All Statuses ▾
         </div>
       </div>
 
-      <div className="mb-3 flex items-center gap-1.5 rounded-md border border-[oklch(0.91_0.005_280)] bg-white px-2 py-1.5">
-        <Search className="h-2.5 w-2.5 text-[oklch(0.44_0.02_280)]" />
-        <span className="text-[8px] text-[oklch(0.65_0.02_280)]">Search vehicles...</span>
-      </div>
-
-      <div className="rounded-lg border border-[oklch(0.91_0.005_280)] overflow-hidden">
-        <div className="grid grid-cols-12 gap-2 border-b border-[oklch(0.91_0.005_280)] bg-[oklch(0.97_0.002_285)] px-2.5 py-1.5">
-          <span className="col-span-5 text-[7px] font-medium text-[oklch(0.44_0.02_280)]">Vehicle</span>
-          <span className="col-span-2 text-[7px] font-medium text-[oklch(0.44_0.02_280)]">Type</span>
-          <span className="col-span-2 text-[7px] font-medium text-[oklch(0.44_0.02_280)]">Status</span>
-          <span className="col-span-2 text-[7px] font-medium text-[oklch(0.44_0.02_280)] text-right">Price</span>
-          <span className="col-span-1 text-[7px] font-medium text-[oklch(0.44_0.02_280)] text-right">Views</span>
-        </div>
-        {inventoryItems.map((item, i) => (
+      {/* Vehicle card grid — matches real portal layout */}
+      <div className="grid grid-cols-3 gap-2">
+        {inventoryVehicles.map((v, i) => (
           <motion.div
-            key={item.model}
-            initial={{ opacity: 0, x: -6 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.08 + i * 0.04, duration: 0.3 }}
-            className={`grid grid-cols-12 items-center gap-2 px-2.5 py-2 ${
-              i < inventoryItems.length - 1 ? "border-b border-[oklch(0.95_0.002_285)]" : ""
-            }`}
+            key={v.model}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.06 + i * 0.05, duration: 0.35 }}
+            className="overflow-hidden rounded-lg border border-[oklch(0.91_0.005_280)] bg-white"
           >
-            <div className="col-span-5 flex items-center gap-2">
-              <div className="h-5 w-8 shrink-0 rounded" style={{ backgroundColor: item.color }} />
-              <span className="text-[8px] font-medium text-[oklch(0.145_0.005_285)] truncate">
-                {item.year} {item.make} {item.model}
+            {/* Image placeholder — 4:3 aspect with type badge */}
+            <div className="relative aspect-[4/3] w-full" style={{ background: v.gradient }}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Car className="h-6 w-6 text-white/20" strokeWidth={1.25} />
+              </div>
+              <span className="absolute top-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[6px] font-medium uppercase tracking-wide text-white backdrop-blur-sm">
+                {v.type === "lease" ? "Lease" : "For Sale"}
               </span>
             </div>
-            <div className="col-span-2">
-              <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[6.5px] font-medium ${typeColors[item.type]}`}>
-                {item.type}
-              </span>
+
+            {/* Card content */}
+            <div className="p-2 space-y-1">
+              <div className="flex items-start justify-between gap-1">
+                <div className="min-w-0">
+                  <p className="text-[8px] font-semibold text-[oklch(0.145_0.005_285)] truncate leading-tight">
+                    {v.year} {v.make} {v.model}
+                  </p>
+                  <p className="text-[6.5px] text-[oklch(0.44_0.02_280)] truncate">{v.trim}</p>
+                </div>
+                <span className={`shrink-0 rounded-full border px-1 py-px text-[5.5px] font-medium ${statusStyles[v.status]}`}>
+                  {v.status}
+                </span>
+              </div>
+              <p className="text-[8px] font-semibold text-[oklch(0.145_0.005_285)]">{v.price}</p>
+              <div className="flex flex-wrap gap-0.5">
+                {v.chips.map((chip) => (
+                  <span key={chip} className="rounded bg-[oklch(0.955_0.003_285)] px-1 py-px text-[5.5px] text-[oklch(0.44_0.02_280)]">
+                    {chip}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="col-span-2">
-              <span className={`inline-flex rounded-full px-1.5 py-0.5 text-[6.5px] font-medium ${statusColors[item.status]}`}>
-                {item.status}
-              </span>
-            </div>
-            <span className="col-span-2 text-[8px] font-medium text-[oklch(0.145_0.005_285)] tabular-nums text-right">
-              {item.price}
-            </span>
-            <span className="col-span-1 text-[8px] text-[oklch(0.44_0.02_280)] tabular-nums text-right">
-              {item.views}
-            </span>
           </motion.div>
         ))}
       </div>
@@ -340,7 +346,7 @@ export function DashboardDemo({ showInventory = false }: DashboardDemoProps) {
   const activeNav = showInventory ? "Manage Inventory" : "Dashboard";
 
   return (
-    <div ref={ref} className="flex bg-[oklch(0.07_0.005_285)] rounded-b-lg overflow-hidden" style={{ minHeight: 380 }}>
+    <div ref={ref} className="flex bg-[oklch(0.07_0.005_285)] rounded-b-lg overflow-hidden h-[480px]">
       {/* Sidebar */}
       <div className="hidden md:flex w-[140px] shrink-0 flex-col border-r border-white/[0.06] py-3 px-2">
         <div className="mb-4 px-2">
@@ -369,7 +375,7 @@ export function DashboardDemo({ showInventory = false }: DashboardDemoProps) {
         </div>
       </div>
 
-      {/* Content area */}
+      {/* Content area — light panel matching portal layout */}
       <div className="flex-1 p-2 md:p-2.5">
         <div className="h-full rounded-xl bg-[oklch(0.98_0.002_285)] p-3 md:p-4 overflow-hidden">
           <AnimatePresence mode="wait">
