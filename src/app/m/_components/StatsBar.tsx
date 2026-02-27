@@ -1,30 +1,43 @@
 "use client";
 
-import { CountUp } from "./CountUp";
+import {
+  Car,
+  FileText,
+  Users,
+  BarChart3,
+  Globe,
+  Presentation,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
-const stats = [
-  { label: "Setup Time", target: 5, prefix: "", suffix: " min" },
-  { label: "Avg. Leads per Dealer / Month", target: 34, prefix: "", suffix: "+" },
-  { label: "Websites Compatible", target: 100, prefix: "", suffix: "%" },
-  { label: "Uptime", target: 99, prefix: "", suffix: ".9%" },
+const pillars = [
+  { icon: Car, label: "Inventory Management" },
+  { icon: Globe, label: "Website Widgets" },
+  { icon: FileText, label: "Credit Applications" },
+  { icon: Users, label: "Customer CRM" },
+  { icon: Presentation, label: "Deal Sheets" },
+  { icon: BarChart3, label: "Analytics" },
 ];
 
 export function StatsBar() {
   return (
-    <section className="relative border-y border-border/30 bg-card/30 backdrop-blur-sm">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-6 py-16 md:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="flex flex-col items-center text-center">
-            <CountUp
-              target={s.target}
-              prefix={s.prefix}
-              suffix={s.suffix}
-              duration={2.5}
-              className="text-3xl font-medium tracking-[-0.015em] text-foreground md:text-4xl"
-            />
-            <span className="mt-2 text-sm text-muted-foreground">{s.label}</span>
-          </div>
-        ))}
+    <section className="relative border-y border-border/30 bg-card/20 backdrop-blur-sm">
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-12">
+          {pillars.map((p, i) => (
+            <motion.div
+              key={p.label}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.06, duration: 0.4 }}
+              className="flex items-center gap-2 text-muted-foreground/70"
+            >
+              <p.icon className="h-4 w-4" strokeWidth={1.5} />
+              <span className="text-sm">{p.label}</span>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
