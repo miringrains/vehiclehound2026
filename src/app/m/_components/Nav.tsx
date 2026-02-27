@@ -33,7 +33,7 @@ export function Nav() {
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.svg" alt="VehicleHound" width={160} height={32} className="h-7 w-auto" priority />
+          <Image src="/logo.svg" alt="VehicleHound" width={180} height={36} className="h-8 w-auto sm:h-9" priority />
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
