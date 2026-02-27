@@ -57,7 +57,7 @@ export function FeatureShowcase({
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
-            <h2 className={`text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl ${titleColor}`}>
+            <h2 className={`text-3xl font-medium tracking-[-0.015em] sm:text-4xl lg:text-[2.75rem] ${titleColor}`}>
               {title}
             </h2>
           </ScrollReveal>
@@ -76,7 +76,7 @@ export function FeatureShowcase({
                     <h.icon className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className={`text-sm font-semibold ${hlTitle}`}>{h.title}</h3>
+                    <h3 className={`text-sm font-medium ${hlTitle}`}>{h.title}</h3>
                     <p className={`mt-0.5 text-sm leading-relaxed ${hlDesc}`}>{h.description}</p>
                   </div>
                 </div>

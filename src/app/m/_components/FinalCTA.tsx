@@ -26,7 +26,7 @@ export function FinalCTA() {
 
       <div className="relative z-10 mx-auto max-w-3xl text-center">
         <ScrollReveal>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          <h2 className="text-3xl font-medium tracking-[-0.015em] text-foreground sm:text-4xl lg:text-[2.75rem]">
             Ready to drop the outdated software?
           </h2>
         </ScrollReveal>
@@ -43,7 +43,7 @@ export function FinalCTA() {
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
               href={`${PORTAL}/signup`}
-              className="inline-flex h-12 items-center rounded-xl bg-violet-600 px-8 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition-all hover:bg-violet-500 hover:shadow-violet-500/30"
+              className="inline-flex h-12 items-center rounded-xl bg-violet-600 px-8 text-sm font-medium text-white shadow-lg shadow-violet-600/25 transition-all hover:bg-violet-500 hover:shadow-violet-500/30"
             >
               Start Free Trial
             </a>

@@ -53,7 +53,7 @@ export default function PricingPage() {
       <section className="px-6 pt-32 pb-16">
         <div className="mx-auto max-w-3xl text-center">
           <ScrollReveal>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            <h1 className="text-4xl font-medium tracking-[-0.015em] text-foreground sm:text-[2.75rem]">
               Pricing that actually makes sense.
             </h1>
           </ScrollReveal>
@@ -74,7 +74,7 @@ export default function PricingPage() {
       <section className="border-t border-border/30 px-6 py-24">
         <div className="mx-auto max-w-5xl">
           <ScrollReveal>
-            <h2 className="text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="text-center text-2xl font-medium tracking-[-0.015em] text-foreground sm:text-3xl">
               Compare plans
             </h2>
           </ScrollReveal>
@@ -124,7 +124,7 @@ export default function PricingPage() {
       <section className="border-t border-border/30 px-6 py-24">
         <div className="mx-auto max-w-3xl">
           <ScrollReveal>
-            <h2 className="text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="text-center text-2xl font-medium tracking-[-0.015em] text-foreground sm:text-3xl">
               Frequently asked questions
             </h2>
           </ScrollReveal>

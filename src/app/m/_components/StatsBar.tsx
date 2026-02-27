@@ -20,7 +20,7 @@ export function StatsBar() {
               prefix={s.prefix}
               suffix={s.suffix}
               duration={2.5}
-              className="text-3xl font-bold tracking-tight text-foreground md:text-4xl"
+              className="text-3xl font-medium tracking-[-0.015em] text-foreground md:text-4xl"
             />
             <span className="mt-2 text-sm text-muted-foreground">{s.label}</span>
           </div>
