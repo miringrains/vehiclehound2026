@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Car, Send, FileDown, Star } from "lucide-react";
+import { Send, FileDown, Star } from "lucide-react";
 
 const options = [
   {
@@ -142,8 +142,8 @@ export function DealSheetDemo() {
               <div className="p-3 space-y-2.5">
                 {/* Vehicle */}
                 <div className="flex items-center gap-1.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded bg-white/[0.05]">
-                    <Car className="h-2.5 w-2.5 text-white/40" />
+                  <div className="h-5 w-5 shrink-0 overflow-hidden rounded bg-white/[0.05]">
+                    <img src="/demo/bmw-330i.jpg" alt={opt.vehicle} className="h-full w-full object-cover" />
                   </div>
                   <p className="text-[8px] font-medium text-white/70">{opt.vehicle}</p>
                 </div>
