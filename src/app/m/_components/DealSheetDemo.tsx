@@ -141,8 +141,8 @@ export function DealSheetDemo() {
 
               <div className="p-3 space-y-2.5">
                 {/* Vehicle */}
-                <div className="flex items-center gap-1.5">
-                  <div className="h-5 w-5 shrink-0 overflow-hidden rounded bg-white/[0.05]">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-12 shrink-0 overflow-hidden rounded bg-white/[0.05]">
                     <img src="/demo/bmw-330i.jpg" alt={opt.vehicle} className="h-full w-full object-cover" />
                   </div>
                   <p className="text-[8px] font-medium text-white/70">{opt.vehicle}</p>

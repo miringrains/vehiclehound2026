@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const vehicles = [
-  { year: 2025, make: "BMW", model: "330i", price: "$429/mo", img: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", color: "Alpine White" },
-  { year: 2025, make: "Mercedes", model: "C300", price: "$348/mo", img: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)", color: "Obsidian Black" },
-  { year: 2026, make: "BMW", model: "X5 sDrive40i", price: "$829/mo", img: "linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%)", color: "Phytonic Blue" },
+  { year: 2025, make: "BMW", model: "330i", price: "$429/mo", img: "/demo/bmw-330i.jpg", color: "Alpine White" },
+  { year: 2025, make: "Mercedes", model: "C300", price: "$348/mo", img: "/demo/c300.jpg", color: "Obsidian Black" },
+  { year: 2026, make: "BMW", model: "X5 sDrive40i", price: "$829/mo", img: "/demo/bmw-x5.jpg", color: "Phytonic Blue" },
 ];
 
 const codeSnippet = `<script src="https://portal.vehiclehound.com
@@ -85,10 +85,9 @@ export function WidgetDemo() {
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     className="flex items-center gap-2 rounded-md border border-gray-100 p-1.5"
                   >
-                    <div
-                      className="h-8 w-12 shrink-0 rounded"
-                      style={{ background: v.img }}
-                    />
+                    <div className="h-8 w-12 shrink-0 overflow-hidden rounded bg-gray-100">
+                      <img src={v.img} alt={`${v.year} ${v.make} ${v.model}`} className="h-full w-full object-cover" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[8px] font-semibold text-gray-900 truncate">
                         {v.year} {v.make} {v.model}
