@@ -50,12 +50,12 @@ const activities = [
 ];
 
 const inventoryVehicles = [
-  { gradient: "linear-gradient(135deg, #1a2940, #2d5a8e)", year: 2025, make: "BMW", model: "330i xDrive", trim: "M Sport", type: "sale", status: "Available", price: "$42,500", chips: ["AWD", "12,450 mi", "Alpine White"] },
-  { gradient: "linear-gradient(135deg, #2d1b3e, #5a3d7a)", year: 2024, make: "Mercedes-Benz", model: "C300", trim: "4MATIC", type: "lease", status: "Available", price: "$489/mo", chips: ["36mo", "10,000 mi/yr"] },
-  { gradient: "linear-gradient(135deg, #1a1a2e, #3d3d5c)", year: 2025, make: "Audi", model: "A4 Premium", trim: "45 TFSI", type: "sale", status: "Available", price: "$39,900", chips: ["AWD", "8,200 mi", "Mythos Black"] },
-  { gradient: "linear-gradient(135deg, #1e3329, #3d6b52)", year: 2024, make: "Lexus", model: "IS 350", trim: "F Sport", type: "lease", status: "Available", price: "$449/mo", chips: ["36mo", "12,000 mi/yr"] },
-  { gradient: "linear-gradient(135deg, #3d2020, #6b3d3d)", year: 2025, make: "Tesla", model: "Model 3", trim: "Long Range", type: "sale", status: "Pending", price: "$38,990", chips: ["AWD", "New", "Ultra Red"] },
-  { gradient: "linear-gradient(135deg, #1a2d3d, #3d5a6b)", year: 2024, make: "Genesis", model: "G70", trim: "3.3T Sport", type: "sale", status: "Sold", price: "$36,500", chips: ["RWD", "18,300 mi", "Havana Red"] },
+  { image: "/demo/bmw-330i.jpg", year: 2025, make: "BMW", model: "330i", trim: "M Sport", type: "lease", status: "Available", price: "$429/mo", chips: ["39mo", "7,500 mi/yr"] },
+  { image: "/demo/c300.jpg", year: 2025, make: "Mercedes-Benz", model: "C300", trim: "RWD", type: "lease", status: "Available", price: "$348/mo", chips: ["24mo", "7,500 mi/yr"] },
+  { image: "/demo/audi-a4.jpg", year: 2025, make: "Audi", model: "A4 Premium", trim: "45 TFSI", type: "sale", status: "Available", price: "$39,900", chips: ["AWD", "8,200 mi", "Glacier White"] },
+  { image: "/demo/bmw-x5.jpg", year: 2026, make: "BMW", model: "X5 sDrive40i", trim: "", type: "lease", status: "Available", price: "$829/mo", chips: ["39mo", "7,500 mi/yr"] },
+  { image: "/demo/bmw-m5.jpg", year: 2025, make: "BMW", model: "M5", trim: "Competition", type: "sale", status: "Pending", price: "$112,900", chips: ["AWD", "New", "Frozen Grey"] },
+  { image: "/demo/tacoma.jpg", year: 2025, make: "Toyota", model: "Tacoma SR5", trim: "4x4", type: "sale", status: "Available", price: "$38,500", chips: ["4WD", "0 mi", "Underground"] },
 ];
 
 function useCountUp(target: number, delay: number, inView: boolean) {
@@ -297,11 +297,12 @@ function InventoryContent() {
             transition={{ delay: 0.06 + i * 0.05, duration: 0.35 }}
             className="overflow-hidden rounded-lg border border-[oklch(0.91_0.005_280)] bg-white"
           >
-            {/* Image placeholder — 4:3 aspect with type badge */}
-            <div className="relative aspect-[4/3] w-full" style={{ background: v.gradient }}>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Car className="h-6 w-6 text-white/20" strokeWidth={1.25} />
-              </div>
+            <div className="relative aspect-[4/3] w-full bg-[oklch(0.94_0.005_280)]">
+              <img
+                src={v.image}
+                alt={`${v.year} ${v.make} ${v.model}`}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
               <span className="absolute top-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[6px] font-medium uppercase tracking-wide text-white backdrop-blur-sm">
                 {v.type === "lease" ? "Lease" : "For Sale"}
               </span>
