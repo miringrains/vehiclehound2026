@@ -19,14 +19,26 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "VehicleHound",
+    default: "VehicleHound — Dealership & Brokerage Management Platform",
     template: "%s | VehicleHound",
   },
   description:
-    "AI-powered automotive dealership inventory management platform.",
+    "The all-in-one platform for auto dealerships and brokerages. Manage retail inventory, lease specials, credit applications, and customer leads from a single dashboard.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com"
   ),
+  openGraph: {
+    title: "VehicleHound — Dealership & Brokerage Management Platform",
+    description:
+      "Manage retail inventory, lease specials, credit applications, and customer leads from a single dashboard.",
+    siteName: "VehicleHound",
+  },
+  twitter: {
+    card: "summary",
+    title: "VehicleHound — Dealership & Brokerage Management Platform",
+    description:
+      "The all-in-one platform for auto dealerships and brokerages.",
+  },
 };
 
 export default function RootLayout({
