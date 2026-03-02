@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import { motion, useScroll, useMotionValue, useMotionValueEvent } from "framer-motion";
 import { BrowserFrame } from "./BrowserFrame";
 import { DashboardDemo } from "./DashboardDemo";
 
@@ -58,68 +58,51 @@ function AnimatedHeadline() {
   );
 }
 
+function clamp01(v: number, start: number, end: number) {
+  return Math.min(1, Math.max(0, (v - start) / (end - start)));
+}
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
-  const dashRef = useRef<HTMLDivElement>(null);
   const [showInventory, setShowInventory] = useState(false);
-  const [centerY, setCenterY] = useState(-300);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
 
+  const demoRotate = useMotionValue(5);
+  const demoScale = useMotionValue(0.88);
+
   useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setShowInventory(v > 0.45);
+    const t = clamp01(v, 0, 0.35);
+    demoRotate.set(5 * (1 - t));
+    demoScale.set(0.88 + 0.12 * t);
+    setShowInventory(v > 0.5);
   });
-
-  // Measure the exact Y offset to center the dashboard in the viewport
-  useEffect(() => {
-    const el = dashRef.current;
-    if (!el) return;
-    const measure = () => {
-      const rect = el.getBoundingClientRect();
-      const vpCenter = window.innerHeight / 2;
-      const elCenter = rect.top + rect.height / 2;
-      setCenterY(Math.round(vpCenter - elCenter));
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  // All ranges include explicit hold keyframes so values clamp (useTransform extrapolates by default)
-  const demoRotate = useTransform(scrollYProgress, [0, 0.25, 1], [5, 0, 0]);
-  const demoScale = useTransform(scrollYProgress, [0, 0.25, 1], [0.88, 1, 1]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.08, 0.25, 1], [1, 1, 0, 0]);
-  const textY = useTransform(scrollYProgress, [0, 0.08, 0.25, 1], [0, 0, -80, -80]);
-  const demoY = useTransform(scrollYProgress, [0, 0.1, 0.35, 1], [0, 0, centerY, centerY]);
 
   return (
     <section
       ref={sectionRef}
-      className="relative"
-      style={{ height: "280vh" }}
+      className="relative bg-background"
+      style={{ height: "250vh" }}
     >
-      <div className="sticky top-0 flex h-screen flex-col items-center overflow-hidden px-6 pt-36 md:pt-40">
-        {/* Aurora backdrop */}
-        <div className="pointer-events-none absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-background" />
-          <Aurora
-            colorStops={["#3A29FF", "#7C3AED", "#4F46E5"]}
-            speed={0.5}
-            amplitude={1.4}
-            blend={0.7}
-            className="absolute inset-0 opacity-50"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-        </div>
+      {/* Aurora — covers hero area */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-screen z-0">
+        <div className="absolute inset-0 bg-background" />
+        <Aurora
+          colorStops={["#3A29FF", "#7C3AED", "#4F46E5"]}
+          speed={0.5}
+          amplitude={1.4}
+          blend={0.7}
+          className="absolute inset-0 opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+      </div>
 
-        {/* Text content — fades out on scroll */}
-        <motion.div
-          style={{ opacity: textOpacity, y: textY }}
-          className="relative z-10 mx-auto flex max-w-3xl flex-col items-center text-center"
-        >
+      {/* Text — normal flow, scrolls away naturally */}
+      <div className="relative z-10 flex justify-center px-6 pt-36 md:pt-40">
+        <div className="flex max-w-3xl flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -165,32 +148,32 @@ export function Hero() {
               See Pricing
             </a>
           </motion.div>
-        </motion.div>
-
-        {/* Dashboard — in flow below text, scroll-driven centering */}
-        <div ref={dashRef} className="relative z-10 mt-14 w-full max-w-[1360px] md:w-[108vw]">
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <motion.div style={{ y: demoY, scale: demoScale }}>
-              <div style={{ perspective: "1200px" }}>
-                <motion.div style={{ rotateX: demoRotate }}>
-                  <BrowserFrame
-                    url={
-                      showInventory
-                        ? "portal.vehiclehound.com/inventory"
-                        : "portal.vehiclehound.com/dashboard"
-                    }
-                  >
-                    <DashboardDemo showInventory={showInventory} />
-                  </BrowserFrame>
-                </motion.div>
-              </div>
-            </motion.div>
-          </motion.div>
         </div>
+      </div>
+
+      {/* Dashboard — THE STICKY ELEMENT, locks when it hits top */}
+      <div className="sticky top-[5vh] z-10 mx-auto mt-14 w-full max-w-[1360px] px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <motion.div style={{ scale: demoScale }}>
+            <div style={{ perspective: "1200px" }}>
+              <motion.div style={{ rotateX: demoRotate }}>
+                <BrowserFrame
+                  url={
+                    showInventory
+                      ? "portal.vehiclehound.com/inventory"
+                      : "portal.vehiclehound.com/dashboard"
+                  }
+                >
+                  <DashboardDemo showInventory={showInventory} />
+                </BrowserFrame>
+              </motion.div>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

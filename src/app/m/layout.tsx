@@ -25,7 +25,7 @@ export default function MarketingLayout({
   return (
     <>
       <Nav />
-      <main className="min-h-screen overflow-x-hidden">{children}</main>
+      <main className="min-h-screen overflow-x-clip">{children}</main>
       <Footer />
     </>
   );
