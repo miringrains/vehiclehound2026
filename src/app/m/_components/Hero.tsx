@@ -73,11 +73,17 @@ export function Hero() {
 
   const demoRotate = useMotionValue(5);
   const demoScale = useMotionValue(0.88);
+  const demoHeight = useMotionValue(480);
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     const t = clamp01(v, 0, 0.35);
     demoRotate.set(5 * (1 - t));
     demoScale.set(0.88 + 0.12 * t);
+
+    const maxH = typeof window !== "undefined" ? window.innerHeight * 0.82 : 720;
+    const ht = clamp01(v, 0.2, 0.45);
+    demoHeight.set(480 + ht * (maxH - 480));
+
     setShowInventory(v > 0.5);
   });
 
@@ -158,9 +164,9 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <motion.div style={{ scale: demoScale }}>
-            <div style={{ perspective: "1200px" }}>
-              <motion.div style={{ rotateX: demoRotate }}>
+          <motion.div style={{ scale: demoScale, height: demoHeight }}>
+            <div style={{ perspective: "1200px" }} className="h-full">
+              <motion.div style={{ rotateX: demoRotate }} className="h-full">
                 <BrowserFrame
                   url={
                     showInventory

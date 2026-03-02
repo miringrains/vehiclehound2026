@@ -346,7 +346,7 @@ export function DashboardDemo({ showInventory = false }: DashboardDemoProps) {
   const activeNav = showInventory ? "Manage Inventory" : "Dashboard";
 
   return (
-    <div ref={ref} className="flex bg-[oklch(0.07_0.005_285)] rounded-b-lg overflow-hidden h-[480px]">
+    <div ref={ref} className="flex bg-[oklch(0.07_0.005_285)] rounded-b-lg overflow-hidden h-full">
       {/* Sidebar */}
       <div className="hidden md:flex w-[140px] shrink-0 flex-col border-r border-white/[0.06] py-3 px-2">
         <div className="mb-4 px-2">
