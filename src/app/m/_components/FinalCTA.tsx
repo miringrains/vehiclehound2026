@@ -42,7 +42,7 @@ export function FinalCTA() {
         <ScrollReveal delay={0.2}>
           <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
-              href={`${PORTAL}/signup`}
+              href={`${PORTAL}/start`}
               className="inline-flex h-12 items-center rounded-xl bg-violet-600 px-8 text-sm font-medium text-white shadow-lg shadow-violet-600/25 transition-all hover:bg-violet-500 hover:shadow-violet-500/30"
             >
               Start Free Trial

@@ -117,7 +117,7 @@ export function Hero() {
           >
             <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
             <span className="text-[11px] font-medium text-violet-300/80">
-              14-day free trial — no credit card required
+              14-day free trial — cancel anytime
             </span>
           </motion.div>
 
@@ -142,7 +142,7 @@ export function Hero() {
             className="mt-8 flex flex-col items-center gap-3 sm:flex-row"
           >
             <a
-              href={`${PORTAL}/signup`}
+              href={`${PORTAL}/start`}
               className="inline-flex h-11 items-center rounded-xl bg-violet-600 px-7 text-sm font-medium text-white shadow-lg shadow-violet-600/20 transition-all hover:bg-violet-500 hover:shadow-violet-500/25"
             >
               Start 14-Day Free Trial

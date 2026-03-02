@@ -34,17 +34,24 @@ export async function POST(request: NextRequest) {
         if (!dealershipId) break;
 
         const plan = planSlug ? getPlan(planSlug as "starter" | "professional" | "enterprise") : null;
+        const subId = typeof session.subscription === "string"
+          ? session.subscription
+          : session.subscription.id;
+
+        // Fetch the subscription to check if it's trialing
+        const sub = await stripe.subscriptions.retrieve(subId);
+        const isTrialing = sub.status === "trialing";
 
         await admin
           .from("dealerships")
           .update({
-            stripe_subscription_id: typeof session.subscription === "string"
-              ? session.subscription
-              : session.subscription.id,
-            subscription_status: "active",
+            stripe_subscription_id: subId,
+            subscription_status: isTrialing ? "trialing" : "active",
             plan: planSlug || "starter",
             max_users: plan?.maxUsers ?? 2,
-            trial_ends_at: null,
+            trial_ends_at: isTrialing && sub.trial_end
+              ? new Date(sub.trial_end * 1000).toISOString()
+              : null,
           })
           .eq("id", dealershipId);
         break;

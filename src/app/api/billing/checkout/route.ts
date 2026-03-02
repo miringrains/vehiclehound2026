@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const admin = createAdminClient();
     const { data: dealership } = await admin
       .from("dealerships")
-      .select("id, name, is_free_account, stripe_customer_id, plan, subscription_status")
+      .select("id, name, is_free_account, stripe_customer_id, plan, subscription_status, trial_ends_at")
       .eq("id", profile.dealership_id)
       .single();
 
@@ -72,6 +72,15 @@ export async function POST(request: NextRequest) {
 
     const origin = request.headers.get("origin") || request.headers.get("referer")?.replace(/\/[^/]*$/, "") || process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com";
 
+    // Carry over remaining trial days for users still in trial
+    let trialDays: number | undefined;
+    if (dealership.subscription_status === "trialing" && dealership.trial_ends_at) {
+      const remaining = Math.ceil(
+        (new Date(dealership.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      );
+      if (remaining > 0) trialDays = remaining;
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
       mode: "subscription",
@@ -79,6 +88,7 @@ export async function POST(request: NextRequest) {
       success_url: `${origin}/billing?success=true`,
       cancel_url: `${origin}/billing?canceled=true`,
       subscription_data: {
+        ...(trialDays ? { trial_period_days: trialDays } : {}),
         metadata: {
           dealership_id: dealership.id,
           plan_slug: planSlug,
@@ -88,6 +98,7 @@ export async function POST(request: NextRequest) {
         dealership_id: dealership.id,
         plan_slug: planSlug,
       },
+      payment_method_collection: "always",
       allow_promotion_codes: true,
     });
 

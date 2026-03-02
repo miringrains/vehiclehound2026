@@ -5,6 +5,10 @@ import { slugify } from "@/lib/utils/slugify";
 import { TRIAL_DAYS } from "@/lib/constants";
 import { sendEmail } from "@/lib/email/mailgun";
 import { welcomeEmail } from "@/lib/email/templates";
+import { stripe } from "@/lib/stripe";
+import { getPriceId } from "@/config/stripe-prices";
+import { getPlan, type PlanSlug } from "@/config/plans";
+import type { BillingInterval } from "@/config/stripe-prices";
 
 export async function POST(request: Request) {
   try {
@@ -19,6 +23,10 @@ export async function POST(request: Request) {
     }
 
     const { dealershipName, name, email, password, phone } = parsed.data;
+    const planSlug: PlanSlug = parsed.data.plan || "starter";
+    const interval: BillingInterval = parsed.data.interval || "monthly";
+    const planDef = getPlan(planSlug);
+
     const supabase = createAdminClient();
 
     const { data: existingUser } = await supabase
@@ -55,8 +63,8 @@ export async function POST(request: Request) {
         slug,
         phone: phone || null,
         subscription_status: "trialing",
-        plan: "starter",
-        max_users: 2,
+        plan: planSlug,
+        max_users: planDef?.maxUsers ?? 2,
         trial_ends_at: trialEndsAt.toISOString(),
         active_users_count: 1,
       })
@@ -93,6 +101,49 @@ export async function POST(request: Request) {
       })
       .eq("id", authData.user.id);
 
+    // Create Stripe customer
+    const customer = await stripe.customers.create({
+      email,
+      name: dealershipName,
+      metadata: {
+        dealership_id: dealership.id,
+        user_id: authData.user.id,
+      },
+    });
+
+    await supabase
+      .from("dealerships")
+      .update({ stripe_customer_id: customer.id })
+      .eq("id", dealership.id);
+
+    // Create Stripe Checkout Session with trial
+    const priceId = getPriceId(planSlug, interval);
+    const origin = request.headers.get("origin")
+      || request.headers.get("referer")?.replace(/\/[^/]*$/, "")
+      || process.env.NEXT_PUBLIC_APP_URL
+      || "https://portal.vehiclehound.com";
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customer.id,
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      subscription_data: {
+        trial_period_days: TRIAL_DAYS,
+        metadata: {
+          dealership_id: dealership.id,
+          plan_slug: planSlug,
+        },
+      },
+      metadata: {
+        dealership_id: dealership.id,
+        plan_slug: planSlug,
+      },
+      payment_method_collection: "always",
+      allow_promotion_codes: true,
+      success_url: `${origin}/dashboard?welcome=true`,
+      cancel_url: `${origin}/billing?setup=true`,
+    });
+
     try {
       const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://portal.vehiclehound.com"}/login`;
       await sendEmail({
@@ -108,7 +159,7 @@ export async function POST(request: Request) {
       // Non-critical
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, checkoutUrl: session.url });
   } catch {
     return NextResponse.json(
       { error: "An unexpected error occurred." },

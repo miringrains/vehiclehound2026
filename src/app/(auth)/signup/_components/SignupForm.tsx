@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validators/auth";
+import { getPlan, formatPrice, type PlanSlug } from "@/config/plans";
+import { createClient } from "@/lib/supabase/client";
 import { routes } from "@/config/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +14,14 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 
-export function SignupForm() {
-  const router = useRouter();
+type SignupFormProps = {
+  plan?: PlanSlug;
+  interval?: "monthly" | "yearly";
+};
+
+export function SignupForm({ plan, interval }: SignupFormProps) {
   const [error, setError] = useState<string | null>(null);
+  const planDef = plan ? getPlan(plan) : undefined;
 
   const {
     register,
@@ -23,6 +29,7 @@ export function SignupForm() {
     formState: { errors, isSubmitting },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
+    defaultValues: { plan, interval },
   });
 
   async function onSubmit(data: SignupInput) {
@@ -31,7 +38,7 @@ export function SignupForm() {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, plan: plan || "starter", interval: interval || "monthly" }),
     });
 
     const result = await res.json();
@@ -41,7 +48,16 @@ export function SignupForm() {
       return;
     }
 
-    router.push(routes.login + "?registered=true");
+    if (result.checkoutUrl) {
+      const supabase = createClient();
+      await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      window.location.href = result.checkoutUrl;
+    } else {
+      window.location.href = routes.billing;
+    }
   }
 
   return (
@@ -50,6 +66,31 @@ export function SignupForm() {
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
+      )}
+
+      {planDef && (
+        <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">{planDef.name} Plan</p>
+              <p className="text-xs text-muted-foreground">
+                {formatPrice(interval === "yearly" ? Math.round(planDef.yearlyPrice / 12) : planDef.monthlyPrice)}
+                /mo
+                {interval === "yearly" && (
+                  <span className="ml-1 text-muted-foreground/60">
+                    ({formatPrice(planDef.yearlyPrice)}/yr)
+                  </span>
+                )}
+              </p>
+            </div>
+            <Link
+              href="/start"
+              className="text-xs text-violet-400 hover:text-violet-300"
+            >
+              Change
+            </Link>
+          </div>
+        </div>
       )}
 
       <div className="space-y-1.5">

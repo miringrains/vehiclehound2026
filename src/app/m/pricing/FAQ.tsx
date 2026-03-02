@@ -7,7 +7,7 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
   {
     q: "How does the 14-day free trial work?",
-    a: "When you sign up, you get full access to all Professional plan features for 14 days. No credit card required. At the end of the trial, choose a plan that fits your dealership or your account pauses until you subscribe.",
+    a: "When you sign up, you choose a plan and enter a payment method to start your 14-day free trial. You won't be charged until the trial ends. If you cancel before it's over, you pay nothing.",
   },
   {
     q: "Can I switch plans later?",

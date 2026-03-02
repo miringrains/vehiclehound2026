@@ -109,14 +109,14 @@ export function PricingCards({ expanded = false, light = false }: PricingCardsPr
                 </div>
 
                 <a
-                  href={`${PORTAL}/signup`}
+                  href={`${PORTAL}/start/${plan.slug}/${annual ? "yearly" : "monthly"}`}
                   className={`mt-6 flex h-10 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
                     popular
                       ? "bg-violet-600 text-white hover:bg-violet-500"
                       : btnNormal
                   }`}
                 >
-                  Start Free Trial
+                  Start 14-Day Trial
                 </a>
 
                 <ul className={`mt-6 space-y-3 border-t pt-6 ${dividerColor}`}>
@@ -135,7 +135,7 @@ export function PricingCards({ expanded = false, light = false }: PricingCardsPr
 
       {expanded && (
         <p className={`text-center text-sm ${textSecondary}`}>
-          All plans include a 14-day free trial. No credit card required.
+          All plans include a 14-day free trial. Cancel anytime.
         </p>
       )}
     </div>

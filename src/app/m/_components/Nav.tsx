@@ -56,7 +56,7 @@ export function Nav() {
             Log in
           </a>
           <a
-            href={`${PORTAL}/signup`}
+            href={`${PORTAL}/start`}
             className="inline-flex h-9 items-center rounded-lg bg-violet-600 px-4 text-sm font-medium text-white transition-colors hover:bg-violet-500"
           >
             Start Free Trial
@@ -99,7 +99,7 @@ export function Nav() {
                 Log in
               </a>
               <a
-                href={`${PORTAL}/signup`}
+                href={`${PORTAL}/start`}
                 className="inline-flex h-10 items-center justify-center rounded-lg bg-violet-600 px-4 text-sm font-medium text-white transition-colors hover:bg-violet-500"
               >
                 Start Free Trial
