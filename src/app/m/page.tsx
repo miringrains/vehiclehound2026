@@ -16,6 +16,9 @@ import {
   Palette,
   Smartphone,
   Link2,
+  Sparkles,
+  Share2,
+  ImageIcon,
 } from "lucide-react";
 import { Hero } from "./_components/Hero";
 
@@ -25,6 +28,7 @@ import { WidgetDemo } from "./_components/WidgetDemo";
 import { CreditAppDemo } from "./_components/CreditAppDemo";
 import { DealSheetDemo } from "./_components/DealSheetDemo";
 import { StorefrontDemo } from "./_components/StorefrontDemo";
+import { SocialPostDemo } from "./_components/SocialPostDemo";
 import { BrowserFrame } from "./_components/BrowserFrame";
 import { PricingCards } from "./_components/PricingCards";
 import { FinalCTA } from "./_components/FinalCTA";
@@ -225,6 +229,43 @@ export default function LandingPage() {
             },
           ]}
           demo={<StorefrontDemo />}
+        />
+
+        {/* Feature 6: AI social post generator — light */}
+        <FeatureShowcase
+          badge="AI Social Posts"
+          title={
+            <>
+              Turn Inventory Into{" "}
+              <span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+                Scroll-Stopping Content.
+              </span>
+            </>
+          }
+          description="Stop paying a designer $50 per post. Select any vehicle, hit generate, and our AI creates cinematic, on-brand social media graphics using your colors, your logo, and the actual deal. Ready to post in seconds, not days."
+          highlights={[
+            {
+              icon: Sparkles,
+              title: "One-Click Generation",
+              description:
+                "Pick a vehicle, choose a format, and let AI handle the rest — studio lighting, typography, composition.",
+            },
+            {
+              icon: ImageIcon,
+              title: "Every Format Covered",
+              description:
+                "Instagram posts, stories, Facebook — each sized and composed specifically for the platform.",
+            },
+            {
+              icon: Share2,
+              title: "On-Brand, Every Time",
+              description:
+                "Your brand colors, your logo, the real deal numbers. Consistent content that looks like you hired an agency.",
+            },
+          ]}
+          demo={<SocialPostDemo />}
+          reversed
+          light
         />
       </div>
 
