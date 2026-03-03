@@ -32,8 +32,8 @@ function buildPrompt(
   const make = vehicle.make ?? "";
   const model = vehicle.model ?? "";
   const trim = vehicle.trim ?? "";
-  const exterior = vehicle.exterior_color ?? "Unknown";
-  const interior = vehicle.interior_color ?? "Unknown";
+  const exterior = String(vehicle.exterior_color ?? "Unknown");
+  const interior = String(vehicle.interior_color ?? "Unknown");
   const isLease = vehicle.inventory_type === "lease";
 
   let priceInfo: string;
