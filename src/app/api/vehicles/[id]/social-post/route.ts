@@ -77,20 +77,21 @@ BRAND COLOR INTEGRATION:
 Incorporate ${brandColor} exclusively as one of these: a subtle ambient light reflection on the floor beneath the car, a singular thin geometric accent line in the composition, or a faint color cast in the rim lighting. Do not use it as a large fill, banner, or background color.
 
 TEXT OVERLAY — CRITICAL:
-All text must be crisp, high-contrast, and immediately legible. Use a premium sans-serif typeface like Futura, Avenir, or DIN — clean geometry, no decorative fonts. Every text element must have strong contrast against its background: white or very light text on dark areas, or place text on a subtle frosted/darkened strip to guarantee readability. Never place light text on a light area or dark text on a dark area.
+All text must be crisp, high-contrast, and immediately legible. Use a premium sans-serif typeface like Futura, Avenir, or DIN. White or very light text on dark backgrounds. Never place text where it lacks contrast.
 
-Render exactly these three text elements and nothing else:
-1. "${vehicleName}" — UPPERCASE, bold weight, generous letter-spacing (tracking +100), large and dominant. This is the headline.
-2. "${isLease ? priceInfo : priceInfo}" — ${isLease ? 'semi-bold, with a small "LEASE" tag next to it' : "semi-bold, clearly readable"}. Slightly smaller than the vehicle name but still prominent.
-3. "${dealershipName}" — light weight, small, positioned at the bottom edge. Subtle but legible.
+There are exactly TWO text elements — nothing else:
 
-Text must be aligned to a clean grid with consistent margins. Do NOT render any other words, taglines, watermarks, URLs, or call-to-action phrases.
+1. PRIMARY — THE PRICE: "${isLease ? priceInfo : priceInfo}"
+This is the single most important text on the graphic. Render it massive — the largest text element by far. UPPERCASE, extra-bold weight, wide letter-spacing. ${isLease ? 'Place a small, clean "LEASE" tag near it — a thin outlined badge or minimal label.' : ""} Style this number to feel like a statement — consider using the accent color ${brandColor} on the price, or a subtle glow, underline, or geometric highlight behind it. The price should be the first thing someone reads when they glance at this graphic for half a second.
+
+2. SECONDARY — THE CAR: "${vehicleName}"
+Render below or above the price in a lighter weight, smaller size. Clean and readable but clearly subordinate to the price. This provides context for what the price is for.
+
+Do NOT include the dealership name, any taglines, watermarks, URLs, phone numbers, or any other text. Only the price and vehicle name exist.
 
 COMPOSITION:
-Use asymmetric negative space to create visual tension. The car should not be dead-center — offset it slightly to create a dynamic editorial feel. Text elements should align to an invisible grid with consistent margins. The overall composition should use strong leading lines or geometric shadow patterns to pull the viewer's eye directly to the car first, then to the price.
-
-${isLease ? "Emphasize the monthly payment as the primary price callout with the LEASE label." : "The sale price should be the clear secondary focal point after the car itself."}
-If a dealership logo image is attached, place it small and semi-transparent in a corner — it must not compete with the vehicle.
+Use asymmetric negative space to create visual tension. Offset the car slightly for a dynamic editorial feel. The price text should be positioned where the eye naturally lands — near the car but not overlapping it. Use strong leading lines or geometric shadow patterns to pull the viewer's eye: car first, then price.
+If a dealership logo image is attached, place it very small and semi-transparent in a corner — it should be barely noticeable and never compete with the car or price.
 
 Output only the final image, no additional text.`;
 }
