@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { genai } from "@/lib/gemini";
+import { getGeminiClient } from "@/lib/gemini";
 import { isFeatureAvailable } from "@/config/features";
 import type { PlanSlug } from "@/config/plans";
 
@@ -87,15 +87,23 @@ ${isLease ? '- Show "LEASE" badge and monthly payment prominently' : "- Show sal
 - Output ONLY the image, no additional text`;
 }
 
+const SUPPORTED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
 async function fetchImageAsBase64(
   url: string
 ): Promise<{ data: string; mimeType: string } | null> {
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
+    const contentType = (res.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+    if (!SUPPORTED_MIME_TYPES.has(contentType)) return null;
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const contentType = res.headers.get("content-type") || "image/jpeg";
     return { data: buffer.toString("base64"), mimeType: contentType };
   } catch {
     return null;
@@ -212,7 +220,8 @@ export async function POST(
       }
     }
 
-    const response = await genai.models.generateContent({
+    const gemini = getGeminiClient();
+    const response = await gemini.models.generateContent({
       model: "gemini-3.1-flash-image-preview",
       contents,
       config: {
@@ -253,10 +262,18 @@ export async function POST(
     }
 
     return NextResponse.json({ image: generatedImage });
-  } catch (err) {
-    console.error("[social-post]", err);
+  } catch (err: unknown) {
+    const apiErr = err as { status?: number; message?: string };
+    console.error("[social-post] Error:", apiErr.message);
+    console.error("[social-post] GEMINI_API_KEY set:", !!process.env.GEMINI_API_KEY);
+    console.error("[social-post] Key prefix:", process.env.GEMINI_API_KEY?.slice(0, 10));
     return NextResponse.json(
-      { error: "An unexpected error occurred." },
+      {
+        error:
+          apiErr.status === 403
+            ? "Gemini API access denied. Check your API key configuration."
+            : "An unexpected error occurred.",
+      },
       { status: 500 }
     );
   }
