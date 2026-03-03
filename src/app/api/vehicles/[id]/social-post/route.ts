@@ -63,30 +63,24 @@ function buildPrompt(
 
   const spec = FORMAT_SPECS[format];
 
-  return `You are a world-class automotive art director at a top creative agency. You design social media content that wins awards and stops the scroll. Your work is influenced by modern editorial design — think Apple product launches, Porsche's Instagram, and high-fashion automotive photography.
+  return `Design a ${spec.label} (${spec.dimensions}) social media graphic for this vehicle. Study the attached car photo closely — match the design's energy to the car itself.
 
-Create a single social media graphic.
+${year} ${make} ${model}${trim ? ` ${trim}` : ""} — ${isLease ? `${priceInfo} lease` : priceInfo}
+${dealershipName}
 
-FORMAT: ${spec.label} (${spec.dimensions})
+You are a senior graphic designer at a brand agency. Your taste level is extremely high. You study Behance and Dribbble daily. You know that great automotive graphics feel effortless — the layout breathes, the type is refined, and the car sells itself.
 
-THE CAR:
-${year} ${make} ${model}${trim ? ` ${trim}` : ""}
-${isLease ? `Lease: ${priceInfo}` : `Price: ${priceInfo}`}
+Design principles to follow:
+- The car photo is everything. Build the entire composition around it. Don't shrink it, crop it awkwardly, or bury it under overlays.
+- Typography must be elegant and contemporary. Thin or medium weight sans-serif. Generous tracking. Let the type feel airy, not heavy or cramped. The vehicle name and price should be immediately readable but never feel like they're shouting.
+- The background should elevate the car, not distract. Use your judgment — a dark atmospheric tone, a complementary color wash, environmental depth. Whatever serves this specific car best. Avoid anything that looks templated or generic.
+- Use ${brandColor} as a subtle accent if it enhances the design. If it doesn't work with the car's color, skip it entirely. Taste over rules.
+- ${isLease ? 'This is a lease — make the monthly payment the clear price callout.' : 'Show the price clearly but let the car remain the hero.'}
+- Less is more. Only include: vehicle name, price, and dealership name. Nothing else.
+- If a logo is attached, place it small and unobtrusive.
+- The final result should look like something a premium brand would actually post — not a template from Canva.
 
-DEALERSHIP: ${dealershipName}
-ACCENT COLOR: ${brandColor}
-
-CREATIVE DIRECTION:
-1. COMPOSITION: Place the car as a bold, dominant hero element. Use asymmetric or editorial composition — not centered and boring. Give it breathing room. Let negative space work for you.
-2. BACKGROUND: Create an abstract, atmospheric backdrop. Think: soft color gradients with luminous bokeh, sweeping light trails, subtle particle effects, or smooth flowing curves. The vibe should feel like a luxury perfume ad meets automotive photography. NEVER use plain white, plain black, or flat solid fills.
-3. TYPOGRAPHY: Minimal, modern sans-serif type (like Helvetica Neue or Montserrat weight). Vehicle name large and confident. Price smaller but clear. Dealership name subtle, bottom edge. Use generous letter-spacing. Align text to a grid — clean edges, not floating randomly.
-4. COLOR: Use the accent color (${brandColor}) sparingly — a thin rule, a highlight on the price, or a subtle glow. Don't drench the design in it. Let the car's own color be the star.
-5. MOOD: Premium, aspirational, editorial. This should look like it belongs on a luxury brand's Instagram, not a local classifieds ad. No cheesy gradients, no drop shadows on text, no bevels, no 2010-era glossy effects.
-${isLease ? '6. Show a "LEASE" label and the monthly payment as the focal price point.' : "6. Feature the sale price as the focal price point."}
-7. Include ONLY: vehicle name, price/payment, and dealership name. No other text, no phone numbers, no URLs, no "call now" badges.
-8. If a dealership logo image is provided, integrate it subtly — small, in a corner, semi-transparent or monochrome. Do not let it compete with the car.
-
-Output ONLY the final image.`;
+Output only the image.`;
 }
 
 const RASTER_MIME_TYPES = new Set([
