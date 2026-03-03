@@ -63,31 +63,30 @@ function buildPrompt(
 
   const spec = FORMAT_SPECS[format];
 
-  return `You are a premium automotive marketing designer. Create a social media graphic for a car dealership.
+  return `You are a world-class automotive art director at a top creative agency. You design social media content that wins awards and stops the scroll. Your work is influenced by modern editorial design — think Apple product launches, Porsche's Instagram, and high-fashion automotive photography.
+
+Create a single social media graphic.
 
 FORMAT: ${spec.label} (${spec.dimensions})
 
-VEHICLE DETAILS:
-- ${year} ${make} ${model} ${trim}
-- ${isLease ? `Lease: ${priceInfo}` : `Sale Price: ${priceInfo}`}
-${mileageInfo ? `- Mileage: ${mileageInfo}` : ""}
-- Colors: ${exterior} / ${interior}
+THE CAR:
+${year} ${make} ${model}${trim ? ` ${trim}` : ""}
+${isLease ? `Lease: ${priceInfo}` : `Price: ${priceInfo}`}
 
 DEALERSHIP: ${dealershipName}
-BRAND PRIMARY COLOR: ${brandColor}
+ACCENT COLOR: ${brandColor}
 
-DESIGN REQUIREMENTS:
-- Feature the provided car photo prominently as the hero element
-- Create a sleek, premium background — use a dark gradient, subtle geometric shapes, ambient lighting effects, or a moody automotive environment that complements the car's color
-- NEVER use a plain white or flat-colored background — the design should feel cinematic and high-end
-- Use the brand primary color (${brandColor}) as the accent color for overlays, badges, or typography highlights
-- Include the vehicle name, price, and dealership name as clean typography overlays
-- Professional, modern, premium automotive aesthetic (think luxury dealership, not used car lot)
-- Clean composition with clear visual hierarchy: car first, price second, dealership third
-- Do NOT add any text besides: vehicle name, price/payment, and dealership name
-- No clip art, no cartoon elements, no stock watermarks
-${isLease ? '- Show "LEASE" badge and monthly payment prominently' : "- Show sale price prominently"}
-- Output ONLY the image, no additional text`;
+CREATIVE DIRECTION:
+1. COMPOSITION: Place the car as a bold, dominant hero element. Use asymmetric or editorial composition — not centered and boring. Give it breathing room. Let negative space work for you.
+2. BACKGROUND: Create an abstract, atmospheric backdrop. Think: soft color gradients with luminous bokeh, sweeping light trails, subtle particle effects, or smooth flowing curves. The vibe should feel like a luxury perfume ad meets automotive photography. NEVER use plain white, plain black, or flat solid fills.
+3. TYPOGRAPHY: Minimal, modern sans-serif type (like Helvetica Neue or Montserrat weight). Vehicle name large and confident. Price smaller but clear. Dealership name subtle, bottom edge. Use generous letter-spacing. Align text to a grid — clean edges, not floating randomly.
+4. COLOR: Use the accent color (${brandColor}) sparingly — a thin rule, a highlight on the price, or a subtle glow. Don't drench the design in it. Let the car's own color be the star.
+5. MOOD: Premium, aspirational, editorial. This should look like it belongs on a luxury brand's Instagram, not a local classifieds ad. No cheesy gradients, no drop shadows on text, no bevels, no 2010-era glossy effects.
+${isLease ? '6. Show a "LEASE" label and the monthly payment as the focal price point.' : "6. Feature the sale price as the focal price point."}
+7. Include ONLY: vehicle name, price/payment, and dealership name. No other text, no phone numbers, no URLs, no "call now" badges.
+8. If a dealership logo image is provided, integrate it subtly — small, in a corner, semi-transparent or monochrome. Do not let it compete with the car.
+
+Output ONLY the final image.`;
 }
 
 const RASTER_MIME_TYPES = new Set([
