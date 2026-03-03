@@ -4,6 +4,8 @@ import { genai } from "@/lib/gemini";
 import { isFeatureAvailable } from "@/config/features";
 import type { PlanSlug } from "@/config/plans";
 
+export const maxDuration = 60;
+
 type SocialFormat = "instagram-post" | "instagram-story" | "facebook-post";
 
 const FORMAT_SPECS: Record<SocialFormat, { label: string; dimensions: string }> =
