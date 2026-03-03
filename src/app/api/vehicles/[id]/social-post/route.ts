@@ -107,11 +107,11 @@ async function fetchImageAsBase64(
       .split(";")[0]
       .trim();
     const arrayBuffer = await res.arrayBuffer();
-    let buffer = Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
 
     if (contentType === "image/svg+xml") {
-      buffer = await sharp(buffer).resize(512).png().toBuffer();
-      return { data: buffer.toString("base64"), mimeType: "image/png" };
+      const pngBuffer = await sharp(buffer).resize(512).png().toBuffer();
+      return { data: pngBuffer.toString("base64"), mimeType: "image/png" };
     }
 
     if (!RASTER_MIME_TYPES.has(contentType)) return null;
