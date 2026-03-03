@@ -76,22 +76,25 @@ Use a vast, abstract studio backdrop. Choose one: smooth dark concrete floor wit
 BRAND COLOR INTEGRATION:
 Incorporate ${brandColor} exclusively as one of these: a subtle ambient light reflection on the floor beneath the car, a singular thin geometric accent line in the composition, or a faint color cast in the rim lighting. Do not use it as a large fill, banner, or background color.
 
-TEXT OVERLAY — CRITICAL:
-All text must be crisp, high-contrast, and immediately legible. Use a premium sans-serif typeface like Futura, Avenir, or DIN. White or very light text on dark backgrounds. Never place text where it lacks contrast.
+TYPOGRAPHY & TEXT DESIGN — THIS IS WHAT MAKES OR BREAKS THE GRAPHIC:
+The text is not an afterthought — it is a designed visual element integrated into the composition. Think of how Nike, Apple, or Porsche design their ads: the typography IS the design.
 
-There are exactly TWO text elements — nothing else:
+There are exactly TWO text lockups. Render only these exact strings:
 
-1. PRIMARY — THE PRICE: "${isLease ? priceInfo : priceInfo}"
-This is the single most important text on the graphic. Render it massive — the largest text element by far. UPPERCASE, extra-bold weight, wide letter-spacing. ${isLease ? 'Place a small, clean "LEASE" tag near it — a thin outlined badge or minimal label.' : ""} Style this number to feel like a statement — consider using the accent color ${brandColor} on the price, or a subtle glow, underline, or geometric highlight behind it. The price should be the first thing someone reads when they glance at this graphic for half a second.
+1. HERO LOCKUP — "${isLease ? priceInfo : priceInfo}"${isLease ? ' with a "LEASE" label' : ""}
+This is a designed typographic element, not plain text. Render the price in an ultra-bold condensed sans-serif typeface at a dramatically oversized scale. The price should feel architectural — like it was built, not typed. Pair it with a visual treatment: a sleek horizontal accent bar in ${brandColor} running beneath or beside the price, or place the price inside a minimal frosted glass panel with subtle blur, or render the numbers with a faint metallic sheen. The price must pop instantly — if someone scrolls past in 0.3 seconds, this is the only thing they register.${isLease ? ' The "LEASE" label should appear as a small, sharp, uppercase tag — either inside a thin rounded pill shape or as a clean all-caps label with extreme letter-spacing positioned just above or beside the payment amount.' : ""}
 
-2. SECONDARY — THE CAR: "${vehicleName}"
-Render below or above the price in a lighter weight, smaller size. Clean and readable but clearly subordinate to the price. This provides context for what the price is for.
+2. VEHICLE NAME — "${vehicleName}"
+Render in a thin or light weight of the same typeface family as the price, creating dramatic weight contrast (ultra-bold price vs ultra-light vehicle name). Use wide letter-spacing and uppercase. Position it directly adjacent to the price lockup — they should feel like one cohesive typographic unit, not two separate floating labels.
 
-Do NOT include the dealership name, any taglines, watermarks, URLs, phone numbers, or any other text. Only the price and vehicle name exist.
+ABSOLUTE TEXT RULES:
+- Do NOT render any other words — no dealership name, no taglines, no "call now," no URLs, no watermarks.
+- All text must be white or near-white against the dark background. Guarantee contrast.
+- Text must feel designed and intentional — anchored to a grid, aligned with visual elements, not randomly floating.
 
 COMPOSITION:
-Use asymmetric negative space to create visual tension. Offset the car slightly for a dynamic editorial feel. The price text should be positioned where the eye naturally lands — near the car but not overlapping it. Use strong leading lines or geometric shadow patterns to pull the viewer's eye: car first, then price.
-If a dealership logo image is attached, place it very small and semi-transparent in a corner — it should be barely noticeable and never compete with the car or price.
+Place the car as a dominant visual occupying most of the frame, slightly offset from center for editorial tension. The typography lockup (price + vehicle name as one unit) should sit in a clean area of negative space — typically a lower third or upper corner — never overlapping the car's key details. The viewer's eye should flow: car body → price → vehicle name. Use the geometric shadows and accent lighting to create natural leading lines toward both focal points.
+If a dealership logo image is attached, place it very small and semi-transparent in a corner — barely noticeable.
 
 Output only the final image, no additional text.`;
 }
