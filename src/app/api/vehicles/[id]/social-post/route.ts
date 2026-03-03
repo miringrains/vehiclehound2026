@@ -76,12 +76,15 @@ Use a vast, abstract studio backdrop. Choose one: smooth dark concrete floor wit
 BRAND COLOR INTEGRATION:
 Incorporate ${brandColor} exclusively as one of these: a subtle ambient light reflection on the floor beneath the car, a singular thin geometric accent line in the composition, or a faint color cast in the rim lighting. Do not use it as a large fill, banner, or background color.
 
-TEXT OVERLAY — STRICT RULES:
-Render exactly these text strings in a modern geometric sans-serif typeface (ultra-minimalist, medium weight, wide letter-spacing):
-- Vehicle name: "${vehicleName}" — positioned prominently, large scale
-- Price: "${isLease ? priceInfo : priceInfo}" — ${isLease ? 'with a small "LEASE" label adjacent' : "clear and readable"}
-- Dealership: "${dealershipName}" — small, subtle, lower portion of the composition
-Do NOT render any other words, phrases, taglines, URLs, phone numbers, or call-to-action text. Only these three text elements exist.
+TEXT OVERLAY — CRITICAL:
+All text must be crisp, high-contrast, and immediately legible. Use a premium sans-serif typeface like Futura, Avenir, or DIN — clean geometry, no decorative fonts. Every text element must have strong contrast against its background: white or very light text on dark areas, or place text on a subtle frosted/darkened strip to guarantee readability. Never place light text on a light area or dark text on a dark area.
+
+Render exactly these three text elements and nothing else:
+1. "${vehicleName}" — UPPERCASE, bold weight, generous letter-spacing (tracking +100), large and dominant. This is the headline.
+2. "${isLease ? priceInfo : priceInfo}" — ${isLease ? 'semi-bold, with a small "LEASE" tag next to it' : "semi-bold, clearly readable"}. Slightly smaller than the vehicle name but still prominent.
+3. "${dealershipName}" — light weight, small, positioned at the bottom edge. Subtle but legible.
+
+Text must be aligned to a clean grid with consistent margins. Do NOT render any other words, taglines, watermarks, URLs, or call-to-action phrases.
 
 COMPOSITION:
 Use asymmetric negative space to create visual tension. The car should not be dead-center — offset it slightly to create a dynamic editorial feel. Text elements should align to an invisible grid with consistent margins. The overall composition should use strong leading lines or geometric shadow patterns to pull the viewer's eye directly to the car first, then to the price.
