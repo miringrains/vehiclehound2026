@@ -63,24 +63,33 @@ function buildPrompt(
 
   const spec = FORMAT_SPECS[format];
 
-  return `Design a ${spec.label} (${spec.dimensions}) social media graphic for this vehicle. Study the attached car photo closely — match the design's energy to the car itself.
+  const vehicleName = `${year} ${make} ${model}${trim ? ` ${trim}` : ""}`;
 
-${year} ${make} ${model}${trim ? ` ${trim}` : ""} — ${isLease ? `${priceInfo} lease` : priceInfo}
-${dealershipName}
+  return `Generate a ${spec.label} (${spec.dimensions}) cinematic editorial automotive advertisement photograph.
 
-You are a senior graphic designer at a brand agency. Your taste level is extremely high. You study Behance and Dribbble daily. You know that great automotive graphics feel effortless — the layout breathes, the type is refined, and the car sells itself.
+SCENE & LIGHTING:
+Place the provided car photo as the dominant subject occupying 60-70% of the frame. Use dramatic chiaroscuro studio lighting — a single strong key light from a 45-degree angle creating deep, sculpted shadows across the body panels. Add subtle rim lighting along the roofline and wheel arches to separate the vehicle from the background. The overall mood is high-contrast, moody, and aspirational.
 
-Design principles to follow:
-- The car photo is everything. Build the entire composition around it. Don't shrink it, crop it awkwardly, or bury it under overlays.
-- Typography must be elegant and contemporary. Thin or medium weight sans-serif. Generous tracking. Let the type feel airy, not heavy or cramped. The vehicle name and price should be immediately readable but never feel like they're shouting.
-- The background should elevate the car, not distract. Use your judgment — a dark atmospheric tone, a complementary color wash, environmental depth. Whatever serves this specific car best. Avoid anything that looks templated or generic.
-- Use ${brandColor} as a subtle accent if it enhances the design. If it doesn't work with the car's color, skip it entirely. Taste over rules.
-- ${isLease ? 'This is a lease — make the monthly payment the clear price callout.' : 'Show the price clearly but let the car remain the hero.'}
-- Less is more. Only include: vehicle name, price, and dealership name. Nothing else.
-- If a logo is attached, place it small and unobtrusive.
-- The final result should look like something a premium brand would actually post — not a template from Canva.
+BACKGROUND & ENVIRONMENT:
+Use a vast, abstract studio backdrop. Choose one: smooth dark concrete floor with deep perspective shadows fading to black, soft gradient color fields transitioning from charcoal to deep ${exterior === "Unknown" ? "navy" : exterior.toLowerCase().includes("white") ? "slate" : "black"}, or a minimal geometric environment with a single converging leading line that draws the eye to the car. The background must be ultra-clean — absolutely no visual clutter, no complex environments, no reflections of other objects, no cheesy graphic overlays or starbursts.
 
-Output only the image.`;
+BRAND COLOR INTEGRATION:
+Incorporate ${brandColor} exclusively as one of these: a subtle ambient light reflection on the floor beneath the car, a singular thin geometric accent line in the composition, or a faint color cast in the rim lighting. Do not use it as a large fill, banner, or background color.
+
+TEXT OVERLAY — STRICT RULES:
+Render exactly these text strings in a modern geometric sans-serif typeface (ultra-minimalist, medium weight, wide letter-spacing):
+- Vehicle name: "${vehicleName}" — positioned prominently, large scale
+- Price: "${isLease ? priceInfo : priceInfo}" — ${isLease ? 'with a small "LEASE" label adjacent' : "clear and readable"}
+- Dealership: "${dealershipName}" — small, subtle, lower portion of the composition
+Do NOT render any other words, phrases, taglines, URLs, phone numbers, or call-to-action text. Only these three text elements exist.
+
+COMPOSITION:
+Use asymmetric negative space to create visual tension. The car should not be dead-center — offset it slightly to create a dynamic editorial feel. Text elements should align to an invisible grid with consistent margins. The overall composition should use strong leading lines or geometric shadow patterns to pull the viewer's eye directly to the car first, then to the price.
+
+${isLease ? "Emphasize the monthly payment as the primary price callout with the LEASE label." : "The sale price should be the clear secondary focal point after the car itself."}
+If a dealership logo image is attached, place it small and semi-transparent in a corner — it must not compete with the vehicle.
+
+Output only the final image, no additional text.`;
 }
 
 const RASTER_MIME_TYPES = new Set([
