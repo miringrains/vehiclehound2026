@@ -10,7 +10,8 @@ export type FeatureName =
   | "analytics"
   | "email_notifications"
   | "api_access"
-  | "priority_support";
+  | "priority_support"
+  | "social_post_generator";
 
 export const featureRequiredPlans: Record<FeatureName, PlanSlug[]> = {
   inventory_management: ["starter", "professional", "enterprise"],
@@ -23,6 +24,7 @@ export const featureRequiredPlans: Record<FeatureName, PlanSlug[]> = {
   email_notifications: ["professional", "enterprise"],
   api_access: ["enterprise"],
   priority_support: ["enterprise"],
+  social_post_generator: ["enterprise"],
 };
 
 export function isFeatureAvailable(

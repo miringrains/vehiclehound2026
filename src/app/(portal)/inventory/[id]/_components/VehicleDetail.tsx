@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Pencil, Trash2, Car, Gauge, Fuel, Calendar, Palette,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Share2,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { FeatureGate } from "@/components/shared/FeatureGate";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 import { VEHICLE_STATUS_LABELS, ICON_STROKE_WIDTH } from "@/lib/constants";
@@ -17,6 +18,7 @@ import { formatCurrencyDollars } from "@/lib/utils/format-currency";
 import { formatNumber } from "@/lib/utils/format-number";
 import type { Vehicle, VehicleImage } from "@/types/vehicle";
 import { cn } from "@/lib/utils";
+import { SocialPostModal } from "./SocialPostModal";
 
 function DetailRow({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null;
@@ -37,6 +39,7 @@ export function VehicleDetail({ vehicle, images }: Props) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [showSocialPost, setShowSocialPost] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
 
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -75,6 +78,11 @@ export function VehicleDetail({ vehicle, images }: Props) {
               variant="default"
             />
             <StatusBadge status={VEHICLE_STATUS_LABELS[vehicle.status] ?? "Unknown"} />
+            <FeatureGate feature="social_post_generator" fallback={null}>
+              <Button variant="outline" size="sm" onClick={() => setShowSocialPost(true)}>
+                <Share2 size={14} strokeWidth={ICON_STROKE_WIDTH} /> Social Post
+              </Button>
+            </FeatureGate>
             <Button variant="outline" size="sm" asChild>
               <Link href={routes.vehicleEdit(vehicle.id)}>
                 <Pencil size={14} strokeWidth={ICON_STROKE_WIDTH} /> Edit
@@ -233,6 +241,13 @@ export function VehicleDetail({ vehicle, images }: Props) {
         onConfirm={handleDelete}
         loading={deleting}
         variant="destructive"
+      />
+
+      <SocialPostModal
+        open={showSocialPost}
+        onOpenChange={setShowSocialPost}
+        vehicleId={vehicle.id}
+        vehicleTitle={title}
       />
     </div>
   );
