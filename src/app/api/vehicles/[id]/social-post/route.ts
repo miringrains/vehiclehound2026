@@ -9,18 +9,29 @@ export const maxDuration = 60;
 
 type SocialFormat = "instagram-post" | "instagram-story" | "facebook-post";
 
-const FORMAT_SPECS: Record<SocialFormat, { label: string; dimensions: string }> =
-  {
-    "instagram-post": { label: "Instagram Post", dimensions: "1080x1080 (1:1)" },
-    "instagram-story": {
-      label: "Instagram Story",
-      dimensions: "1080x1920 (9:16)",
-    },
-    "facebook-post": {
-      label: "Facebook Post",
-      dimensions: "1200x630 (landscape)",
-    },
-  };
+const FORMAT_SPECS: Record<
+  SocialFormat,
+  { label: string; dimensions: string; layout: string }
+> = {
+  "instagram-post": {
+    label: "Instagram Post",
+    dimensions: "1080x1080 (1:1 square)",
+    layout:
+      "Square format. Position the car in the lower two-thirds of the frame, viewed from a low 3/4 front angle to convey power and presence. The car should be grounded on a reflective surface with perspective depth behind it. Place the typography lockup in the upper-left or upper-right area, anchored to the top margin with generous padding. The upper third is reserved for text, the lower two-thirds for the car — they should not overlap.",
+  },
+  "instagram-story": {
+    label: "Instagram Story",
+    dimensions: "1080x1920 (9:16 vertical)",
+    layout:
+      "Tall vertical format. Position the car in the center of the frame, viewed from a dramatic low angle looking slightly upward to make the car feel imposing in the vertical space. Place the typography lockup in the lower quarter of the frame, stacked vertically (price above vehicle name). Leave the top 20% as open atmospheric space — this is where the background gradient or lighting blooms. The vertical format should feel cinematic, like a movie poster.",
+  },
+  "facebook-post": {
+    label: "Facebook Post",
+    dimensions: "1200x630 (landscape 1.91:1)",
+    layout:
+      "Wide landscape format. Position the car on the right two-thirds of the frame, viewed from a classic profile or 3/4 angle that stretches across the width. Place the typography lockup on the left third, vertically centered, creating a clean split composition — text left, car right. The wide format should feel panoramic and editorial, like a magazine spread.",
+  },
+};
 
 function buildPrompt(
   format: SocialFormat,
@@ -67,11 +78,14 @@ function buildPrompt(
 
   return `Generate a ${spec.label} (${spec.dimensions}) cinematic editorial automotive advertisement photograph.
 
+LAYOUT — FORMAT-SPECIFIC PLACEMENT:
+${spec.layout}
+
 SCENE & LIGHTING:
-Place the provided car photo as the dominant subject occupying 60-70% of the frame. Use dramatic chiaroscuro studio lighting — a single strong key light from a 45-degree angle creating deep, sculpted shadows across the body panels. Add subtle rim lighting along the roofline and wheel arches to separate the vehicle from the background. The overall mood is high-contrast, moody, and aspirational.
+The car is the hero — it must feel three-dimensional, grounded, and physically present in the scene. Use dramatic studio lighting: a strong key light from a 45-degree angle sculpting the body panels with deep shadows, plus subtle rim lighting along the roofline and wheel arches that separates the car from the background. Add a faint reflection of the car on the floor surface beneath it for depth. The overall mood is high-contrast, moody, and aspirational — like a luxury car commercial frozen in a single frame.
 
 BACKGROUND & ENVIRONMENT:
-Use a vast, abstract studio backdrop. Choose one: smooth dark concrete floor with deep perspective shadows fading to black, soft gradient color fields transitioning from charcoal to deep ${exterior === "Unknown" ? "navy" : exterior.toLowerCase().includes("white") ? "slate" : "black"}, or a minimal geometric environment with a single converging leading line that draws the eye to the car. The background must be ultra-clean — absolutely no visual clutter, no complex environments, no reflections of other objects, no cheesy graphic overlays or starbursts.
+Create a vast, atmospheric studio environment. The floor should be a dark reflective surface (polished concrete or wet asphalt) that catches faint light and the car's reflection. The background should transition from deep ${exterior === "Unknown" ? "navy" : exterior.toLowerCase().includes("white") ? "slate" : "charcoal"} into darkness with smooth gradients — never a hard edge or flat wall. Add one subtle environmental detail for depth: a soft diagonal light beam cutting through atmospheric haze, or a faint geometric line on the floor converging toward the car. No clutter, no complex environments, no cheesy overlays.
 
 BRAND COLOR INTEGRATION:
 Incorporate ${brandColor} exclusively as one of these: a subtle ambient light reflection on the floor beneath the car, a singular thin geometric accent line in the composition, or a faint color cast in the rim lighting. Do not use it as a large fill, banner, or background color.
@@ -92,11 +106,15 @@ ABSOLUTE TEXT RULES:
 - All text must be white or near-white against the dark background. Guarantee contrast.
 - Text must feel designed and intentional — anchored to a grid, aligned with visual elements, not randomly floating.
 
-COMPOSITION:
-Place the car as a dominant visual occupying most of the frame, slightly offset from center for editorial tension. The typography lockup (price + vehicle name as one unit) should sit in a clean area of negative space — typically a lower third or upper corner — never overlapping the car's key details. The viewer's eye should flow: car body → price → vehicle name. Use the geometric shadows and accent lighting to create natural leading lines toward both focal points.
-If a dealership logo image is attached, place it very small and semi-transparent in a corner — barely noticeable.
+SPATIAL RULES — NON-NEGOTIABLE:
+- The car and the text must occupy SEPARATE zones of the frame as defined in the LAYOUT section above. They must never overlap or crowd each other.
+- The car must appear WHOLE — no cropping of bumpers, wheels, or roof. Show the full vehicle including all four wheels, the complete front/rear, and the roofline. The car should sit naturally on the floor surface, grounded with visible shadows beneath.
+- Maintain generous margins from all edges — nothing should touch or feel pressed against the frame boundary.
+- The eye should flow naturally: car → price → vehicle name. The car commands attention first, then the price, then the vehicle name.
+- If a dealership logo image is attached, place it very small (no more than 5% of frame area) and semi-transparent in whichever corner is furthest from the text lockup.
 
-Output only the final image, no additional text.`;
+FINAL OUTPUT:
+Produce only the finished image. No borders, no extra text, no annotations.`;
 }
 
 const RASTER_MIME_TYPES = new Set([
