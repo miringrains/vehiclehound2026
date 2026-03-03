@@ -260,7 +260,7 @@ export async function POST(
 
     const gemini = getGeminiClient();
     const response = await gemini.models.generateContent({
-      model: "gemini-3.1-flash-image-preview",
+      model: "gemini-2.0-flash-exp-image-generation",
       contents,
       config: {
         responseModalities: ["TEXT", "IMAGE"],
