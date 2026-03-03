@@ -13,6 +13,8 @@ type AppData = {
   zip?: string | null;
   residential_status?: string | null;
   monthly_payment?: number | null;
+  years_at_address?: number | null;
+  months_at_address?: number | null;
   employer?: string | null;
   occupation?: string | null;
   employment_status?: string | null;
@@ -39,6 +41,8 @@ type AppData = {
   co_zip?: string | null;
   co_residential_status?: string | null;
   co_monthly_payment?: number | null;
+  co_years_at_address?: number | null;
+  co_months_at_address?: number | null;
   co_employer?: string | null;
   co_occupation?: string | null;
   co_employment_status?: string | null;
@@ -231,9 +235,14 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
     [0.10, "State", val(data.state)],
     [0.25, "Zip", val(data.zip)],
   ]);
+  const addrParts: string[] = [];
+  if (data.years_at_address != null) addrParts.push(`${data.years_at_address} yr`);
+  if (data.months_at_address != null) addrParts.push(`${data.months_at_address} mo`);
+
   row([
-    [0.50, "Residential Status", val(data.residential_status)],
-    [0.50, "Monthly Housing Payment", money(data.monthly_payment)],
+    [0.34, "Residential Status", val(data.residential_status)],
+    [0.33, "Monthly Housing Payment", money(data.monthly_payment)],
+    [0.33, "Time at Address", addrParts.join(" ")],
   ]);
 
   /* ═══════════════════════════════════════════════
@@ -296,9 +305,14 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
       [0.10, "State", val(data.co_state)],
       [0.25, "Zip", val(data.co_zip)],
     ]);
+    const coAddrParts: string[] = [];
+    if (data.co_years_at_address != null) coAddrParts.push(`${data.co_years_at_address} yr`);
+    if (data.co_months_at_address != null) coAddrParts.push(`${data.co_months_at_address} mo`);
+
     row([
-      [0.50, "Monthly Housing Payment", money(data.co_monthly_payment)],
-      [0.50, "Employment Status", val(data.co_employment_status)],
+      [0.34, "Monthly Housing Payment", money(data.co_monthly_payment)],
+      [0.33, "Time at Address", coAddrParts.join(" ")],
+      [0.33, "Employment Status", val(data.co_employment_status)],
     ]);
     row([
       [0.40, "Employer", val(data.co_employer)],

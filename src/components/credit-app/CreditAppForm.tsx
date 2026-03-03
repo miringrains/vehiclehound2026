@@ -46,6 +46,8 @@ type FormData = {
   zip: string;
   residential_status: string;
   monthly_payment: string;
+  years_at_address: string;
+  months_at_address: string;
 
   employer: string;
   occupation: string;
@@ -74,6 +76,8 @@ type FormData = {
   co_zip: string;
   co_residential_status: string;
   co_monthly_payment: string;
+  co_years_at_address: string;
+  co_months_at_address: string;
   co_employer: string;
   co_occupation: string;
   co_employment_status: string;
@@ -88,7 +92,7 @@ type FormData = {
 const EMPTY_FORM: FormData = {
   first_name: "", last_name: "", email: "", phone: "",
   date_of_birth: "", ssn: "", address: "", city: "", state: "", zip: "",
-  residential_status: "", monthly_payment: "",
+  residential_status: "", monthly_payment: "", years_at_address: "", months_at_address: "",
   employer: "", occupation: "", employment_status: "",
   employer_address: "", employer_city: "", employer_state: "", employer_zip: "",
   employer_phone: "", monthly_income: "", years_employed: "", months_employed: "",
@@ -96,7 +100,8 @@ const EMPTY_FORM: FormData = {
   has_co_applicant: false,
   co_first_name: "", co_last_name: "", co_email: "", co_phone: "",
   co_date_of_birth: "", co_ssn: "", co_address: "", co_city: "", co_state: "", co_zip: "",
-  co_residential_status: "", co_monthly_payment: "", co_employer: "", co_occupation: "",
+  co_residential_status: "", co_monthly_payment: "", co_years_at_address: "", co_months_at_address: "",
+  co_employer: "", co_occupation: "",
   co_employment_status: "", co_monthly_income: "",
   is_business_app: false, business_name: "", business_type: "", business_ein: "",
 };
@@ -169,6 +174,7 @@ export function CreditAppForm({
       if (!form.phone.trim()) errs.phone = "Required";
       if (!form.ssn.trim()) errs.ssn = "Required";
       else if (form.ssn.replace(/\D/g, "").length !== 9) errs.ssn = "Must be 9 digits";
+      if (form.years_at_address === "" && form.months_at_address === "") errs.years_at_address = "Required";
     }
     if (s === 1) {
       if (!form.employer.trim()) errs.employer = "Required";
@@ -180,6 +186,7 @@ export function CreditAppForm({
         if (!form.co_email.trim()) errs.co_email = "Required";
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.co_email)) errs.co_email = "Invalid email";
         if (!form.co_phone.trim()) errs.co_phone = "Required";
+        if (form.co_years_at_address === "" && form.co_months_at_address === "") errs.co_years_at_address = "Required";
       }
       if (form.is_business_app) {
         if (!form.business_name.trim()) errs.business_name = "Required";
@@ -231,6 +238,8 @@ export function CreditAppForm({
         zip: form.zip || null,
         residential_status: form.residential_status || null,
         monthly_payment: form.monthly_payment ? parseFloat(form.monthly_payment) : null,
+        years_at_address: form.years_at_address ? parseInt(form.years_at_address) : null,
+        months_at_address: form.months_at_address ? parseInt(form.months_at_address) : null,
         employer: form.employer || null,
         occupation: form.occupation || null,
         employment_status: form.employment_status || null,
@@ -262,6 +271,8 @@ export function CreditAppForm({
           co_zip: form.co_zip || null,
           co_residential_status: form.co_residential_status || null,
           co_monthly_payment: form.co_monthly_payment ? parseFloat(form.co_monthly_payment) : null,
+          co_years_at_address: form.co_years_at_address ? parseInt(form.co_years_at_address) : null,
+          co_months_at_address: form.co_months_at_address ? parseInt(form.co_months_at_address) : null,
           co_employer: form.co_employer || null,
           co_occupation: form.co_occupation || null,
           co_employment_status: form.co_employment_status || null,
@@ -521,6 +532,17 @@ function StepPersonal({ form, set, errors, ssnVisible, setSsnVisible }: StepProp
           <Input id="monthly_payment" type="number" min="0" value={form.monthly_payment} onChange={(e) => set("monthly_payment", e.target.value)} placeholder="$" className={INPUT_CLASS} />
         </div>
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label htmlFor="years_at_address">Years at Address *</Label>
+          <Input id="years_at_address" type="number" min="0" value={form.years_at_address} onChange={(e) => set("years_at_address", e.target.value)} className={`${INPUT_CLASS} ${errors.years_at_address ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.years_at_address} />
+        </div>
+        <div>
+          <Label htmlFor="months_at_address">Months *</Label>
+          <Input id="months_at_address" type="number" min="0" max="11" value={form.months_at_address} onChange={(e) => set("months_at_address", e.target.value)} className={INPUT_CLASS} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -697,6 +719,17 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
             <div>
               <Label htmlFor="co_monthly">Monthly Housing</Label>
               <Input id="co_monthly" type="number" min="0" value={form.co_monthly_payment} onChange={(e) => set("co_monthly_payment", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="co_years_at_address">Years at Address *</Label>
+              <Input id="co_years_at_address" type="number" min="0" value={form.co_years_at_address} onChange={(e) => set("co_years_at_address", e.target.value)} className={`${INPUT_CLASS} ${errors.co_years_at_address ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_years_at_address} />
+            </div>
+            <div>
+              <Label htmlFor="co_months_at_address">Months *</Label>
+              <Input id="co_months_at_address" type="number" min="0" max="11" value={form.co_months_at_address} onChange={(e) => set("co_months_at_address", e.target.value)} className={INPUT_CLASS} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">

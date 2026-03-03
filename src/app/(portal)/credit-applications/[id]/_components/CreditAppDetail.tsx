@@ -231,6 +231,14 @@ export function CreditAppDetail({ application: app }: Props) {
             label="Monthly Housing"
             value={app.monthly_payment != null ? formatCurrencyDollars(app.monthly_payment) : null}
           />
+          <InfoRow
+            label="Time at Address"
+            value={
+              app.years_at_address != null || app.months_at_address != null
+                ? `${app.years_at_address ?? 0} yr ${app.months_at_address ?? 0} mo`
+                : null
+            }
+          />
         </Section>
 
         {/* Employment & Income */}
@@ -280,6 +288,14 @@ export function CreditAppDetail({ application: app }: Props) {
               value={[app.co_city, app.co_state, app.co_zip].filter(Boolean).join(", ") || null}
             />
             <InfoRow label="Residential Status" value={app.co_residential_status} />
+            <InfoRow
+              label="Time at Address"
+              value={
+                app.co_years_at_address != null || app.co_months_at_address != null
+                  ? `${app.co_years_at_address ?? 0} yr ${app.co_months_at_address ?? 0} mo`
+                  : null
+              }
+            />
             <InfoRow label="Employer" value={app.co_employer} />
             <InfoRow label="Occupation" value={app.co_occupation} />
             <InfoRow

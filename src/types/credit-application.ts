@@ -17,6 +17,8 @@ export type CreditApplication = {
   zip: string | null;
   residential_status: string | null;
   monthly_payment: number | null;
+  years_at_address: number | null;
+  months_at_address: number | null;
 
   employer: string | null;
   occupation: string | null;
@@ -45,6 +47,8 @@ export type CreditApplication = {
   co_zip: string | null;
   co_residential_status: string | null;
   co_monthly_payment: number | null;
+  co_years_at_address: number | null;
+  co_months_at_address: number | null;
   co_employer: string | null;
   co_occupation: string | null;
   co_employment_status: string | null;
@@ -90,6 +94,8 @@ export type CreditApplicationFormData = {
   zip: string;
   residential_status: string;
   monthly_payment: number | null;
+  years_at_address: number;
+  months_at_address: number;
 
   employer: string;
   occupation: string;
@@ -118,6 +124,8 @@ export type CreditApplicationFormData = {
   co_zip?: string;
   co_residential_status?: string;
   co_monthly_payment?: number;
+  co_years_at_address?: number;
+  co_months_at_address?: number;
   co_employer?: string;
   co_occupation?: string;
   co_employment_status?: string;
