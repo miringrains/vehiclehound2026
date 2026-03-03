@@ -43,90 +43,14 @@ function GeneratedGraphic() {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.6, ease }}
-      className="relative aspect-square w-full overflow-hidden rounded-lg"
+      className="relative aspect-square w-full overflow-hidden rounded-lg shadow-2xl shadow-orange-500/10"
     >
-      {/* Dark moody background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0c0c12] via-[#111118] to-[#08080c]" />
-
-      {/* Subtle accent light on floor */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[30%] w-[80%] rounded-full bg-violet-600/[0.06] blur-2xl" />
-
-      {/* Diagonal light beam */}
-      <div
-        className="absolute top-0 right-0 h-full w-1/3 opacity-[0.04]"
-        style={{
-          background:
-            "linear-gradient(215deg, rgba(255,255,255,0.3) 0%, transparent 60%)",
-        }}
-      />
-
-      {/* Car image */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15, ease }}
-        className="absolute inset-x-[8%] bottom-[28%] top-[12%]"
-      >
-        <Image
-          src="/demo/bmw-330i.jpg"
-          alt="BMW 330i"
-          fill
-          className="object-contain drop-shadow-2xl"
-          sizes="300px"
-        />
-      </motion.div>
-
-      {/* Floor reflection */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.15 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
-        className="absolute inset-x-[12%] bottom-[18%] h-[12%] scale-y-[-1] blur-[3px]"
-      >
-        <Image
-          src="/demo/bmw-330i.jpg"
-          alt=""
-          fill
-          className="object-contain opacity-40"
-          sizes="300px"
-        />
-      </motion.div>
-
-      {/* Typography lockup — bottom left */}
-      <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.35, ease }}
-        className="absolute bottom-[7%] left-[7%]"
-      >
-        {/* Accent bar */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.4, delay: 0.5, ease }}
-          className="mb-1 h-[2px] w-8 origin-left bg-violet-500/70"
-        />
-        {/* Price */}
-        <p
-          className="text-[18px] font-black tracking-tight text-white leading-none"
-          style={{ fontFamily: "system-ui, -apple-system, sans-serif", fontStretch: "condensed" }}
-        >
-          $389<span className="text-[10px] font-light tracking-widest text-white/60">/MO</span>
-        </p>
-        {/* Vehicle name */}
-        <p
-          className="mt-0.5 text-[7px] font-light uppercase tracking-[0.2em] text-white/50"
-        >
-          2025 BMW 330i
-        </p>
-      </motion.div>
-
-      {/* Tiny logo watermark */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.2 }}
-        transition={{ delay: 0.6 }}
-        className="absolute top-[6%] right-[6%] h-3 w-3 rounded-full bg-white/10"
+      <Image
+        src="/demo/social-post-demo.png"
+        alt="AI-generated social media ad for 2025 BMW 330i"
+        fill
+        className="object-cover"
+        sizes="400px"
       />
     </motion.div>
   );
