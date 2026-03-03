@@ -52,6 +52,38 @@ function GeneratedGraphic() {
         className="object-cover"
         sizes="400px"
       />
+
+      {/* Text overlay — real HTML for crisp typography */}
+      <motion.div
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.3, ease }}
+        className="absolute top-[8%] left-[7%]"
+      >
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.4, delay: 0.45, ease }}
+          className="mb-1.5 h-[2px] w-8 origin-left bg-[#FF6B00]"
+        />
+        <div className="flex items-baseline gap-1">
+          <p
+            className="text-[22px] font-black leading-none tracking-tight text-white"
+            style={{ fontStretch: "condensed" }}
+          >
+            $389
+          </p>
+          <span className="text-[9px] font-light uppercase tracking-[0.15em] text-white/60">
+            /mo
+          </span>
+        </div>
+        <span className="mt-1 inline-block rounded-full border border-white/20 px-1.5 py-[1px] text-[5px] font-medium uppercase tracking-[0.2em] text-white/70">
+          Lease
+        </span>
+        <p className="mt-1.5 text-[7px] font-light uppercase tracking-[0.2em] text-white/50">
+          2025 BMW 330i
+        </p>
+      </motion.div>
     </motion.div>
   );
 }
