@@ -211,7 +211,7 @@ export async function POST(
     }
 
     const response = await genai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-3.1-flash-image-preview",
       contents,
       config: {
         responseModalities: ["TEXT", "IMAGE"],
