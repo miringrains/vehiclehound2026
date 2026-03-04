@@ -174,6 +174,10 @@ export function CreditAppForm({
       if (!form.phone.trim()) errs.phone = "Required";
       if (!form.ssn.trim()) errs.ssn = "Required";
       else if (form.ssn.replace(/\D/g, "").length !== 9) errs.ssn = "Must be 9 digits";
+      if (!form.address.trim()) errs.address = "Required";
+      if (!form.city.trim()) errs.city = "Required";
+      if (!form.state) errs.state = "Required";
+      if (!form.zip.trim()) errs.zip = "Required";
       if (form.years_at_address === "" && form.months_at_address === "") errs.years_at_address = "Required";
     }
     if (s === 1) {
@@ -186,6 +190,12 @@ export function CreditAppForm({
         if (!form.co_email.trim()) errs.co_email = "Required";
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.co_email)) errs.co_email = "Invalid email";
         if (!form.co_phone.trim()) errs.co_phone = "Required";
+        if (!form.co_ssn.trim()) errs.co_ssn = "Required";
+        else if (form.co_ssn.replace(/\D/g, "").length !== 9) errs.co_ssn = "Must be 9 digits";
+        if (!form.co_address.trim()) errs.co_address = "Required";
+        if (!form.co_city.trim()) errs.co_city = "Required";
+        if (!form.co_state) errs.co_state = "Required";
+        if (!form.co_zip.trim()) errs.co_zip = "Required";
         if (form.co_years_at_address === "" && form.co_months_at_address === "") errs.co_years_at_address = "Required";
       }
       if (form.is_business_app) {
@@ -495,26 +505,30 @@ function StepPersonal({ form, set, errors, ssnVisible, setSsnVisible }: StepProp
       </div>
 
       <div>
-        <Label htmlFor="address">Address</Label>
-        <Input id="address" value={form.address} onChange={(e) => set("address", e.target.value)} className={INPUT_CLASS} />
+        <Label htmlFor="address">Address *</Label>
+        <Input id="address" value={form.address} onChange={(e) => set("address", e.target.value)} className={`${INPUT_CLASS} ${errors.address ? "!border-red-400" : ""}`} />
+        <FieldError error={errors.address} />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <Label htmlFor="city">City</Label>
-          <Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} className={INPUT_CLASS} />
+          <Label htmlFor="city">City *</Label>
+          <Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} className={`${INPUT_CLASS} ${errors.city ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.city} />
         </div>
         <div>
-          <Label htmlFor="state">State</Label>
+          <Label htmlFor="state">State *</Label>
           <Select value={form.state} onValueChange={(v) => set("state", v)}>
-            <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={`${INPUT_CLASS} ${errors.state ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
+          <FieldError error={errors.state} />
         </div>
         <div>
-          <Label htmlFor="zip">Zip</Label>
-          <Input id="zip" value={form.zip} onChange={(e) => set("zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={INPUT_CLASS} />
+          <Label htmlFor="zip">Zip *</Label>
+          <Input id="zip" value={form.zip} onChange={(e) => set("zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={`${INPUT_CLASS} ${errors.zip ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.zip} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -679,31 +693,36 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
               <Input id="co_dob" type="date" value={form.co_date_of_birth} onChange={(e) => set("co_date_of_birth", e.target.value)} className={INPUT_CLASS} />
             </div>
             <div>
-              <Label htmlFor="co_ssn">SSN</Label>
-              <SSNInput id="co_ssn" value={form.co_ssn} onChange={(v) => set("co_ssn", v)} visible={coSsnVisible} onToggle={() => setCoSsnVisible(!coSsnVisible)} />
+              <Label htmlFor="co_ssn">SSN *</Label>
+              <SSNInput id="co_ssn" value={form.co_ssn} onChange={(v) => set("co_ssn", v)} visible={coSsnVisible} onToggle={() => setCoSsnVisible(!coSsnVisible)} error={errors.co_ssn} />
+              <FieldError error={errors.co_ssn} />
             </div>
           </div>
           <div>
-            <Label htmlFor="co_address">Address</Label>
-            <Input id="co_address" value={form.co_address} onChange={(e) => set("co_address", e.target.value)} className={INPUT_CLASS} />
+            <Label htmlFor="co_address">Address *</Label>
+            <Input id="co_address" value={form.co_address} onChange={(e) => set("co_address", e.target.value)} className={`${INPUT_CLASS} ${errors.co_address ? "!border-red-400" : ""}`} />
+            <FieldError error={errors.co_address} />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <Label htmlFor="co_city">City</Label>
-              <Input id="co_city" value={form.co_city} onChange={(e) => set("co_city", e.target.value)} className={INPUT_CLASS} />
+              <Label htmlFor="co_city">City *</Label>
+              <Input id="co_city" value={form.co_city} onChange={(e) => set("co_city", e.target.value)} className={`${INPUT_CLASS} ${errors.co_city ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_city} />
             </div>
             <div>
-              <Label>State</Label>
+              <Label>State *</Label>
               <Select value={form.co_state} onValueChange={(v) => set("co_state", v)}>
-                <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className={`${INPUT_CLASS} ${errors.co_state ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <FieldError error={errors.co_state} />
             </div>
             <div>
-              <Label htmlFor="co_zip">Zip</Label>
-              <Input id="co_zip" value={form.co_zip} onChange={(e) => set("co_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={INPUT_CLASS} />
+              <Label htmlFor="co_zip">Zip *</Label>
+              <Input id="co_zip" value={form.co_zip} onChange={(e) => set("co_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={`${INPUT_CLASS} ${errors.co_zip ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_zip} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
