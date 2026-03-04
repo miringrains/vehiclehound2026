@@ -172,31 +172,48 @@ export function CreditAppForm({
       if (!form.email.trim()) errs.email = "Required";
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Invalid email";
       if (!form.phone.trim()) errs.phone = "Required";
+      if (!form.date_of_birth) errs.date_of_birth = "Required";
       if (!form.ssn.trim()) errs.ssn = "Required";
       else if (form.ssn.replace(/\D/g, "").length !== 9) errs.ssn = "Must be 9 digits";
       if (!form.address.trim()) errs.address = "Required";
       if (!form.city.trim()) errs.city = "Required";
       if (!form.state) errs.state = "Required";
       if (!form.zip.trim()) errs.zip = "Required";
+      if (!form.residential_status) errs.residential_status = "Required";
+      if (!form.monthly_payment.trim()) errs.monthly_payment = "Required";
       if (form.years_at_address === "" && form.months_at_address === "") errs.years_at_address = "Required";
     }
     if (s === 1) {
       if (!form.employer.trim()) errs.employer = "Required";
+      if (!form.occupation.trim()) errs.occupation = "Required";
       if (!form.employment_status) errs.employment_status = "Required";
       if (!form.monthly_income.trim()) errs.monthly_income = "Required";
+      if (form.years_employed === "" && form.months_employed === "") errs.years_employed = "Required";
+      if (!form.employer_address.trim()) errs.employer_address = "Required";
+      if (!form.employer_city.trim()) errs.employer_city = "Required";
+      if (!form.employer_state) errs.employer_state = "Required";
+      if (!form.employer_zip.trim()) errs.employer_zip = "Required";
+      if (!form.employer_phone.trim()) errs.employer_phone = "Required";
       if (form.has_co_applicant) {
         if (!form.co_first_name.trim()) errs.co_first_name = "Required";
         if (!form.co_last_name.trim()) errs.co_last_name = "Required";
         if (!form.co_email.trim()) errs.co_email = "Required";
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.co_email)) errs.co_email = "Invalid email";
         if (!form.co_phone.trim()) errs.co_phone = "Required";
+        if (!form.co_date_of_birth) errs.co_date_of_birth = "Required";
         if (!form.co_ssn.trim()) errs.co_ssn = "Required";
         else if (form.co_ssn.replace(/\D/g, "").length !== 9) errs.co_ssn = "Must be 9 digits";
         if (!form.co_address.trim()) errs.co_address = "Required";
         if (!form.co_city.trim()) errs.co_city = "Required";
         if (!form.co_state) errs.co_state = "Required";
         if (!form.co_zip.trim()) errs.co_zip = "Required";
+        if (!form.co_residential_status) errs.co_residential_status = "Required";
+        if (!form.co_monthly_payment.trim()) errs.co_monthly_payment = "Required";
         if (form.co_years_at_address === "" && form.co_months_at_address === "") errs.co_years_at_address = "Required";
+        if (!form.co_employer.trim()) errs.co_employer = "Required";
+        if (!form.co_occupation.trim()) errs.co_occupation = "Required";
+        if (!form.co_employment_status) errs.co_employment_status = "Required";
+        if (!form.co_monthly_income.trim()) errs.co_monthly_income = "Required";
       }
       if (form.is_business_app) {
         if (!form.business_name.trim()) errs.business_name = "Required";
@@ -494,8 +511,9 @@ function StepPersonal({ form, set, errors, ssnVisible, setSsnVisible }: StepProp
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="dob">Date of Birth</Label>
-          <Input id="dob" type="date" value={form.date_of_birth} onChange={(e) => set("date_of_birth", e.target.value)} className={INPUT_CLASS} />
+          <Label htmlFor="dob">Date of Birth *</Label>
+          <Input id="dob" type="date" value={form.date_of_birth} onChange={(e) => set("date_of_birth", e.target.value)} className={`${INPUT_CLASS} ${errors.date_of_birth ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.date_of_birth} />
         </div>
         <div>
           <Label htmlFor="ssn">Social Security Number *</Label>
@@ -533,17 +551,19 @@ function StepPersonal({ form, set, errors, ssnVisible, setSsnVisible }: StepProp
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>Residential Status</Label>
+          <Label>Residential Status *</Label>
           <Select value={form.residential_status} onValueChange={(v) => set("residential_status", v)}>
-            <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={`${INPUT_CLASS} ${errors.residential_status ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {RESIDENTIAL_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
+          <FieldError error={errors.residential_status} />
         </div>
         <div>
-          <Label htmlFor="monthly_payment">Monthly Housing Payment</Label>
-          <Input id="monthly_payment" type="number" min="0" value={form.monthly_payment} onChange={(e) => set("monthly_payment", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+          <Label htmlFor="monthly_payment">Monthly Housing Payment *</Label>
+          <Input id="monthly_payment" type="number" min="0" value={form.monthly_payment} onChange={(e) => set("monthly_payment", e.target.value)} placeholder="$" className={`${INPUT_CLASS} ${errors.monthly_payment ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.monthly_payment} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -572,8 +592,9 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
           <FieldError error={errors.employer} />
         </div>
         <div>
-          <Label htmlFor="occupation">Occupation</Label>
-          <Input id="occupation" value={form.occupation} onChange={(e) => set("occupation", e.target.value)} className={INPUT_CLASS} />
+          <Label htmlFor="occupation">Occupation *</Label>
+          <Input id="occupation" value={form.occupation} onChange={(e) => set("occupation", e.target.value)} className={`${INPUT_CLASS} ${errors.occupation ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.occupation} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -595,41 +616,47 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="years_employed">Years at Employer</Label>
-          <Input id="years_employed" type="number" min="0" value={form.years_employed} onChange={(e) => set("years_employed", e.target.value)} className={INPUT_CLASS} />
+          <Label htmlFor="years_employed">Years at Employer *</Label>
+          <Input id="years_employed" type="number" min="0" value={form.years_employed} onChange={(e) => set("years_employed", e.target.value)} className={`${INPUT_CLASS} ${errors.years_employed ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.years_employed} />
         </div>
         <div>
-          <Label htmlFor="months_employed">Months</Label>
+          <Label htmlFor="months_employed">Months *</Label>
           <Input id="months_employed" type="number" min="0" max="11" value={form.months_employed} onChange={(e) => set("months_employed", e.target.value)} className={INPUT_CLASS} />
         </div>
       </div>
       <div>
-        <Label htmlFor="employer_address">Employer Address</Label>
-        <Input id="employer_address" value={form.employer_address} onChange={(e) => set("employer_address", e.target.value)} className={INPUT_CLASS} />
+        <Label htmlFor="employer_address">Employer Address *</Label>
+        <Input id="employer_address" value={form.employer_address} onChange={(e) => set("employer_address", e.target.value)} className={`${INPUT_CLASS} ${errors.employer_address ? "!border-red-400" : ""}`} />
+        <FieldError error={errors.employer_address} />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <Label htmlFor="employer_city">City</Label>
-          <Input id="employer_city" value={form.employer_city} onChange={(e) => set("employer_city", e.target.value)} className={INPUT_CLASS} />
+          <Label htmlFor="employer_city">City *</Label>
+          <Input id="employer_city" value={form.employer_city} onChange={(e) => set("employer_city", e.target.value)} className={`${INPUT_CLASS} ${errors.employer_city ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.employer_city} />
         </div>
         <div>
-          <Label>State</Label>
+          <Label>State *</Label>
           <Select value={form.employer_state} onValueChange={(v) => set("employer_state", v)}>
-            <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectTrigger className={`${INPUT_CLASS} ${errors.employer_state ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
             <SelectContent>
               {US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
+          <FieldError error={errors.employer_state} />
         </div>
         <div>
-          <Label htmlFor="employer_zip">Zip</Label>
-          <Input id="employer_zip" value={form.employer_zip} onChange={(e) => set("employer_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={INPUT_CLASS} />
+          <Label htmlFor="employer_zip">Zip *</Label>
+          <Input id="employer_zip" value={form.employer_zip} onChange={(e) => set("employer_zip", e.target.value.replace(/\D/g, "").slice(0, 5))} className={`${INPUT_CLASS} ${errors.employer_zip ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.employer_zip} />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="employer_phone">Employer Phone</Label>
-          <Input id="employer_phone" value={form.employer_phone} onChange={(e) => set("employer_phone", formatPhoneInput(e.target.value))} className={INPUT_CLASS} />
+          <Label htmlFor="employer_phone">Employer Phone *</Label>
+          <Input id="employer_phone" value={form.employer_phone} onChange={(e) => set("employer_phone", formatPhoneInput(e.target.value))} className={`${INPUT_CLASS} ${errors.employer_phone ? "!border-red-400" : ""}`} />
+          <FieldError error={errors.employer_phone} />
         </div>
         <div>
           <Label htmlFor="additional_monthly_income">Additional Monthly Income</Label>
@@ -689,8 +716,9 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="co_dob">Date of Birth</Label>
-              <Input id="co_dob" type="date" value={form.co_date_of_birth} onChange={(e) => set("co_date_of_birth", e.target.value)} className={INPUT_CLASS} />
+              <Label htmlFor="co_dob">Date of Birth *</Label>
+              <Input id="co_dob" type="date" value={form.co_date_of_birth} onChange={(e) => set("co_date_of_birth", e.target.value)} className={`${INPUT_CLASS} ${errors.co_date_of_birth ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_date_of_birth} />
             </div>
             <div>
               <Label htmlFor="co_ssn">SSN *</Label>
@@ -727,17 +755,19 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Residential Status</Label>
+              <Label>Residential Status *</Label>
               <Select value={form.co_residential_status} onValueChange={(v) => set("co_residential_status", v)}>
-                <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className={`${INPUT_CLASS} ${errors.co_residential_status ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {RESIDENTIAL_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <FieldError error={errors.co_residential_status} />
             </div>
             <div>
-              <Label htmlFor="co_monthly">Monthly Housing</Label>
-              <Input id="co_monthly" type="number" min="0" value={form.co_monthly_payment} onChange={(e) => set("co_monthly_payment", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+              <Label htmlFor="co_monthly">Monthly Housing *</Label>
+              <Input id="co_monthly" type="number" min="0" value={form.co_monthly_payment} onChange={(e) => set("co_monthly_payment", e.target.value)} placeholder="$" className={`${INPUT_CLASS} ${errors.co_monthly_payment ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_monthly_payment} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -753,27 +783,31 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="co_employer">Employer</Label>
-              <Input id="co_employer" value={form.co_employer} onChange={(e) => set("co_employer", e.target.value)} className={INPUT_CLASS} />
+              <Label htmlFor="co_employer">Employer *</Label>
+              <Input id="co_employer" value={form.co_employer} onChange={(e) => set("co_employer", e.target.value)} className={`${INPUT_CLASS} ${errors.co_employer ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_employer} />
             </div>
             <div>
-              <Label htmlFor="co_occupation">Occupation</Label>
-              <Input id="co_occupation" value={form.co_occupation} onChange={(e) => set("co_occupation", e.target.value)} className={INPUT_CLASS} />
+              <Label htmlFor="co_occupation">Occupation *</Label>
+              <Input id="co_occupation" value={form.co_occupation} onChange={(e) => set("co_occupation", e.target.value)} className={`${INPUT_CLASS} ${errors.co_occupation ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_occupation} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Employment Status</Label>
+              <Label>Employment Status *</Label>
               <Select value={form.co_employment_status} onValueChange={(v) => set("co_employment_status", v)}>
-                <SelectTrigger className={INPUT_CLASS}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className={`${INPUT_CLASS} ${errors.co_employment_status ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {EMPLOYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <FieldError error={errors.co_employment_status} />
             </div>
             <div>
-              <Label htmlFor="co_income">Monthly Income</Label>
-              <Input id="co_income" type="number" min="0" value={form.co_monthly_income} onChange={(e) => set("co_monthly_income", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+              <Label htmlFor="co_income">Monthly Income *</Label>
+              <Input id="co_income" type="number" min="0" value={form.co_monthly_income} onChange={(e) => set("co_monthly_income", e.target.value)} placeholder="$" className={`${INPUT_CLASS} ${errors.co_monthly_income ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_monthly_income} />
             </div>
           </div>
         </div>
