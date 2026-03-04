@@ -52,12 +52,28 @@ export type CreditApplication = {
   co_employer: string | null;
   co_occupation: string | null;
   co_employment_status: string | null;
+  co_employer_address: string | null;
+  co_employer_city: string | null;
+  co_employer_state: string | null;
+  co_employer_zip: string | null;
+  co_employer_phone: string | null;
   co_monthly_income: number | null;
+  co_years_employed: number | null;
+  co_months_employed: number | null;
+  co_other_income_sources: string | null;
+  co_additional_monthly_income: number | null;
 
   is_business_app: boolean;
   business_name: string | null;
   business_type: string | null;
   business_ein: string | null;
+  business_nature: string | null;
+  business_address: string | null;
+  business_city: string | null;
+  business_state: string | null;
+  business_zip: string | null;
+  business_phone: string | null;
+  years_in_business: number | null;
 
   front_id_path: string | null;
   insurance_path: string | null;
@@ -129,12 +145,28 @@ export type CreditApplicationFormData = {
   co_employer?: string;
   co_occupation?: string;
   co_employment_status?: string;
+  co_employer_address?: string;
+  co_employer_city?: string;
+  co_employer_state?: string;
+  co_employer_zip?: string;
+  co_employer_phone?: string;
   co_monthly_income?: number;
+  co_years_employed?: number;
+  co_months_employed?: number;
+  co_other_income_sources?: string;
+  co_additional_monthly_income?: number;
 
   is_business_app: boolean;
   business_name?: string;
   business_type?: string;
   business_ein?: string;
+  business_nature?: string;
+  business_address?: string;
+  business_city?: string;
+  business_state?: string;
+  business_zip?: string;
+  business_phone?: string;
+  years_in_business?: number;
 };
 
 export type WidgetConfig = {

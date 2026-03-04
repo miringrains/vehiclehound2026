@@ -46,11 +46,27 @@ type AppData = {
   co_employer?: string | null;
   co_occupation?: string | null;
   co_employment_status?: string | null;
+  co_employer_address?: string | null;
+  co_employer_city?: string | null;
+  co_employer_state?: string | null;
+  co_employer_zip?: string | null;
+  co_employer_phone?: string | null;
   co_monthly_income?: number | null;
+  co_years_employed?: number | null;
+  co_months_employed?: number | null;
+  co_other_income_sources?: string | null;
+  co_additional_monthly_income?: number | null;
   is_business_app: boolean;
   business_name?: string | null;
   business_type?: string | null;
   business_ein?: string | null;
+  business_nature?: string | null;
+  business_address?: string | null;
+  business_city?: string | null;
+  business_state?: string | null;
+  business_zip?: string | null;
+  business_phone?: string | null;
+  years_in_business?: number | null;
   vehicle?: { year?: number | null; make?: string | null; model?: string | null; stock_number?: string | null } | null;
   created_at: string;
   logo_data?: { base64: string; format: "PNG" | "JPEG" | "WEBP" } | null;
@@ -319,6 +335,29 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
       [0.30, "Occupation", val(data.co_occupation)],
       [0.30, "Monthly Income", money(data.co_monthly_income)],
     ]);
+    if (data.co_employer_address || data.co_employer_city || data.co_employer_state || data.co_employer_zip) {
+      row([
+        [0.40, "Employer Address", val(data.co_employer_address)],
+        [0.25, "City", val(data.co_employer_city)],
+        [0.10, "State", val(data.co_employer_state)],
+        [0.25, "Zip", val(data.co_employer_zip)],
+      ]);
+    }
+    const coTimeParts: string[] = [];
+    if (data.co_years_employed != null) coTimeParts.push(`${data.co_years_employed} yr`);
+    if (data.co_months_employed != null) coTimeParts.push(`${data.co_months_employed} mo`);
+
+    row([
+      [0.34, "Employer Phone", fmtPhone(data.co_employer_phone)],
+      [0.33, "Time at Employer", coTimeParts.join(" ")],
+      [0.33, "", ""],
+    ]);
+    if (data.co_other_income_sources || data.co_additional_monthly_income) {
+      row([
+        [0.50, "Other Income Sources", val(data.co_other_income_sources)],
+        [0.50, "Additional Monthly Income", money(data.co_additional_monthly_income)],
+      ]);
+    }
   }
 
   /* ═══════════════════════════════════════════════
@@ -332,6 +371,24 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
       [0.30, "Business Type", val(data.business_type)],
       [0.30, "EIN", val(data.business_ein)],
     ]);
+    row([
+      [0.50, "Nature of Business", val(data.business_nature)],
+      [0.50, "Years in Business", data.years_in_business != null ? `${data.years_in_business}` : ""],
+    ]);
+    if (data.business_address || data.business_city || data.business_state || data.business_zip) {
+      row([
+        [0.40, "Business Address", val(data.business_address)],
+        [0.25, "City", val(data.business_city)],
+        [0.10, "State", val(data.business_state)],
+        [0.25, "Zip", val(data.business_zip)],
+      ]);
+    }
+    if (data.business_phone) {
+      row([
+        [0.50, "Business Phone", fmtPhone(data.business_phone)],
+        [0.50, "", ""],
+      ]);
+    }
   }
 
   /* ═══════════════════════════════════════════════

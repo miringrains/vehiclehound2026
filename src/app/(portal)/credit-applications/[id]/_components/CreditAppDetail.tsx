@@ -298,10 +298,31 @@ export function CreditAppDetail({ application: app }: Props) {
             />
             <InfoRow label="Employer" value={app.co_employer} />
             <InfoRow label="Occupation" value={app.co_occupation} />
+            <InfoRow label="Employment Status" value={app.co_employment_status} />
+            {app.co_employer_address && (
+              <InfoRow label="Employer Address" value={app.co_employer_address} />
+            )}
+            {(app.co_employer_city || app.co_employer_state) && (
+              <InfoRow
+                label="Employer City/State/Zip"
+                value={[app.co_employer_city, app.co_employer_state, app.co_employer_zip].filter(Boolean).join(", ") || null}
+              />
+            )}
+            {app.co_employer_phone && <InfoRow label="Employer Phone" value={formatPhone(app.co_employer_phone)} />}
             <InfoRow
               label="Monthly Income"
               value={app.co_monthly_income != null ? formatCurrencyDollars(app.co_monthly_income) : null}
             />
+            {(app.co_years_employed != null || app.co_months_employed != null) && (
+              <InfoRow
+                label="Time at Employer"
+                value={`${app.co_years_employed ?? 0}yr ${app.co_months_employed ?? 0}mo`}
+              />
+            )}
+            {app.co_other_income_sources && <InfoRow label="Other Income" value={app.co_other_income_sources} />}
+            {app.co_additional_monthly_income != null && (
+              <InfoRow label="Additional Monthly" value={formatCurrencyDollars(app.co_additional_monthly_income)} />
+            )}
           </Section>
         )}
 
@@ -311,6 +332,18 @@ export function CreditAppDetail({ application: app }: Props) {
             <InfoRow label="Business Name" value={app.business_name} />
             <InfoRow label="Type" value={app.business_type} />
             <InfoRow label="EIN" value={app.business_ein} />
+            <InfoRow label="Nature of Business" value={app.business_nature} />
+            {app.business_address && <InfoRow label="Address" value={app.business_address} />}
+            {(app.business_city || app.business_state) && (
+              <InfoRow
+                label="City/State/Zip"
+                value={[app.business_city, app.business_state, app.business_zip].filter(Boolean).join(", ") || null}
+              />
+            )}
+            {app.business_phone && <InfoRow label="Phone" value={formatPhone(app.business_phone)} />}
+            {app.years_in_business != null && (
+              <InfoRow label="Years in Business" value={`${app.years_in_business}`} />
+            )}
           </Section>
         )}
 

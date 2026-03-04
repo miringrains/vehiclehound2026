@@ -81,12 +81,28 @@ type FormData = {
   co_employer: string;
   co_occupation: string;
   co_employment_status: string;
+  co_employer_address: string;
+  co_employer_city: string;
+  co_employer_state: string;
+  co_employer_zip: string;
+  co_employer_phone: string;
   co_monthly_income: string;
+  co_years_employed: string;
+  co_months_employed: string;
+  co_other_income_sources: string;
+  co_additional_monthly_income: string;
 
   is_business_app: boolean;
   business_name: string;
   business_type: string;
   business_ein: string;
+  business_nature: string;
+  business_address: string;
+  business_city: string;
+  business_state: string;
+  business_zip: string;
+  business_phone: string;
+  years_in_business: string;
 };
 
 const EMPTY_FORM: FormData = {
@@ -102,8 +118,13 @@ const EMPTY_FORM: FormData = {
   co_date_of_birth: "", co_ssn: "", co_address: "", co_city: "", co_state: "", co_zip: "",
   co_residential_status: "", co_monthly_payment: "", co_years_at_address: "", co_months_at_address: "",
   co_employer: "", co_occupation: "",
-  co_employment_status: "", co_monthly_income: "",
+  co_employment_status: "", co_employer_address: "", co_employer_city: "",
+  co_employer_state: "", co_employer_zip: "", co_employer_phone: "",
+  co_monthly_income: "", co_years_employed: "", co_months_employed: "",
+  co_other_income_sources: "", co_additional_monthly_income: "",
   is_business_app: false, business_name: "", business_type: "", business_ein: "",
+  business_nature: "", business_address: "", business_city: "", business_state: "",
+  business_zip: "", business_phone: "", years_in_business: "",
 };
 
 function formatSSN(value: string): string {
@@ -213,11 +234,25 @@ export function CreditAppForm({
         if (!form.co_employer.trim()) errs.co_employer = "Required";
         if (!form.co_occupation.trim()) errs.co_occupation = "Required";
         if (!form.co_employment_status) errs.co_employment_status = "Required";
+        if (!form.co_employer_address.trim()) errs.co_employer_address = "Required";
+        if (!form.co_employer_city.trim()) errs.co_employer_city = "Required";
+        if (!form.co_employer_state) errs.co_employer_state = "Required";
+        if (!form.co_employer_zip.trim()) errs.co_employer_zip = "Required";
+        if (!form.co_employer_phone.trim()) errs.co_employer_phone = "Required";
         if (!form.co_monthly_income.trim()) errs.co_monthly_income = "Required";
+        if (form.co_years_employed === "" && form.co_months_employed === "") errs.co_years_employed = "Required";
       }
       if (form.is_business_app) {
         if (!form.business_name.trim()) errs.business_name = "Required";
         if (!form.business_type) errs.business_type = "Required";
+        if (!form.business_ein.trim()) errs.business_ein = "Required";
+        if (!form.business_nature.trim()) errs.business_nature = "Required";
+        if (!form.business_address.trim()) errs.business_address = "Required";
+        if (!form.business_city.trim()) errs.business_city = "Required";
+        if (!form.business_state) errs.business_state = "Required";
+        if (!form.business_zip.trim()) errs.business_zip = "Required";
+        if (!form.business_phone.trim()) errs.business_phone = "Required";
+        if (!form.years_in_business.trim()) errs.years_in_business = "Required";
       }
     }
     if (s === 2) {
@@ -303,7 +338,16 @@ export function CreditAppForm({
           co_employer: form.co_employer || null,
           co_occupation: form.co_occupation || null,
           co_employment_status: form.co_employment_status || null,
+          co_employer_address: form.co_employer_address || null,
+          co_employer_city: form.co_employer_city || null,
+          co_employer_state: form.co_employer_state || null,
+          co_employer_zip: form.co_employer_zip || null,
+          co_employer_phone: form.co_employer_phone ? form.co_employer_phone.replace(/\D/g, "") : null,
           co_monthly_income: form.co_monthly_income ? parseFloat(form.co_monthly_income) : null,
+          co_years_employed: form.co_years_employed ? parseInt(form.co_years_employed) : null,
+          co_months_employed: form.co_months_employed ? parseInt(form.co_months_employed) : null,
+          co_other_income_sources: form.co_other_income_sources || null,
+          co_additional_monthly_income: form.co_additional_monthly_income ? parseFloat(form.co_additional_monthly_income) : null,
         });
       }
 
@@ -312,6 +356,13 @@ export function CreditAppForm({
           business_name: form.business_name || null,
           business_type: form.business_type || null,
           business_ein: form.business_ein || null,
+          business_nature: form.business_nature || null,
+          business_address: form.business_address || null,
+          business_city: form.business_city || null,
+          business_state: form.business_state || null,
+          business_zip: form.business_zip || null,
+          business_phone: form.business_phone ? form.business_phone.replace(/\D/g, "") : null,
+          years_in_business: form.years_in_business ? parseInt(form.years_in_business) : null,
         });
       }
 
@@ -810,6 +861,57 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
               <FieldError error={errors.co_monthly_income} />
             </div>
           </div>
+          <div>
+            <Label htmlFor="co_employer_address">Employer Address *</Label>
+            <Input id="co_employer_address" value={form.co_employer_address} onChange={(e) => set("co_employer_address", e.target.value)} className={`${INPUT_CLASS} ${errors.co_employer_address ? "!border-red-400" : ""}`} />
+            <FieldError error={errors.co_employer_address} />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="co_employer_city">City *</Label>
+              <Input id="co_employer_city" value={form.co_employer_city} onChange={(e) => set("co_employer_city", e.target.value)} className={`${INPUT_CLASS} ${errors.co_employer_city ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_employer_city} />
+            </div>
+            <div>
+              <Label>State *</Label>
+              <Select value={form.co_employer_state} onValueChange={(v) => set("co_employer_state", v)}>
+                <SelectTrigger className={`${INPUT_CLASS} ${errors.co_employer_state ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+              <FieldError error={errors.co_employer_state} />
+            </div>
+            <div>
+              <Label htmlFor="co_employer_zip">ZIP *</Label>
+              <Input id="co_employer_zip" value={form.co_employer_zip} onChange={(e) => set("co_employer_zip", e.target.value)} className={`${INPUT_CLASS} ${errors.co_employer_zip ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_employer_zip} />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="co_employer_phone">Employer Phone *</Label>
+              <Input id="co_employer_phone" type="tel" value={form.co_employer_phone} onChange={(e) => set("co_employer_phone", e.target.value)} className={`${INPUT_CLASS} ${errors.co_employer_phone ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_employer_phone} />
+            </div>
+            <div>
+              <Label htmlFor="co_years_employed">Years Employed *</Label>
+              <Input id="co_years_employed" type="number" min="0" value={form.co_years_employed} onChange={(e) => set("co_years_employed", e.target.value)} className={`${INPUT_CLASS} ${errors.co_years_employed ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.co_years_employed} />
+            </div>
+            <div>
+              <Label htmlFor="co_months_employed">Months *</Label>
+              <Input id="co_months_employed" type="number" min="0" max="11" value={form.co_months_employed} onChange={(e) => set("co_months_employed", e.target.value)} className={INPUT_CLASS} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="co_other_income">Other Income Sources</Label>
+              <Input id="co_other_income" value={form.co_other_income_sources} onChange={(e) => set("co_other_income_sources", e.target.value)} className={INPUT_CLASS} />
+            </div>
+            <div>
+              <Label htmlFor="co_add_income">Additional Monthly Income</Label>
+              <Input id="co_add_income" type="number" min="0" value={form.co_additional_monthly_income} onChange={(e) => set("co_additional_monthly_income", e.target.value)} placeholder="$" className={INPUT_CLASS} />
+            </div>
+          </div>
         </div>
       )}
 
@@ -834,9 +936,54 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
               <FieldError error={errors.business_type} />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="business_ein">EIN *</Label>
+              <Input id="business_ein" value={form.business_ein} onChange={(e) => set("business_ein", e.target.value)} placeholder="XX-XXXXXXX" className={`${INPUT_CLASS} ${errors.business_ein ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.business_ein} />
+            </div>
+            <div>
+              <Label htmlFor="business_nature">Nature of Business *</Label>
+              <Input id="business_nature" value={form.business_nature} onChange={(e) => set("business_nature", e.target.value)} className={`${INPUT_CLASS} ${errors.business_nature ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.business_nature} />
+            </div>
+          </div>
           <div>
-            <Label htmlFor="business_ein">EIN</Label>
-            <Input id="business_ein" value={form.business_ein} onChange={(e) => set("business_ein", e.target.value)} placeholder="XX-XXXXXXX" className={INPUT_CLASS} />
+            <Label htmlFor="business_address">Business Address *</Label>
+            <Input id="business_address" value={form.business_address} onChange={(e) => set("business_address", e.target.value)} className={`${INPUT_CLASS} ${errors.business_address ? "!border-red-400" : ""}`} />
+            <FieldError error={errors.business_address} />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label htmlFor="business_city">City *</Label>
+              <Input id="business_city" value={form.business_city} onChange={(e) => set("business_city", e.target.value)} className={`${INPUT_CLASS} ${errors.business_city ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.business_city} />
+            </div>
+            <div>
+              <Label>State *</Label>
+              <Select value={form.business_state} onValueChange={(v) => set("business_state", v)}>
+                <SelectTrigger className={`${INPUT_CLASS} ${errors.business_state ? "!border-red-400" : ""}`}><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{US_STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+              <FieldError error={errors.business_state} />
+            </div>
+            <div>
+              <Label htmlFor="business_zip">ZIP *</Label>
+              <Input id="business_zip" value={form.business_zip} onChange={(e) => set("business_zip", e.target.value)} className={`${INPUT_CLASS} ${errors.business_zip ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.business_zip} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="business_phone">Business Phone *</Label>
+              <Input id="business_phone" type="tel" value={form.business_phone} onChange={(e) => set("business_phone", e.target.value)} className={`${INPUT_CLASS} ${errors.business_phone ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.business_phone} />
+            </div>
+            <div>
+              <Label htmlFor="years_in_business">Years in Business *</Label>
+              <Input id="years_in_business" type="number" min="0" value={form.years_in_business} onChange={(e) => set("years_in_business", e.target.value)} className={`${INPUT_CLASS} ${errors.years_in_business ? "!border-red-400" : ""}`} />
+              <FieldError error={errors.years_in_business} />
+            </div>
           </div>
         </div>
       )}
