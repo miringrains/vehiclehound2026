@@ -99,8 +99,14 @@ export function CreditAppDetail({ application: app }: Props) {
 
   const handleDownloadPDF = async () => {
     const res = await fetch(`/api/credit-applications/${app.id}/pdf`);
-    const { url } = await res.json();
-    if (url) window.open(url, "_blank");
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Credit-Application-${app.first_name}-${app.last_name}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleLoadFiles = async () => {
@@ -198,12 +204,10 @@ export function CreditAppDetail({ application: app }: Props) {
           {ssnVisible ? <EyeOff size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" /> : <Eye size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />}
           {ssnVisible ? "Hide SSN" : "Reveal SSN"}
         </Button>
-        {app.pdf_path && (
-          <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
-            <Download size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />
-            Download PDF
-          </Button>
-        )}
+        <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+          <Download size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />
+          Download PDF
+        </Button>
         <Button variant="outline" size="sm" onClick={handleCreateCustomer} disabled={creatingCustomer}>
           <UserPlus size={14} strokeWidth={ICON_STROKE_WIDTH} className="mr-1.5" />
           {creatingCustomer ? "Creating..." : "Create Customer"}

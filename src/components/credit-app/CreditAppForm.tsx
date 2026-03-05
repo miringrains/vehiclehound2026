@@ -560,15 +560,15 @@ function StepPersonal({ form, set, errors, ssnVisible, setSsnVisible }: StepProp
           <FieldError error={errors.phone} />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label htmlFor="dob">Date of Birth *</Label>
           <Input id="dob" type="date" value={form.date_of_birth} onChange={(e) => set("date_of_birth", e.target.value)} className={`${INPUT_CLASS} ${errors.date_of_birth ? "!border-red-400" : ""}`} />
           <FieldError error={errors.date_of_birth} />
         </div>
         <div>
-          <Label htmlFor="ssn">Social Security Number *</Label>
-          <SSNInput id="ssn" value={form.ssn} onChange={(v) => set("ssn", v)} visible={ssnVisible} onToggle={() => setSsnVisible(!ssnVisible)} error={errors.ssn} />
+          <Label htmlFor="ssn">SSN *</Label>
+          <SSNInput id="ssn" value={form.ssn} onChange={(v) => set("ssn", v)} visible={ssnVisible} onToggle={() => setSsnVisible(!ssnVisible)} error={errors.ssn} placeholder="###-##-####" />
           <FieldError error={errors.ssn} />
         </div>
       </div>
@@ -765,7 +765,7 @@ function StepEmployment({ form, set, errors, coSsnVisible, setCoSsnVisible }: St
               <FieldError error={errors.co_phone} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label htmlFor="co_dob">Date of Birth *</Label>
               <Input id="co_dob" type="date" value={form.co_date_of_birth} onChange={(e) => set("co_date_of_birth", e.target.value)} className={`${INPUT_CLASS} ${errors.co_date_of_birth ? "!border-red-400" : ""}`} />

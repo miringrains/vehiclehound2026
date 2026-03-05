@@ -101,6 +101,14 @@ function fmtPhone(v: unknown): string {
   return String(v);
 }
 
+function fmtDate(v: unknown): string {
+  if (!v) return "";
+  const s = String(v);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[2]}/${m[3]}/${m[1]}`;
+  return s;
+}
+
 /* ── PDF Generation ── */
 
 export function generateCreditApplicationPDF(data: AppData): Uint8Array {
@@ -237,7 +245,7 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
   row([
     [0.30, "First Name", val(data.first_name)],
     [0.30, "Last Name", val(data.last_name)],
-    [0.20, "Date of Birth", val(data.date_of_birth)],
+    [0.20, "Date of Birth", fmtDate(data.date_of_birth)],
     [0.20, "Date of Application", appDate],
   ]);
   row([
@@ -307,7 +315,7 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
     row([
       [0.30, "First Name", val(data.co_first_name)],
       [0.30, "Last Name", val(data.co_last_name)],
-      [0.20, "Date of Birth", val(data.co_date_of_birth)],
+      [0.20, "Date of Birth", fmtDate(data.co_date_of_birth)],
       [0.20, "Phone", fmtPhone(data.co_phone)],
     ]);
     row([
