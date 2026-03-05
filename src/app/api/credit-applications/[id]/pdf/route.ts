@@ -127,7 +127,7 @@ export async function GET(_request: NextRequest, ctx: RouteContext) {
 
     const filename = `Credit-Application-${app.first_name}-${app.last_name}.pdf`;
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
