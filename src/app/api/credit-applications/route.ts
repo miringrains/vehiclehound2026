@@ -6,6 +6,10 @@ import { generateCreditApplicationPDF } from "@/lib/pdf/credit-application-pdf";
 import { fetchLogoData } from "@/lib/pdf/fetch-logo";
 import { notifyCreditAppSubmission } from "@/lib/email/credit-application-email";
 
+export const maxDuration = 60;
+
+export const dynamic = "force-dynamic";
+
 /* ────────────────────────────────────────────────
    POST /api/credit-applications
    Public endpoint — no auth required.

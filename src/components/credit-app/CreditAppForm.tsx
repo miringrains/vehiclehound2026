@@ -273,12 +273,35 @@ export function CreditAppForm({
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const fileToBase64 = (file: File): Promise<string> =>
+  const compressImage = (file: File, maxDim = 1600, quality = 0.8): Promise<string> =>
     new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      if (!file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+        return;
+      }
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("Canvas not supported")); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Failed to load image")); };
+      img.src = objectUrl;
     });
 
   const handleSubmit = async () => {
@@ -366,9 +389,9 @@ export function CreditAppForm({
         });
       }
 
-      if (files.front_id) payload.front_id_base64 = await fileToBase64(files.front_id);
-      if (files.insurance) payload.insurance_base64 = await fileToBase64(files.insurance);
-      if (files.registration) payload.registration_base64 = await fileToBase64(files.registration);
+      if (files.front_id) payload.front_id_base64 = await compressImage(files.front_id);
+      if (files.insurance) payload.insurance_base64 = await compressImage(files.insurance);
+      if (files.registration) payload.registration_base64 = await compressImage(files.registration);
 
       const res = await fetch(apiEndpoint, {
         method: "POST",
