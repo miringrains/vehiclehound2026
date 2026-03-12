@@ -199,35 +199,50 @@ export function generateCreditApplicationPDF(data: AppData): Uint8Array {
      HEADER
      ═══════════════════════════════════════════════ */
 
-  const hdrH = 42;
+  const titleRowH = 22;
+  const dealerRowH = data.dealership_name || data.logo_data ? 36 : 0;
+  const hdrH = titleRowH + dealerRowH;
+
   doc.setDrawColor(0);
   doc.setLineWidth(LN);
   doc.rect(M, y, W, hdrH);
 
-  let logoRight = M + 8;
-  if (data.logo_data) {
-    try {
-      doc.addImage(data.logo_data.base64, data.logo_data.format, M + 8, y + 5, 72, 32, undefined, "FAST");
-      logoRight = M + 86;
-    } catch { /* skip logo */ }
-  }
+  if (dealerRowH > 0) {
+    doc.setLineWidth(LN);
+    doc.line(M, y + dealerRowH, M + W, y + dealerRowH);
 
-  if (data.dealership_name) {
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
-    doc.text(data.dealership_name, logoRight, y + 16);
-    if (data.dealership_phone) {
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "normal");
-      doc.text(fmtPhone(data.dealership_phone), logoRight, y + 27);
+    let logoRight = M + 8;
+    if (data.logo_data) {
+      try {
+        const logoH = 24;
+        const logoW = 60;
+        const logoY = y + (dealerRowH - logoH) / 2;
+        doc.setFillColor(245, 245, 245);
+        doc.roundedRect(M + 6, logoY - 2, logoW + 4, logoH + 4, 2, 2, "F");
+        doc.addImage(data.logo_data.base64, data.logo_data.format, M + 8, logoY, logoW, logoH, undefined, "FAST");
+        logoRight = M + 8 + logoW + 10;
+      } catch { /* skip logo */ }
+    }
+
+    if (data.dealership_name) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0);
+      doc.text(data.dealership_name, logoRight, y + dealerRowH / 2 - 2);
+      if (data.dealership_phone) {
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.text(fmtPhone(data.dealership_phone), logoRight, y + dealerRowH / 2 + 9);
+      }
     }
   }
 
-  doc.setFontSize(14);
+  doc.setFillColor(30, 30, 33);
+  doc.rect(M, y + dealerRowH, W, titleRowH, "F");
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(0);
-  doc.text("CREDIT APPLICATION", M + W / 2, y + 26, { align: "center" });
+  doc.setTextColor(255, 255, 255);
+  doc.text("CREDIT APPLICATION", M + W / 2, y + dealerRowH + titleRowH / 2 + 3, { align: "center" });
 
   y += hdrH;
 
